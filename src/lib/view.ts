@@ -1,6 +1,6 @@
 import { ClassType, EventNames, FnType, Tree, Props } from "./types";
 
-export abstract class View<Controller extends ClassType> {
+export abstract class View<Self> {
   protected model: InstanceType<Controller>["model"];
 
   constructor(model: InstanceType<Controller>["model"]) {
@@ -12,17 +12,7 @@ export abstract class View<Controller extends ClassType> {
     payload: Parameters<InstanceType<Controller>[E]>[0],
   ) {}
 
-  public abstract render(): Tree;
-}
-
-export class Properties<Model extends Record<string, unknown>> {
-  pending(name: Props<Model>, fn: FnType): any {
-    return null;
-  }
-
-  error(name: Props<Model>, fn: FnType): any {
-    return null;
-  }
+  public abstract tree(): Tree;
 }
 
 // public dispatch(run) {
@@ -40,3 +30,7 @@ export class Properties<Model extends Record<string, unknown>> {
 //     },
 //   );
 // }
+
+export function otherwise(fn: FnType) {
+  return fn;
+}

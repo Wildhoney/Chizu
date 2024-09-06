@@ -1,7 +1,7 @@
 import { Controller } from "../lib/controller";
-import { Events, Model } from "./types";
+import { Events, Self } from "./types";
 
-export default class PersonController extends Controller<Model> {
+export default class PersonController extends Controller<Self> {
   public model = {
     name: "Adam",
     age: 38,

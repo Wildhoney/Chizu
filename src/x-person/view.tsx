@@ -1,29 +1,34 @@
-import { Events, Handle } from "./types";
-import PersonController from "./controller";
+import { Events, Self } from "./types";
 import { View } from "../lib/view";
+import { State } from "../lib/types";
 
-@Handle.Pending("name", () => {
-  return <p>...</p>;
-})
-@Handle.Error("age", ({ error }) => {
-  return <p>{error.message}</p>;
-})
-export default class PersonView extends View<typeof PersonController> {
-  protected name = "x-person";
+export default class PersonView extends View<Self> {
+  protected meta = {
+    tag: "x-person",
+    styles: import("./styles.css"),
+  };
 
-  protected styles = import("./styles.css");
-
-  private handleModifyName(event: MouseEvent) {
-    this.dispatch(Events.ModifyName, { name: "Maria" });
+  private name(state: State): string {
+    switch (state) {
+      case State.Optimistic:
+        return state;
+    }
   }
 
-  public render() {
+  public tree() {
     <>
       <h1>
-        Hello {this.model.name}, you are {this.model.age}!
+        Hello {this.model.name.otherwise(this.name)}, you are{" "}
+        {this.model.age.match(State.Errored, (error) => "Oh no...")}!
       </h1>
 
-      <button onClick={this.handleModifyName}>Update name</button>
+      <p>Unsaved: {this.model.name.is(State.Optimistic)}</p>
+
+      <button
+        onClick={() => this.dispatch(Events.ModifyName, { name: "Maria" })}
+      >
+        Update name
+      </button>
     </>;
   }
 }

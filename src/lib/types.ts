@@ -5,13 +5,13 @@ export type FnType = (...args: any[]) => any;
 
 export type RecordType = Record<string, unknown>;
 
-type Names<T> = {
+export type Names<T> = {
   [K in keyof T]: T[K] extends FnType ? K : never;
 }[keyof T];
 
 export type ClassType = abstract new (...args: any) => any;
 
-export type EventNames<T extends ClassType> = Names<InstanceType<T>>;
+export type Dispatchables<T extends ClassType> = Names<InstanceType<T>>;
 
 export type DraftFn<Model> = (draft: Draft<Model>) => void;
 
@@ -41,3 +41,12 @@ export type Props<Model extends RecordType> = Join<
   PathsToStringProps<Model>,
   "."
 >;
+
+export enum State {
+  Pending,
+  Optimistic,
+  Errored,
+}
+
+
+export type Unify<T, U> = [T, U];;
