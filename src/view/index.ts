@@ -7,7 +7,7 @@ export function render(
   if (!Array.isArray(tree)) {
     if (tree instanceof Property) {
       const node = document.createTextNode(tree.read());
-      tree.assign(node);
+      tree.updater((value) => (node.textContent = value));
       return container.appendChild(node);
     }
 
@@ -18,6 +18,15 @@ export function render(
   const [tag, attributes, children] = tree;
   const node = document.createElement(tag);
   container.appendChild(node);
+
+  for (const [key, value] of Object.entries(attributes)) {
+    if (value instanceof Property) {
+      value.updater((value) => node.setAttribute(key, value));
+      node.setAttribute(key, value.read());
+    } else {
+      node.setAttribute(key, value);
+    }
+  }
 
   [].concat(children).map((child) => render(child, node));
 

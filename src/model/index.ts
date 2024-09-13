@@ -1,15 +1,16 @@
+import { register } from "../dispatcher";
+
 export class Property {
   property: symbol | string;
   value: unknown;
-  textNode: Text;
 
   constructor(value: unknown, property: symbol | string) {
     this.property = property;
     this.value = value;
   }
 
-  public assign(textNode: Text) {
-    this.textNode = textNode;
+  public updater(update) {
+    register(this.property, update);
   }
 
   public read(): string {
