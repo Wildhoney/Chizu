@@ -1,5 +1,6 @@
 import { describe, expect, it } from "@jest/globals";
 import { render } from ".";
+import { decorate } from "../model";
 
 describe("view", () => {
   describe("render()", () => {
@@ -15,13 +16,17 @@ describe("view", () => {
   });
 });
 
+const model = decorate({
+  name: "Adam",
+});
+
 export function view() {
   return [
     "h1",
     {},
     [
       ["span", {}, "Hello"],
-      ["strong", {}, "Adam"],
+      ["strong", {}, model.name],
     ],
   ];
 }
