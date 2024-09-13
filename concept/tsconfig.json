@@ -20,7 +20,7 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
     "jsx": "preserve",
-    "jsxFactory": "h",
+    "jsxFactory": "h"
   },
   "include": ["src"]
 }

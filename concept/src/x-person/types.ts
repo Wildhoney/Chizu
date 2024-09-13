@@ -9,7 +9,4 @@ export const enum Events {
 
 // export type Dispatch = Dispatchables<typeof PersonController>;
 
-export type Self = Unify<
-  typeof PersonController,
-  typeof PersonView
->;
+export type Self = Unify<typeof PersonController, typeof PersonView>;

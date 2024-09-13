@@ -48,5 +48,4 @@ export enum State {
   Errored,
 }
 
-
-export type Unify<T, U> = [T, U];;
+export type Unify<T, U> = [T, U];

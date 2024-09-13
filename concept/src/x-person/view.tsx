@@ -17,8 +17,7 @@ export default class PersonView extends View<Self> {
 
   public render() {
     <>
-      <h1>
-      </h1>
+      <h1></h1>
 
       <p>Unsaved: {this.model.name.is(State.Optimistic)}</p>
 
