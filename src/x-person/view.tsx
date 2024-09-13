@@ -15,7 +15,7 @@ export default class PersonView extends View<Self> {
     }
   }
 
-  public tree() {
+  public render() {
     <>
       <h1>
         Hello {this.model.name.otherwise(this.name)}, you are{" "}
