@@ -1,7 +1,8 @@
 import { describe, expect, it } from "@jest/globals";
-import { render } from ".";
+import { create, render } from ".";
 import { decorate } from "../model";
 import { dispatch } from "../dispatcher";
+// import { ƒ } from "../operations";
 
 describe("view", () => {
   describe("render()", () => {
@@ -71,18 +72,27 @@ describe("view", () => {
   });
 });
 
-const model = decorate({
+type Model = {
+  name: string;
+  locale: string;
+  friends: { name: string }[];
+};
+
+const model = decorate<Model>({
   name: "Adam",
   locale: "en-GB",
+  friends: [],
 });
 
-export function view() {
+export const view = create("x-person", () => {
   return [
     "h1",
     {},
     [
       ["span", {}, "Hello"],
       ["strong", {}, model.name],
+      // [ƒ.is(model.name, "Adam", ["em", {}, "👋"])],
+      // [ƒ.map(model.friends, (friend) => ["p", {}, friend.name])],
     ],
   ];
-}
+});

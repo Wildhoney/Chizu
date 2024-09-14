@@ -17,6 +17,10 @@ export class Property {
   public get(): string {
     return String(this.value);
   }
+
+  public is(matches: string): boolean {
+    return this.get() === matches;
+  }
 }
 
 export function decorate<T extends object>(model: T) {

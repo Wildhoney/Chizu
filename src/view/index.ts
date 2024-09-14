@@ -49,3 +49,7 @@ export function render(
 }
 
 export function update() {}
+
+export function create<T>(name: string, tree: T): T {
+  return tree;
+}
