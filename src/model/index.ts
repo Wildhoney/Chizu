@@ -1,11 +1,11 @@
 import { register } from "../dispatcher";
 
-export class Property {
+export class Property<T> {
   property: symbol | string;
-  value: unknown;
+  value: T;
   node: Text;
 
-  constructor(value: unknown, property: symbol | string) {
+  constructor(value: T, property: symbol | string) {
     this.property = property;
     this.value = value;
   }
@@ -16,10 +16,6 @@ export class Property {
 
   public get(): string {
     return String(this.value);
-  }
-
-  public is(matches: string): boolean {
-    return this.get() === matches;
   }
 }
 

@@ -91,8 +91,8 @@ export const view = create("x-person", () => {
     [
       ["span", {}, "Hello"],
       ["strong", {}, model.name],
-      [ƒ.is(model.name, "Adam", ["em", {}, "👋"])],
-      [ƒ.map(model.friends, (friend) => ["p", {}, friend.name])],
+      // ƒ.is(model.name, "Adam", ["em", {}, "👋"]),
+      // ƒ.map(model.friends, (friend) => ["p", {}, friend.name]),
     ],
   ];
 });

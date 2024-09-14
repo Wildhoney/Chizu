@@ -1,10 +1,11 @@
+import { Property } from "../model";
 import { Primitive } from "../types";
 
 export function ƒ() {}
 
-export const Operation = Symbol("Operation");
-
-ƒ.is = <T extends Primitive>(a: T, b: T, c) => Operation;
+ƒ.is = <T extends Primitive>(a: Property<T>, b: T, c) => {
+  return a.get() === b ? c : null;
+};
 
 // ƒ.not = (x: Primitive) => {};
 
@@ -12,4 +13,4 @@ export const Operation = Symbol("Operation");
 
 // ƒ.lt = (x: Primitive) => {};
 
-ƒ.map = <T extends unknown>(xs: T[], x: (x: T) => {}) => Operation;
+ƒ.map = <T extends unknown>(xs: T[], x: (x: T) => {}) => {};

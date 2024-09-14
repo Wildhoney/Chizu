@@ -1,6 +1,5 @@
 import { Patch } from "immer";
 import { Property } from "../model";
-import { Operation } from "../operations";
 
 export function render(
   tree,
@@ -26,11 +25,6 @@ export function render(
   }
 
   const [tag, attributes, children] = tree;
-
-  if (tag === Operation) {
-    // We have an operation we're skipping for now.
-    return container;
-  }
 
   // We have an element and thus we're creating it and attaching its attributes and events.
   const node = document.createElement(tag);
