@@ -2,7 +2,7 @@ import { describe, expect, it } from "@jest/globals";
 import { create, render } from ".";
 import { decorate } from "../model";
 import { dispatch } from "../dispatcher";
-// import { ƒ } from "../operations";
+import { ƒ } from "../operations";
 
 describe("view", () => {
   describe("render()", () => {
@@ -91,8 +91,8 @@ export const view = create("x-person", () => {
     [
       ["span", {}, "Hello"],
       ["strong", {}, model.name],
-      // [ƒ.is(model.name, "Adam", ["em", {}, "👋"])],
-      // [ƒ.map(model.friends, (friend) => ["p", {}, friend.name])],
+      [ƒ.is(model.name, "Adam", ["em", {}, "👋"])],
+      [ƒ.map(model.friends, (friend) => ["p", {}, friend.name])],
     ],
   ];
 });

@@ -1,11 +1,13 @@
 import { Patch } from "immer";
 import { Property } from "../model";
+import { Operation } from "../operations";
 
 export function render(
   tree,
   container: DocumentFragment | HTMLElement = document.createDocumentFragment(),
 ): Text | DocumentFragment | HTMLElement {
   if (!Array.isArray(tree)) {
+    // We have a primitive and thus we're creating a text node.
     if (tree instanceof Property) {
       const node = document.createTextNode(tree.get());
       tree.register((patch: Patch) => {
@@ -24,6 +26,13 @@ export function render(
   }
 
   const [tag, attributes, children] = tree;
+
+  if (tag === Operation) {
+    // We have an operation we're skipping for now.
+    return container;
+  }
+
+  // We have an element and thus we're creating it and attaching its attributes and events.
   const node = document.createElement(tag);
   container.appendChild(node);
 
@@ -43,6 +52,7 @@ export function render(
     }
   }
 
+  // We're rendering the children of the element as well.
   [].concat(children).map((child) => render(child, node));
 
   return container;
