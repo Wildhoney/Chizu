@@ -15,26 +15,58 @@ describe("view", () => {
       );
     });
 
-    it("dispatches updates to text nodes", () => {
-      const container = document.createElement("section");
-      const fragment = render(["h1", {}, model.name]);
-      container.append(fragment);
+    describe("text", () => {
+      it("dispatches updates to text nodes", () => {
+        const container = document.createElement("section");
+        const fragment = render(["h1", {}, model.name]);
+        container.append(fragment);
 
-      expect(container.innerHTML).toMatchInlineSnapshot(`"<h1>Adam</h1>"`);
+        expect(container.innerHTML).toMatchInlineSnapshot(`"<h1>Adam</h1>"`);
 
-      dispatch("name", "Maria");
-      expect(container.innerHTML).toMatchInlineSnapshot(`"<h1>Maria</h1>"`);
+        dispatch({ op: "replace", path: ["name"], value: "Maria" });
+        expect(container.innerHTML).toMatchInlineSnapshot(`"<h1>Maria</h1>"`);
+      });
+
+      it("dispatches removals to text nodes", () => {
+        const container = document.createElement("section");
+        const fragment = render(["h1", {}, model.name]);
+        container.append(fragment);
+
+        expect(container.innerHTML).toMatchInlineSnapshot(`"<h1>Adam</h1>"`);
+
+        dispatch({ op: "remove", path: ["name"] });
+        expect(container.innerHTML).toMatchInlineSnapshot(`"<h1></h1>"`);
+      });
     });
 
-    it("dispatches updates to node attributes", () => {
-      const container = document.createElement("section");
-      const fragment = render(["h1", { locale: model.locale }, "Adam"]);
-      container.append(fragment);
+    describe("attributes", () => {
+      it("dispatches updates to node attributes", () => {
+        const container = document.createElement("section");
+        const fragment = render(["h1", { locale: model.locale }, "Adam"]);
+        container.append(fragment);
 
-      expect(container.innerHTML).toMatchInlineSnapshot(`"<h1 locale="en-GB">Adam</h1>"`);
+        expect(container.innerHTML).toMatchInlineSnapshot(
+          `"<h1 locale="en-GB">Adam</h1>"`,
+        );
 
-      dispatch("locale", "fr-FR");
-      expect(container.innerHTML).toMatchInlineSnapshot(`"<h1 locale="fr-FR">Adam</h1>"`);
+        dispatch({ op: "replace", path: ["locale"], value: "fr-FR" });
+        expect(container.innerHTML).toMatchInlineSnapshot(
+          `"<h1 locale="fr-FR">Adam</h1>"`,
+        );
+      });
+
+      it("dispatches removals to node attributes", () => {
+        const container = document.createElement("section");
+        const fragment = render(["h1", { locale: model.locale }, "Adam"]);
+        container.append(fragment);
+
+        expect(container.innerHTML).toMatchInlineSnapshot(
+          `"<h1 locale="en-GB">Adam</h1>"`,
+        );
+
+        dispatch({ op: "remove", path: ["locale"] });
+        expect(container.innerHTML).toMatchInlineSnapshot(`"<h1>Adam</h1>"`);
+      });
     });
   });
 });

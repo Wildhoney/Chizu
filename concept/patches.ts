@@ -25,8 +25,10 @@ const [state, patches] = produceWithPatches(model, (draft) => {
   //   draft.friends[1].name = "Peter";
   //   delete draft.friends[2];
   draft.friends[0].age = 22;
-  draft.friends.sort((a, b) => a.name.localeCompare(b.name));
-  draft.friends.push({ name: "Sarah", age: 35 });
+  // draft.friends.sort((a, b) => a.name.localeCompare(b.name));
+  draft.friends.push({ name: "Adam", age: 35 });
+  // delete draft.name;
+  // draft.friends.sort((a, b) => a.name.localeCompare(b.name));
 });
 
 console.log(JSON.stringify(patches, null, 4));

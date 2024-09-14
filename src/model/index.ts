@@ -3,17 +3,18 @@ import { register } from "../dispatcher";
 export class Property {
   property: symbol | string;
   value: unknown;
+  node: Text;
 
   constructor(value: unknown, property: symbol | string) {
     this.property = property;
     this.value = value;
   }
 
-  public updater(update) {
+  public register(update) {
     register(this.property, update);
   }
 
-  public read(): string {
+  public get(): string {
     return String(this.value);
   }
 }
@@ -26,3 +27,26 @@ export function decorate<T extends object>(model: T) {
     },
   });
 }
+
+// [
+//   {
+//       "op": "replace",
+//       "path": [
+//           "friends",
+//           0,
+//           "age"
+//       ],
+//       "value": 22
+//   },
+//   {
+//       "op": "add",
+//       "path": [
+//           "friends",
+//           3
+//       ],
+//       "value": {
+//           "name": "Adam",
+//           "age": 35
+//       }
+//   }
+// ]
