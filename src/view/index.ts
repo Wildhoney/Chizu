@@ -1,8 +1,9 @@
 import { Patch } from "immer";
 import { Property } from "../model";
+import { Fn, Tree } from "../types";
 
 export function render(
-  tree,
+  tree: Tree,
   container: DocumentFragment | HTMLElement = document.createDocumentFragment(),
 ): Text | DocumentFragment | HTMLElement {
   if (!Array.isArray(tree)) {
@@ -54,6 +55,6 @@ export function render(
 
 export function update() {}
 
-export function create<T>(name: string, tree: T): T {
+export function element<T>(name: string, tree: Tree): Tree {
   return tree;
 }

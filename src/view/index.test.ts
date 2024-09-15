@@ -1,5 +1,5 @@
 import { describe, expect, it } from "@jest/globals";
-import { create, render } from ".";
+import { element, render } from ".";
 import { decorate } from "../model";
 import { dispatch } from "../dispatcher";
 import { ƒ } from "../operations";
@@ -8,7 +8,7 @@ describe("view", () => {
   describe("render()", () => {
     it("transforms the tree into valid html", () => {
       const container = document.createElement("section");
-      const fragment = render(view());
+      const fragment = render(view);
       container.append(fragment);
 
       expect(container.innerHTML).toMatchInlineSnapshot(
@@ -84,15 +84,13 @@ const model = decorate<Model>({
   friends: [],
 });
 
-export const view = create("x-person", () => {
-  return [
-    "h1",
-    {},
-    [
-      ["span", {}, "Hello"],
-      ["strong", {}, model.name],
-      // ƒ.is(model.name, "Adam", ["em", {}, "👋"]),
-      // ƒ.map(model.friends, (friend) => ["p", {}, friend.name]),
-    ],
-  ];
-});
+export const view = element("x-person", [
+  "h1",
+  {},
+  [
+    ["span", {}, "Hello"],
+    ["strong", {}, model.name],
+    // ƒ.is(model.name, "Adam", (name) => ["em", {}, "👋"]),
+    // ƒ.map(model.friends, (friend) => ["p", {}, friend.name]),
+  ],
+]);

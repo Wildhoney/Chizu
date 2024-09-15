@@ -1,4 +1,14 @@
+import { Property } from "../model";
+
 export type Primitive = string | number | boolean | null;
+
+export type Fn<A, R> = (...args: A[]) => R;
+
+export type Tree = [
+  keyof HTMLElementTagNameMap,
+  Record<string, string>,
+  Tree[] | Primitive,
+];
 
 // [
 //     {

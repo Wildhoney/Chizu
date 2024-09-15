@@ -1,9 +1,9 @@
 import { Property } from "../model";
-import { Primitive } from "../types";
+import { Fn, Primitive } from "../types";
 
 export function ƒ() {}
 
-ƒ.is = <T extends Primitive>(a: Property<T>, b: T, c) => {
+ƒ.is = <T extends Primitive>(a: Property<T>, b: T, c: Fn<T, unknown>) => {
   return a.get() === b ? c : null;
 };
 
