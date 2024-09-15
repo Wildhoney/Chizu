@@ -3,6 +3,8 @@ import { element, render } from ".";
 import { decorate } from "../model";
 import { dispatch } from "../dispatcher";
 import { ƒ } from "../operations";
+import { actions, Dispatch } from "../controller";
+import { produce } from "immer";
 
 describe("view", () => {
   describe("render()", () => {
@@ -83,6 +85,14 @@ const model = decorate<Model>({
   locale: "en-GB",
   friends: [],
 });
+
+const controller = actions(model, ({ produce }) => ({
+  updateName(name: string) {
+    return produce(Dispatch.Unicast, (state) => {
+      state.name = name;
+    });
+  },
+}));
 
 export const view = element("x-person", [
   "h1",
