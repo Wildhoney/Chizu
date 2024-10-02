@@ -1,9 +1,9 @@
-import { describe, expect, it } from "@jest/globals";
 import { element, render } from ".";
-import { decorate } from "../model";
-import { dispatch } from "../dispatcher";
-import { ƒ } from "../operations";
 import { actions, Dispatch } from "../controller";
+import { dispatch } from "../dispatcher";
+import { decorate } from "../model";
+import { ƒ } from "../operations";
+import { describe, expect, it } from "@jest/globals";
 import { produce } from "immer";
 
 describe("view", () => {
@@ -14,7 +14,7 @@ describe("view", () => {
       container.append(fragment);
 
       expect(container.innerHTML).toMatchInlineSnapshot(
-        `"<h1><span>Hello</span><strong>Adam</strong></h1>"`,
+        `"<h1><span>Hello</span><strong>Adam</strong></h1>"`
       );
     });
 
@@ -49,12 +49,12 @@ describe("view", () => {
         container.append(fragment);
 
         expect(container.innerHTML).toMatchInlineSnapshot(
-          `"<h1 locale="en-GB">Adam</h1>"`,
+          `"<h1 locale="en-GB">Adam</h1>"`
         );
 
         dispatch({ op: "replace", path: ["locale"], value: "fr-FR" });
         expect(container.innerHTML).toMatchInlineSnapshot(
-          `"<h1 locale="fr-FR">Adam</h1>"`,
+          `"<h1 locale="fr-FR">Adam</h1>"`
         );
       });
 
@@ -64,7 +64,7 @@ describe("view", () => {
         container.append(fragment);
 
         expect(container.innerHTML).toMatchInlineSnapshot(
-          `"<h1 locale="en-GB">Adam</h1>"`,
+          `"<h1 locale="en-GB">Adam</h1>"`
         );
 
         dispatch({ op: "remove", path: ["locale"] });
@@ -80,13 +80,13 @@ type Model = {
   friends: { name: string }[];
 };
 
-const model = decorate<Model>({
+const model = create.model<Model>({
   name: "Adam",
   locale: "en-GB",
   friends: [],
 });
 
-const controller = actions(model, ({ produce }) => ({
+const controller = create.controller(model, ({ produce, controllers }) => ({
   updateName(name: string) {
     return produce(Dispatch.Unicast, (state) => {
       state.name = name;
@@ -94,13 +94,11 @@ const controller = actions(model, ({ produce }) => ({
   },
 }));
 
-export const view = element("x-person", [
-  "h1",
-  {},
-  [
-    ["span", {}, "Hello"],
-    ["strong", {}, model.name],
-    // ƒ.is(model.name, "Adam", (name) => ["em", {}, "👋"]),
-    // ƒ.map(model.friends, (friend) => ["p", {}, friend.name]),
-  ],
-]);
+export const view = create.view`x-person`(({ model, dispatch }) => {
+  return (
+    <h1>
+      <span>Hello</span>
+      <strong>{model.name}</strong>
+    </h1>
+  );
+});

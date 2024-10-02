@@ -13,4 +13,5 @@ export function actions<M>(model: M, actions: Fn<Helpers<M>, Actions>) {
 export const enum Dispatch {
   Unicast,
   Multicast,
+  Broadcast,
 }
