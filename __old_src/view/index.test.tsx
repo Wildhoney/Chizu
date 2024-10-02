@@ -86,19 +86,26 @@ const model = create.model<Model>({
   friends: [],
 });
 
-const controller = create.controller(model, ({ produce, controllers }) => ({
-  updateName(name: string) {
-    return produce(Dispatch.Unicast, (state) => {
+const enum Events {
+  UpdateName
+}
+
+const controller = create.controller`person`(model, ({ app, use }) => ({
+  [Events.UpdateName](name: string) {
+    return use.produce(Dispatch.Unicast, (state) => {
       state.name = name;
     });
   },
 }));
 
-export const view = create.view`x-person`(({ model, dispatch }) => {
-  return (
+export const view = create.view`x-person`(({ model, use }) => {
+return (
     <h1>
       <span>Hello</span>
-      <strong>{model.name}</strong>
+
+      <strong onClick={() => use.dispatch(Events.UpdateName, "Adam")}>
+        {model.name}
+      </strong>
     </h1>
   );
 });
