@@ -1,8 +1,8 @@
 import { create, Transmit } from ".";
-import { State } from "./types";
+import { State, Reactive } from "./types";
 
 type Model = {
-  name: string;
+  name: Reactive<string>;
   age: number;
 };
 
@@ -21,7 +21,7 @@ const model = create.model<Model>({
 
 create.controller<Model, Actions>`person`(model, ({ app, use }) => ({
   *[Events.UpdateName](name) {
-    const random: string = yield use.io(() => name);
+    const random: Reactive<string> = yield use.io(() => name);
 
     return use.dispatch(Transmit.Multicast, (draft) => {
       draft.name = random;
@@ -39,6 +39,8 @@ create.view<Model, Actions>`x-person`(model, ({ model, use }) => {
   return (
     <h1>
       <span>Hello</span>
+
+      <h1>{model.name}</h1>
 
       <strong onClick={() => use.dispatch([Events.UpdateName, "Adam"])}>
         {use.is(model.name, State.Pending) ? "Loading..." : model.name}
