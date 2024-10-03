@@ -7,7 +7,7 @@ export function model<M extends Model>(model: M): M {
 export function controller<M extends Model, A extends Actions>(
   name: TemplateStringsArray,
 ) {
-  return (model: M, definition: ControllerDefinition<A>) => {};
+  return (model: M, definition: ControllerDefinition<M, A>) => {};
 }
 
 export function view<M extends Model, A extends Actions>(
