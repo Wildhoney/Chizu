@@ -1,3 +1,5 @@
+export type Options = Record<string, unknown>;
+
 export const enum Transmit {
   Unicast = "unicast",
   Multicast = "multicast",
@@ -20,22 +22,23 @@ export type Reactive<P> =
   | typeof Optimistic
   | P;
 
-type ControllerArgs<M extends Model> = {
+type ControllerArgs<M extends Model, A extends Actions> = {
   app: unknown;
   use: {
-    dispatch(transmit: Transmit, ƒ: (draft: M) => void): void;
+    // dispatch(event: A): void;
+    produce(transmit: Transmit, ƒ: (draft: M) => void): void;
     io<R>(ƒ: () => R): R;
   };
 };
 
-export type Actions = [any, any];
+export type Actions = [any] | [any, any];
 
 export type Model = Record<string, any>;
 
 export type ControllerDefinition<M extends Model, A extends Actions> = ({
   app,
   use,
-}: ControllerArgs<M>) => Handlers<A>;
+}: ControllerArgs<M, A>) => Partial<Handlers<A>>;
 
 type Handlers<A extends Actions> = {
   [K in A[0]]: (
@@ -47,14 +50,21 @@ type Payload<A extends Actions, K> = A extends [K, infer P] ? P : never;
 
 type ViewArgs<M extends Model, A extends Actions> = {
   model: M;
-  use: {
-    dispatch(event: A): void;
+  queue: {};
+  attrs: Record<string, string>;
+  inspect: {
     is<P>(property: P, state: State): boolean;
+    not<P>(property: P, state: State): boolean;
+    match<P>(property: P, state: State): boolean;
+  };
+  actions: {
+    dispatch(event: A): void;
+    dispatching(event: A | [A[0]]): boolean;
     match<P>(property: P, ƒ: (state: State) => string | P): void;
   };
 };
 
 export type ViewDefinition<M extends Model, A extends Actions> = ({
-  use,
   model,
+  actions,
 }: ViewArgs<M, A>) => any;

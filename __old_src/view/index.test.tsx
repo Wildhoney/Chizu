@@ -14,7 +14,7 @@ describe("view", () => {
       container.append(fragment);
 
       expect(container.innerHTML).toMatchInlineSnapshot(
-        `"<h1><span>Hello</span><strong>Adam</strong></h1>"`
+        `"<h1><span>Hello</span><strong>Adam</strong></h1>"`,
       );
     });
 
@@ -49,12 +49,12 @@ describe("view", () => {
         container.append(fragment);
 
         expect(container.innerHTML).toMatchInlineSnapshot(
-          `"<h1 locale="en-GB">Adam</h1>"`
+          `"<h1 locale="en-GB">Adam</h1>"`,
         );
 
         dispatch({ op: "replace", path: ["locale"], value: "fr-FR" });
         expect(container.innerHTML).toMatchInlineSnapshot(
-          `"<h1 locale="fr-FR">Adam</h1>"`
+          `"<h1 locale="fr-FR">Adam</h1>"`,
         );
       });
 
@@ -64,7 +64,7 @@ describe("view", () => {
         container.append(fragment);
 
         expect(container.innerHTML).toMatchInlineSnapshot(
-          `"<h1 locale="en-GB">Adam</h1>"`
+          `"<h1 locale="en-GB">Adam</h1>"`,
         );
 
         dispatch({ op: "remove", path: ["locale"] });
@@ -87,7 +87,7 @@ const model = create.model<Model>({
 });
 
 const enum Events {
-  UpdateName
+  UpdateName,
 }
 
 const controller = create.controller`person`(model, ({ app, use }) => ({
@@ -99,7 +99,7 @@ const controller = create.controller`person`(model, ({ app, use }) => ({
 }));
 
 export const view = create.view`x-person`(({ model, use }) => {
-return (
+  return (
     <h1>
       <span>Hello</span>
 

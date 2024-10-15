@@ -1,5 +1,5 @@
-import { describe, expect, it } from "@jest/globals";
 import { create } from ".";
+import { describe, expect, it } from "@jest/globals";
 
 describe("view", () => {
   describe("render()", () => {
