@@ -1,15 +1,13 @@
 import { create, Reactive, Transmit } from "../../library/index.ts";
-import model from "./model.ts";
 import { Actions, Model, Events } from "./types.ts";
 
 export default create.controller<Model, Actions>`person`(
-  model,
-  ({ app, use }) => {
+  ({ model, actions }) => {
     return {
       *[Events.UpdateName](name) {
-        const random: Reactive<string> = yield use.io(() => name);
+        const random: Reactive<string> = yield actions.io(() => name);
 
-        return use.produce(Transmit.Multicast, (draft) => {
+        return actions.produce(Transmit.Multicast, (draft) => {
           draft.name = random;
         });
       },
@@ -17,7 +15,7 @@ export default create.controller<Model, Actions>`person`(
       *[Events.UpdateAge](age) {
         const random = Math.random() * age;
 
-        return use.produce(Transmit.Multicast, (draft) => {
+        return actions.produce(Transmit.Multicast, (draft) => {
           draft.age = random;
           draft.displayParentalPermission = random < 18;
         });
