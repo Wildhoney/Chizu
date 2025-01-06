@@ -1,7 +1,7 @@
 import { createElement, h } from "preact";
 import { create, State } from "../../library/index.ts";
-import { Actions, Events, Model } from "./types.ts";
-import { Routes } from "../types.ts";
+import { Actions, Model } from "./types.ts";
+import { DistributedEvents, Routes } from "../types.ts";
 
 const React = h;
 React.createElement = createElement;
@@ -16,7 +16,9 @@ export default create.view<Model, Actions, Routes>`x-person`(
 
         <button
           disabled={actions.is(model.name, State.Pending)}
-          onClick={() => actions.dispatch([Events.UpdateName, "Adam"])}
+          onClick={() =>
+            actions.dispatch([DistributedEvents.UpdateName, "Adam"])
+          }
         >
           {/* {actions.is(model.name, State.Pending) ? "Loading..." : model.name} */}
         </button>

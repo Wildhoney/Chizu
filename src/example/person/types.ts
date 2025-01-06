@@ -1,5 +1,5 @@
 import { Reactive } from "../../library/index.ts";
-import { DistributedEvents } from "../types.ts";
+import { DistributedActions } from "../types.ts";
 
 export type Name = Reactive<string>;
 
@@ -10,8 +10,7 @@ export type Model = {
 };
 
 export const enum Events {
-  UpdateName = DistributedEvents.UpdateName,
-  UpdateAge = "UpdateAge",
+  UpdateAge,
 }
 
-export type Actions = [Events.UpdateName, string] | [Events.UpdateAge, number];
+export type Actions = DistributedActions | [Events.UpdateAge, number];

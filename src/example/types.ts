@@ -5,5 +5,7 @@ export const enum Paths {
 export type Routes = typeof Paths;
 
 export const enum DistributedEvents {
-  UpdateName = "Distributed:UpdateName",
+  UpdateName = "distributed/update-name",
 }
+
+export type DistributedActions = [DistributedEvents.UpdateName, string];

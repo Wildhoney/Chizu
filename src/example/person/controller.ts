@@ -1,11 +1,12 @@
 import { create, Transmit } from "../../library/index.ts";
 import { Routes } from "../types.ts";
 import { Actions, Model, Events, Name } from "./types.ts";
+import { DistributedEvents } from "../types.ts";
 
 export default create.controller<Model, Actions, Routes>`person`(
   ({ model, actions }) => {
     return {
-      *[Events.UpdateName](name) {
+      *[DistributedEvents.UpdateName](name) {
         const random: Name = yield actions.io(() => name);
 
         return actions.produce(Transmit.Multicast, (draft) => {
