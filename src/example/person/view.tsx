@@ -1,15 +1,13 @@
-import { createElement, h } from "preact";
+import { h } from "preact";
 import { create, State } from "../../library/index.ts";
 import { Actions, Model } from "./types.ts";
 import { DistributedEvents, Routes } from "../types.ts";
-
-const React = h;
-React.createElement = createElement;
+import { name } from "./nodes/name.tsx";
 
 export default create.view<Model, Actions, Routes>`x-person`(
   ({ model, actions }) => {
     return (
-      <section>
+      <section class="container">
         <h1>
           Hey {name()}!{/* {model.name} */}
         </h1>
@@ -26,7 +24,3 @@ export default create.view<Model, Actions, Routes>`x-person`(
     );
   },
 );
-
-export function name(): string {
-  return "Adam";
-}
