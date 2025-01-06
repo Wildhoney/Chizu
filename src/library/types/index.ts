@@ -1,5 +1,3 @@
-export type Options = Record<string, unknown>;
-
 export const enum Transmit {
   Unicast = "unicast",
   Multicast = "multicast",
@@ -25,3 +23,9 @@ export type Reactive<P> =
 export type Actions = [any] | [any, any];
 
 export type Model = Record<string, any>;
+
+export type RoutePaths<R extends Routes> = R[keyof R];
+
+// export type RoutePaths<R extends Routes> = R[keyof R];
+
+export type Routes = Record<string, string | number | symbol>;

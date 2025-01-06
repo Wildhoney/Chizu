@@ -1,16 +1,16 @@
 import { Actions, Model, Reactive, Transmit } from "../types/index.ts";
 
-type ControllerArgs<M extends Model, A extends Actions> = {
+type ControllerArgs<M extends Model, A extends Actions, R> = {
   model: M;
   actions: {
-    dispatch(event: A): void;
-    produce(transmit: Transmit, ƒ: (draft: M) => void): void;
     io<R>(ƒ: () => R): R;
+    produce(transmit: Transmit, ƒ: (draft: M) => void): void;
+    dispatch(event: A): void;
   };
 };
 
-export type ControllerDefinition<M extends Model, A extends Actions> = (
-  controller: ControllerArgs<M, A>,
+export type ControllerDefinition<M extends Model, A extends Actions, R> = (
+  controller: ControllerArgs<M, A, R>,
 ) => Partial<Handlers<A>>;
 
 type Handlers<A extends Actions> = {

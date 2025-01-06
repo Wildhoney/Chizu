@@ -1,11 +1,12 @@
-import { create, Reactive, Transmit } from "../../library/index.ts";
-import { Actions, Model, Events } from "./types.ts";
+import { create, Transmit } from "../../library/index.ts";
+import { Routes } from "../types.ts";
+import { Actions, Model, Events, Name } from "./types.ts";
 
-export default create.controller<Model, Actions>`person`(
+export default create.controller<Model, Actions, Routes>`person`(
   ({ model, actions }) => {
     return {
       *[Events.UpdateName](name) {
-        const random: Reactive<string> = yield actions.io(() => name);
+        const random: Name = yield actions.io(() => name);
 
         return actions.produce(Transmit.Multicast, (draft) => {
           draft.name = random;

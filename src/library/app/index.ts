@@ -1,11 +1,16 @@
 import render from "preact-render-to-string";
-import { Actions, Model, Options } from "../types/index.ts";
+import { Actions, Model, Routes } from "../types/index.ts";
 import { Module } from "../module/index.ts";
+import { AppOptions } from "./types.ts";
 
-export default function app(options: Options) {
+export default function app<
+  M extends Model,
+  A extends Actions,
+  R extends Routes,
+>(options: AppOptions<M, A, R>) {
   function register(module: any): void {}
 
-  function serve(module: Module<Model, Actions>): void {
+  function serve(module: Module<Model, Actions, R>): void {
     Deno.serve((request) => {
       const body = render(module.meta.view({}));
 

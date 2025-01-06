@@ -1,16 +1,18 @@
-import { Actions, Model } from "../types/index.ts";
+import { Actions, Model, Routes } from "../types/index.ts";
 import { ModuleOptions } from "./types.ts";
 
-export class Module<M extends Model, A extends Actions> {
-  public meta: ModuleOptions<M, A>;
+export class Module<M extends Model, A extends Actions, R extends Routes> {
+  public meta: ModuleOptions<M, A, R>;
 
-  constructor(options: any) {
+  constructor(options: ModuleOptions<M, A, R>) {
     this.meta = options;
   }
 }
 
-export default function module<M extends Model, A extends Actions>(
-  options: ModuleOptions<M, A>,
-) {
+export default function module<
+  M extends Model,
+  A extends Actions,
+  R extends Routes,
+>(options: ModuleOptions<M, A, R>) {
   return new Module(options);
 }
