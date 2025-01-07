@@ -1,7 +1,13 @@
-import { Actions, Model, Reactive, Transmit } from "../types/index.ts";
+import {
+  Actions,
+  Model,
+  ReactiveProps,
+  Routes,
+  Transmit,
+} from "../types/index.ts";
 
-type ControllerArgs<M extends Model, A extends Actions, R> = {
-  model: M;
+type ControllerArgs<M extends Model, A extends Actions, R extends Routes> = {
+  model: ReactiveProps<M>;
   actions: {
     io<R>(ƒ: () => R): R;
     produce(transmit: Transmit, ƒ: (draft: M) => void): void;
@@ -9,14 +15,14 @@ type ControllerArgs<M extends Model, A extends Actions, R> = {
   };
 };
 
-export type ControllerDefinition<M extends Model, A extends Actions, R> = (
-  controller: ControllerArgs<M, A, R>,
-) => Partial<Handlers<A>>;
+export type ControllerDefinition<
+  M extends Model,
+  A extends Actions,
+  R extends Routes,
+> = (controller: ControllerArgs<M, A, R>) => Partial<Handlers<A>>;
 
 type Handlers<A extends Actions> = {
-  [K in A[0]]: (
-    payload: Payload<A, K>,
-  ) => Generator<string, void, Reactive<never>>;
+  [K in A[0]]: (payload: Payload<A, K>) => Generator<string, void, never>;
 };
 
 type Payload<A extends Actions, K> = A extends [K, infer P] ? P : never;

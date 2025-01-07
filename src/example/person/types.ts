@@ -1,11 +1,9 @@
-import { Reactive } from "../../library/index.ts";
 import { DistributedActions } from "../types.ts";
 
-export type Name = Reactive<string>;
-
 export type Model = {
-  name: Name;
+  name: string;
   age: number;
+  avatar: null | string;
   displayParentalPermission: boolean;
 };
 

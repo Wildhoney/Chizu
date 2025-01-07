@@ -8,17 +8,29 @@ export default create.view<Model, Actions, Routes>`x-person`(
   ({ model, actions }) => {
     return (
       <section class="container">
-        <h1>
-          Hey {name()}!{/* {model.name} */}
-        </h1>
+        <h1>Hey {name()}!</h1>
+
+        <p>
+          Your name has always been{" "}
+          <span aria-busy={model.name.pending()}>
+            {model.name.otherwise("Adam")}
+          </span>
+          .
+        </p>
+
+        <img
+          src={model.avatar}
+          alt="avatar"
+          aria-busy={model.avatar.pending()}
+        />
 
         <button
-          disabled={actions.is(model.name, State.Pending)}
+          disabled={model.name.equals(State.Pending)}
           onClick={() =>
             actions.dispatch([DistributedEvents.UpdateName, "Adam"])
           }
         >
-          {/* {actions.is(model.name, State.Pending) ? "Loading..." : model.name} */}
+          Update name
         </button>
       </section>
     );

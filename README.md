@@ -18,4 +18,18 @@ Strongly-typed web component library using generators and efficiently updated vi
 - Avoid vendor lock-in with framework agnostic libraries such as [Shoelace](https://shoelace.style/).
 - Easily communicate between controllers using distributed actions.
 
+## View Helpers
+
+Use the following helpers to construct your views where `prop` is any property in your model:
+
+- `prop.pending()` yields `true` if the property is pending.
+- `prop.otherwise("-")` provide a fallback value for when the property is pending.
+- `prop.equals(State.Pending | State.Optimistic)` determines if the property is in a given state.
+
+For skeleton elements you should use the `pending()` helper as part of the `aria-busy` attribute:
+
+```tsx
+<img src={model.avatar} alt="avatar" aria-busy={model.avatar.pending()} />
+```
+
 ## Distributed Actions
