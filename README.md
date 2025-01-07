@@ -12,11 +12,12 @@ Strongly-typed web component library using generators and efficiently updated vi
 ## Benefits
 
 - Ablility to transpile to self-contained web components.
-- Mostly standard JavaScript without rules and exceptions.
+- Mostly standard JavaScript without quirky rules and exceptions.
 - Clear separation of concerns between business logic and markup.
 - First-class support for skeleton loading using generators with [Immer](https://immerjs.github.io/immer/).
 - Avoid vendor lock-in with framework agnostic libraries such as [Shoelace](https://shoelace.style/).
 - Easily communicate between controllers using distributed actions.
+- State is mutated sequentially and [deeply merged](#state-merging) if multiple pending mutations.
 
 ## View Helpers
 
@@ -33,3 +34,7 @@ For skeleton elements you should use the `pending()` helper as part of the `aria
 ```
 
 ## Distributed Actions
+
+## State Merging
+
+Imagine a scenario where there are three events dispatched in order of: `A` → `B` → `C`. Each mutation updates a handful of properties, setting them to pending, optimistic, etc&hellip; However the async `io` requests are resolved in a different order: `B` → `C` → `A` but Marea cannot apply `B` or `C` because it's still awaiting the resolution of `A`. Once `A` is finally resolved the states are merged in the original dispatch order of `A` → `B` → `C` and the view is updated only once.
