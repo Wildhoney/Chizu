@@ -2,6 +2,8 @@
 
 > /maˈɾe.a/
 
+<img src="/media/logo.png" />
+
 Strongly-typed web component library using generators and efficiently updated views.
 
 ## Contents
