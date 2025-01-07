@@ -12,6 +12,7 @@ type ControllerArgs<M extends Model, A extends Actions, R extends Routes> = {
     io<R>(ƒ: () => R): R;
     produce(transmit: Transmit, ƒ: (draft: M) => void): void;
     dispatch(event: A): void;
+    optimistic<T>(actual: T, optimistic: T): T;
   };
 };
 

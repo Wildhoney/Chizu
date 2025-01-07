@@ -10,7 +10,7 @@ export default create.controller<Model, Actions, Routes>`person`(
         const random: string = yield actions.io(() => name);
 
         return actions.produce(Transmit.Multicast, (draft) => {
-          draft.name = random;
+          draft.name = actions.optimistic(random, name);
         });
       },
 
