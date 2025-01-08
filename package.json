@@ -1,20 +1,22 @@
 {
   "name": "marea",
   "version": "0.0.1",
+  "type": "module",
+  "dependencies": {
+    "@ayame113/ts-serve": "npm:@jsr/ayame113__ts-serve",
+    "@jest/globals": "^29.7.0",
+    "immer": "^10.1.1",
+    "preact": "^10.24.2"
+  },
   "devDependencies": {
     "@babel/preset-env": "^7.25.4",
     "@babel/preset-typescript": "^7.24.7",
-    "@types/deno": "^2.0.0",
     "jest": "^29.7.0",
     "jest-environment-jsdom": "^29.7.0",
     "prettier": "^3.3.3",
     "ts-node": "^10.9.2",
-    "typescript": "^5.2.2"
-  },
-  "dependencies": {
-    "@jest/globals": "^29.7.0",
-    "immer": "^10.1.1",
-    "preact": "^10.24.2",
-    "preact-render-to-string": "^6.5.11"
+    "@preact/preset-vite": "^2.9.3",
+    "typescript": "~5.6.2",
+    "vite": "^6.0.5"
   }
 }

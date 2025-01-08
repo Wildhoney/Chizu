@@ -7,7 +7,7 @@ export default function view<
   A extends Actions,
   R extends Routes,
 >(name: TemplateStringsArray) {
-  return (definition: ViewDefinition<M, A, R>): ComponentChildren => {
+  return (definition: ViewDefinition<M, A, R>) => {
     return definition;
   };
 }

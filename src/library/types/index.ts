@@ -13,16 +13,6 @@ export const enum State {
   Optimistic = 8,
 }
 
-const Pending = Symbol("pending");
-const Failed = Symbol("failed");
-const Optimistic = Symbol("optimistic");
-
-export type Reactive<P> =
-  | typeof Pending
-  | typeof Failed
-  | typeof Optimistic
-  | P;
-
 export type Actions = [any] | [any, any];
 
 export type Model = Record<string, any>;

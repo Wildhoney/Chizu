@@ -3,9 +3,13 @@ import { Routes } from "../types.ts";
 import { Actions, Model, Events } from "./types.ts";
 import { DistributedEvents } from "../types.ts";
 
-export default create.controller<Model, Actions, Routes>`person`(
-  ({ model, actions }) => {
+export default create.controller<Model, Actions, Routes>`/`(
+  ({ model, actions, node }) => {
     return {
+      *mount(parameters) {},
+
+      *unmount() {},
+
       *[DistributedEvents.UpdateName](name) {
         const random: string = yield actions.io(() => name);
 

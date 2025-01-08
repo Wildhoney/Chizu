@@ -4,8 +4,14 @@ unit:
 typecheck:
 	npx tsc --noEmit
 
-app:
-	/Users/adam/.deno/bin/deno --allow-net src/example/index.ts
+dev:
+	npx vite
+
+build:
+	npx tsc -b && vite build
+
+preview:
+	npx vite preview
 
 fmt:
 	npx prettier --write .

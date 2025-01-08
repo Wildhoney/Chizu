@@ -4,11 +4,12 @@
 
 <img src="/media/logo.png" />
 
-Strongly-typed web component library using generators and efficiently updated views.
+Strongly typed web component library using generators and efficiently updated views.
 
 ## Contents
 
 1. [Benefits](#benefits)
+1. [View Helpers](#view-helpers)
 1. [Distributed Actions](#distributed-actions)
 
 ## Benefits
@@ -17,6 +18,7 @@ Strongly-typed web component library using generators and efficiently updated vi
 - Mostly standard JavaScript without quirky rules and exceptions.
 - Clear separation of concerns between business logic and markup.
 - First-class support for skeleton loading using generators with [Immer](https://immerjs.github.io/immer/).
+- Strongly typed routes, styles and controller event-driven architecture.
 - Avoid vendor lock-in with framework agnostic libraries such as [Shoelace](https://shoelace.style/).
 - Easily communicate between controllers using distributed actions.
 - State is mutated sequentially and [deeply merged](#state-merging) if multiple pending mutations.

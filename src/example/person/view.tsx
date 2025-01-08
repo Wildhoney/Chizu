@@ -5,12 +5,14 @@ import { DistributedEvents, Routes } from "../types.ts";
 import { name } from "./nodes/name.tsx";
 
 export default create.view<Model, Actions, Routes>`x-person`(
-  ({ model, actions }) => {
+  ({ model, actions, node }) => {
+    console.log(model, actions, node);
+
     return (
       <section class="container">
         <h1>Hey {name()}!</h1>
 
-        <p>
+        {/* <p>
           Your name has always been{" "}
           <span aria-busy={model.name.pending()}>
             {model.name.otherwise("Adam")}
@@ -31,7 +33,7 @@ export default create.view<Model, Actions, Routes>`x-person`(
           }
         >
           Update name
-        </button>
+        </button> */}
       </section>
     );
   },
