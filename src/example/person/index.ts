@@ -5,7 +5,7 @@ import view from "./view.tsx";
 import { Model, Actions } from "./types.ts";
 import { Routes } from "../types.ts";
 
-export default create.module<Model, Actions, Routes>({
+export default create.module<Model, Actions, Routes>`x-person`({
   controller,
   model,
   view,

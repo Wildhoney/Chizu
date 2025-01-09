@@ -3,9 +3,10 @@ import { Actions, Model, ReactiveProps, Routes } from "../types/index.ts";
 
 type ViewArgs<M extends Model, A extends Actions, R extends Routes> = {
   model: ReactiveProps<M>;
-  node: HTMLElement;
+  element: null | HTMLElement;
   actions: {
     dispatch(event: A): void;
+    navigate(route: R): void;
   };
 };
 

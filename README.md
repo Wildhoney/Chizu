@@ -14,6 +14,7 @@ Strongly typed web component library using generators and efficiently updated vi
 
 ## Benefits
 
+- Cleverly architected superset of [Preact](https://github.com/preactjs/preact).
 - Ablility to transpile to self-contained web components.
 - Mostly standard JavaScript without quirky rules and exceptions.
 - Clear separation of concerns between business logic and markup.
@@ -21,7 +22,7 @@ Strongly typed web component library using generators and efficiently updated vi
 - Strongly typed routes, styles and controller event-driven architecture.
 - Avoid vendor lock-in with framework agnostic libraries such as [Shoelace](https://shoelace.style/).
 - Easily communicate between controllers using distributed actions.
-- State is mutated sequentially and [deeply merged](#state-merging) if multiple pending mutations.
+- State is mutated sequentially ([FIFO](https://en.wikipedia.org/wiki/FIFO_(computing_and_electronics))) and [deeply merged](#state-merging) for queued mutations.
 
 ## View Helpers
 

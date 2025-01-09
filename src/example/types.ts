@@ -1,8 +1,8 @@
-export const enum Paths {
+export const enum Route {
   Dashboard = "/",
 }
 
-export type Routes = typeof Paths;
+export type Routes = typeof Route;
 
 export const enum DistributedEvents {
   UpdateName = "distributed/update-name",

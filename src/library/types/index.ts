@@ -21,6 +21,8 @@ export type RoutePaths<R extends Routes> = R[keyof R];
 
 export type Routes = Record<string, string | number | symbol>;
 
+export type Parameters = undefined | string;
+
 type ReactiveMethods = {
   equals<P>(state: State | ((state: State) => string | P)): boolean;
   pending<P>(options?: PlaceholderOptions): P;

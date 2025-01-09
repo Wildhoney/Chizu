@@ -1,6 +1,7 @@
 import {
   Actions,
   Model,
+  Parameters,
   ReactiveProps,
   Routes,
   Transmit,
@@ -8,7 +9,7 @@ import {
 
 type ControllerArgs<M extends Model, A extends Actions, R extends Routes> = {
   model: ReactiveProps<M>;
-  node: HTMLElement;
+  element: null | HTMLElement;
   actions: {
     io<R>(ƒ: () => R): R;
     produce(transmit: Transmit, ƒ: (draft: M) => void): void;
@@ -21,11 +22,10 @@ export type ControllerDefinition<
   M extends Model,
   A extends Actions,
   R extends Routes,
+  P extends Parameters = undefined,
 > = (
   controller: ControllerArgs<M, A, R>,
-) => { mount?(parameters: unknown): void; unmount?(): void } & Partial<
-  Handlers<A>
->;
+) => { mount?(parameters: P): void; unmount?(): void } & Partial<Handlers<A>>;
 
 type Handlers<A extends Actions> = {
   [K in A[0]]: (payload: Payload<A, K>) => Generator<string, void, never>;

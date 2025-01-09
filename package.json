@@ -3,18 +3,19 @@
   "version": "0.0.1",
   "type": "module",
   "dependencies": {
-    "@jest/globals": "^29.7.0",
     "immer": "^10.1.1",
-    "preact": "^10.24.2"
+    "preact": "^10.25.4"
   },
   "devDependencies": {
-    "@babel/preset-env": "^7.25.4",
-    "@babel/preset-typescript": "^7.24.7",
+    "@babel/preset-env": "^7.26.0",
+    "@babel/preset-typescript": "^7.26.0",
+    "@jest/globals": "^29.7.0",
     "@preact/preset-vite": "^2.9.3",
     "jest": "^29.7.0",
     "jest-environment-jsdom": "^29.7.0",
-    "prettier": "^3.3.3",
-    "typescript": "~5.6.2",
-    "vite": "^6.0.5"
+    "prettier": "^3.4.2",
+    "typescript": "~5.7.3",
+    "vite": "^6.0.5",
+    "vite-plugin-typed-css-modules": "^0.3.0"
   }
 }
