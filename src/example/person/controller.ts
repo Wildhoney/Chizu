@@ -1,4 +1,4 @@
-import { create, Transmit } from "../../library/index.ts";
+import { create, Transmit, Lifecycle } from "../../library/index.ts";
 import { Route, Routes } from "../types.ts";
 import { Actions, Model, Events } from "./types.ts";
 import { DistributedEvents } from "../types.ts";
@@ -6,24 +6,25 @@ import { DistributedEvents } from "../types.ts";
 export default create.controller<Model, Actions, Routes, Route.Dashboard>(
   ({ model, actions, element }) => {
     return {
-      *mount(parameters) {
+      *[Lifecycle.Mount](parameters) {
         console.log(element, "mounted");
       },
 
-      *unmount() {},
+      *[Lifecycle.Unmount]() {},
 
       *[DistributedEvents.UpdateName](name) {
         const random: string = yield actions.io(() => name);
 
-        return actions.produce(Transmit.Multicast, (draft) => {
-          draft.name = actions.optimistic(random, name);
+        return actions.produce((draft) => {
+          draft.name = random;
+          // draft.name = actions.optimistic(random, name);
         });
       },
 
       *[Events.UpdateAge](age) {
         const random = Math.random() * age;
 
-        return actions.produce(Transmit.Multicast, (draft) => {
+        return actions.produce((draft) => {
           draft.age = random;
           draft.displayParentalPermission = random < 18;
         });

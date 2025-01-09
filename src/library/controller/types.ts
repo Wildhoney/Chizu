@@ -4,7 +4,6 @@ import {
   Parameters,
   ReactiveProps,
   Routes,
-  Transmit,
 } from "../types/index.ts";
 
 type ControllerArgs<M extends Model, A extends Actions, R extends Routes> = {
@@ -12,7 +11,8 @@ type ControllerArgs<M extends Model, A extends Actions, R extends Routes> = {
   element: null | HTMLElement;
   actions: {
     io<R>(ƒ: () => R): R;
-    produce(transmit: Transmit, ƒ: (draft: M) => void): void;
+    // produce(transmit: Transmit, ƒ: (draft: M) => void): void;
+    produce(ƒ: (draft: M) => void): void;
     dispatch(event: A): void;
     optimistic<T>(actual: T, optimistic: T): T;
   };

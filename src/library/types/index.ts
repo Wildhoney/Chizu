@@ -36,3 +36,8 @@ export type ReactiveProps<Prop> = {
 type PlaceholderOptions = {
   size: number;
 };
+
+export const enum Lifecycle {
+  Mount = "lifecycle/mount",
+  Unmount = "lifecycle/unmount",
+}

@@ -1573,6 +1573,11 @@
   dependencies:
     undici-types "~6.20.0"
 
+"@types/pubsub-js@^1.8.6":
+  version "1.8.6"
+  resolved "https://registry.yarnpkg.com/@types/pubsub-js/-/pubsub-js-1.8.6.tgz#2492cca3a25431d29df8235f57ef5090e1b501b1"
+  integrity sha512-Kwug5cwV0paUDm/NfwDx1sp9xI0bGIvmWJjJWCU8NngkCCMt3EIC7oPDvb6fV7BR8kPpFyyBu4D11bda/2MdPA==
+
 "@types/stack-utils@^2.0.0":
   version "2.0.3"
   resolved "https://registry.yarnpkg.com/@types/stack-utils/-/stack-utils-2.0.3.tgz#6209321eb2c1712a7e7466422b8cb1fc0d9dd5d8"
@@ -3383,6 +3388,11 @@ psl@^1.1.33:
   integrity sha512-JZd3gMVBAVQkSs6HdNZo9Sdo0LNcQeMNP3CozBJb3JYC/QUYZTnKxP+f8oWRX4rHP5EurWxqAHTSwUCjlNKa1w==
   dependencies:
     punycode "^2.3.1"
+
+pubsub-js@^1.9.5:
+  version "1.9.5"
+  resolved "https://registry.yarnpkg.com/pubsub-js/-/pubsub-js-1.9.5.tgz#e9264ef8c7aa4c2510010ebb75bfd54cdcb7b148"
+  integrity sha512-5MZ0I9i5JWVO7SizvOviKvZU2qaBbl2KQX150FAA+fJBwYpwOUId7aNygURWSdPzlsA/xZ/InUKXqBbzM0czTA==
 
 punycode@^2.1.1, punycode@^2.3.1:
   version "2.3.1"

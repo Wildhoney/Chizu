@@ -24,14 +24,14 @@ export default create.view<Model, Actions, Routes>(
           // aria-busy={model.avatar.pending()}
         /> */}
 
-        {/* <button
-          disabled={model.name.equals(State.Pending)}
+        <button
+          // disabled={model.name.equals(State.Pending)}
           onClick={() =>
-            actions.dispatch([DistributedEvents.UpdateName, "Adam"])
+            actions.dispatch([DistributedEvents.UpdateName, "Maria"])
           }
         >
           Update name
-        </button> */}
+        </button>
       </section>
     );
   },
