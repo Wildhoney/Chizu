@@ -1,13 +1,7 @@
-import {
-  Actions,
-  Model,
-  Parameters,
-  ReactiveProps,
-  Routes,
-} from "../types/index.ts";
+import { Actions, Model, Parameters, Routes } from "../types/index.ts";
 
 type ControllerArgs<M extends Model, A extends Actions, R extends Routes> = {
-  model: ReactiveProps<M>;
+  model: M;
   element: null | HTMLElement;
   actions: {
     io<R>(ƒ: () => R): R;

@@ -40,6 +40,7 @@ export function useController<
           dispatcher.publish(name, ...properties);
         },
         navigate() {},
+        validate(validator: (model: M) => boolean) {},
       },
     }),
     [id],
@@ -72,7 +73,10 @@ export function useController<
 
   return useMemo(
     () => ({
-      state: { model, element },
+      state: {
+        model,
+        element,
+      },
       actions: {
         setElement,
         viewActions: actions.view,

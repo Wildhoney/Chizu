@@ -1,4 +1,4 @@
-import { create } from "../../library/index.ts";
+import { create, State } from "../../library/index.ts";
 import { Actions, Model } from "./types.ts";
 import { DistributedEvents, Routes } from "../types.ts";
 // import { name } from "./nodes/name.tsx";
@@ -17,11 +17,11 @@ export default create.view<Model, Actions, Routes>(({ model, actions }) => {
           .
         </p> */}
 
-      {/* <img
-          src={model.avatar}
-          alt="avatar"
-          // aria-busy={model.avatar.pending()}
-        /> */}
+      <img
+        src={model.avatar}
+        alt="avatar"
+        aria-busy={actions.validate((model) => model.avatar === State.Pending)}
+      />
 
       <button
         // disabled={model.name.equals(State.Pending)}
