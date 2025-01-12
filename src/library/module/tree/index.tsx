@@ -1,13 +1,16 @@
 import { ComponentChildren } from "preact";
-import { Actions, Model, Routes } from "../../types/index.ts";
+import { Actions, Model, Parameters, Routes } from "../../types/index.ts";
 import { Props } from "./types.ts";
 import { memo } from "preact/compat";
 import { useController } from "./utils.ts";
 
-function Tree<M extends Model, A extends Actions, R extends Routes>({
-  moduleOptions,
-}: Props<M, A, R>): ComponentChildren {
-  const controller = useController<M, A, R>({ moduleOptions });
+function Tree<
+  M extends Model,
+  A extends Actions,
+  R extends Routes,
+  P extends Parameters,
+>({ moduleOptions }: Props<M, A, R>): ComponentChildren {
+  const controller = useController<M, A, R, P>({ moduleOptions });
 
   return (
     <moduleOptions.elementName ref={controller.actions.setElement}>

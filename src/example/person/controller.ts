@@ -1,14 +1,12 @@
-import { create, Transmit, Lifecycle } from "../../library/index.ts";
+import { create, Lifecycle } from "../../library/index.ts";
 import { Route, Routes } from "../types.ts";
 import { Actions, Model, Events } from "./types.ts";
 import { DistributedEvents } from "../types.ts";
 
 export default create.controller<Model, Actions, Routes, Route.Dashboard>(
-  ({ model, actions, element }) => {
+  ({ actions }) => {
     return {
-      *[Lifecycle.Mount](parameters) {
-        console.log(element, "mounted");
-      },
+      *[Lifecycle.Mount](parameters) {},
 
       *[Lifecycle.Unmount]() {},
 

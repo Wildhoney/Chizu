@@ -23,9 +23,12 @@ export type ControllerDefinition<
   A extends Actions,
   R extends Routes,
   P extends Parameters = undefined,
-> = (
-  controller: ControllerArgs<M, A, R>,
-) => { mount?(parameters: P): void; unmount?(): void } & Partial<Handlers<A>>;
+> = (controller: ControllerArgs<M, A, R>) => ControllerInstance<A, P>;
+
+export type ControllerInstance<
+  A extends Actions,
+  P extends Parameters = undefined,
+> = { mount?(parameters: P): void; unmount?(): void } & Partial<Handlers<A>>;
 
 type Handlers<A extends Actions> = {
   [K in A[0]]: (payload: Payload<A, K>) => Generator<string, void, never>;

@@ -1,10 +1,10 @@
 import { ComponentChildren } from "preact";
 
-export const enum Transmit {
-  Unicast = "unicast",
-  Multicast = "multicast",
-  Broadcast = "broadcast",
-}
+// export const enum Transmit {
+//   Unicast = "unicast",
+//   Multicast = "multicast",
+//   Broadcast = "broadcast",
+// }
 
 export const enum State {
   Resolved = 1,

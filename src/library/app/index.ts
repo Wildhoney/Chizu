@@ -4,7 +4,7 @@ import { closest } from "./utils.ts";
 import * as preact from "preact";
 
 export default function app<R extends Routes = any>(options: AppOptions<R>) {
-  const module = closest(options);
+  const module = closest<R>(options);
 
   if (module) {
     const vnode = module();
