@@ -9,12 +9,13 @@ import {
 } from "../../types/index.ts";
 import { ModuleInstance, Props } from "./types.ts";
 import dispatcher from "pubsub-js";
-import { Immer } from "immer";
+import { Immer, enablePatches } from "immer";
 import { Validation, ViewActions } from "../../view/types.ts";
 import { ControllerActions } from "../../controller/types.ts";
 import * as proxies from "./proxies/index.ts";
 
 const immer = new Immer();
+enablePatches();
 
 export function useController<
   M extends Model,
@@ -25,13 +26,14 @@ export function useController<
   const id = useId();
   const isMountInvoked = useRef<boolean>(false);
   const [model, setModel] = useState<M>(moduleOptions.model);
+  const [pending, setPending] = useState<string[]>([]);
   const [element, setElement] = useState<HTMLElement | null>(null);
 
   const actions = useMemo(
     () => ({
       controller: <ControllerActions<M, A, R>>{
         io: (ƒ) => ƒ,
-        produce: (ƒ) => immer.produce(model, ƒ),
+        produce: (ƒ) => immer.produceWithPatches(model, ƒ),
         optimistic() {},
         dispatch() {},
         navigate() {},
@@ -42,10 +44,11 @@ export function useController<
           dispatcher.publish(name, ...properties);
         },
         navigate() {},
-        validate: (ƒ: (model: Validation<M>) => boolean) => ƒ(model),
+        validate: (ƒ: (model: Validation<M>) => boolean) =>
+          ƒ(proxies.validate(model, pending)),
       },
     }),
-    [id],
+    [id, pending],
   );
 
   const instance = useMemo(
@@ -58,6 +61,7 @@ export function useController<
       }),
       model,
       setModel,
+      setPending,
     }),
     [id, model, element, actions.controller],
   );
@@ -85,7 +89,7 @@ export function useController<
         viewActions: actions.view,
       },
     }),
-    [model, setElement],
+    [model, pending, setElement],
   );
 }
 
@@ -139,7 +143,13 @@ function updateView<
 
   while (true) {
     const result = generator.next(proxies.state(instance.model, State.Pending));
-    if (result.done) break;
+    if (result.done) {
+      if (result.value) {
+        const pending = result.value[1].flatMap((value) => value.path);
+        instance.setPending(pending);
+      }
+      break;
+    }
     resolvers.add(result.value());
   }
 
@@ -153,7 +163,10 @@ function updateView<
           ? generator.next(resolution.value)
           : generator.next(State.Failed);
 
-      if (result.done && result.value != null) instance.setModel(result.value);
+      if (result.done && result.value != null) {
+        instance.setPending([]);
+        instance.setModel(result.value[0]);
+      }
     });
   });
 }

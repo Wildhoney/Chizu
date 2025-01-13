@@ -19,12 +19,10 @@ export default create.controller<Model, Actions, Routes, Route.Dashboard>(
       // },
 
       *[Events.RandomAvatar]() {
-        const cat: Response = yield actions.io(() =>
-          fetch("https://cataas.com/cat"),
-        );
+        const name = yield actions.io(() => "Maria");
 
         return actions.produce((draft) => {
-          draft.avatar = cat.url;
+          draft.name = name;
         });
       },
     };

@@ -5,7 +5,10 @@ import { Routes } from "../types.ts";
 // import * as styles from "./styles.module.css";
 
 export default create.view<Model, Actions, Routes>(({ model, actions }) => {
-  console.log(model.avatar);
+  console.log(
+    "validate?",
+    actions.validate((model) => model.name === State.Pending),
+  );
 
   return (
     <section>
@@ -19,12 +22,12 @@ export default create.view<Model, Actions, Routes>(({ model, actions }) => {
           .
         </p> */}
 
-      <img
+      {/* <img
         src={model.avatar ?? undefined}
         style={{ width: "100px", aspectRatio: "1/1" }}
         alt="avatar"
         aria-busy={actions.validate((model) => model.avatar === State.Pending)}
-      />
+      /> */}
 
       <button
         // disabled={model.name.equals(State.Pending)}

@@ -19,4 +19,5 @@ export type ModuleInstance<
   controller: ControllerInstance<A, P>;
   model: M;
   setModel: Dispatch<StateUpdater<M>>;
+  setPending: Dispatch<StateUpdater<string[]>>;
 };
