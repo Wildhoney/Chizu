@@ -1,15 +1,21 @@
 import { Actions, Model, Parameters, Routes } from "../types/index.ts";
 
+export type ControllerActions<
+  M extends Model,
+  A extends Actions,
+  R extends Routes,
+> = {
+  io<R>(ƒ: () => R): Awaited<R>;
+  produce(ƒ: (draft: M) => void): void;
+  dispatch(event: A): void;
+  optimistic<T>(actual: T, optimistic: T): T;
+  navigate(route: R): void;
+};
+
 type ControllerArgs<M extends Model, A extends Actions, R extends Routes> = {
   model: M;
   element: null | HTMLElement;
-  actions: {
-    io<R>(ƒ: () => R): R;
-    // produce(transmit: Transmit, ƒ: (draft: M) => void): void;
-    produce(ƒ: (draft: M) => void): void;
-    dispatch(event: A): void;
-    optimistic<T>(actual: T, optimistic: T): T;
-  };
+  actions: ControllerActions<M, A, R>;
 };
 
 export type ControllerDefinition<

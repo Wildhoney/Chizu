@@ -8,7 +8,7 @@ export type Model = {
 };
 
 export const enum Events {
-  UpdateAge,
+  RandomAvatar,
 }
 
-export type Actions = DistributedActions | [Events.UpdateAge, number];
+export type Actions = DistributedActions | [Events.RandomAvatar];

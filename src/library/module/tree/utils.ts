@@ -9,7 +9,12 @@ import {
 } from "../../types/index.ts";
 import { ModuleInstance, Props } from "./types.ts";
 import dispatcher from "pubsub-js";
-import { produce } from "immer";
+import { Immer } from "immer";
+import { Validation, ViewActions } from "../../view/types.ts";
+import { ControllerActions } from "../../controller/types.ts";
+import * as proxies from "./proxies/index.ts";
+
+const immer = new Immer();
 
 export function useController<
   M extends Model,
@@ -24,23 +29,20 @@ export function useController<
 
   const actions = useMemo(
     () => ({
-      controller: {
-        produce(ƒ: (draft: M) => void): M {
-          return produce(model, ƒ);
-        },
-        io(ƒ: any) {
-          return ƒ;
-        },
+      controller: <ControllerActions<M, A, R>>{
+        io: (ƒ) => ƒ,
+        produce: (ƒ) => immer.produce(model, ƒ),
         optimistic() {},
         dispatch() {},
+        navigate() {},
       },
-      view: {
-        dispatch<A extends Actions>([event, ...properties]: A) {
+      view: <ViewActions<M, A, R>>{
+        dispatch([event, ...properties]) {
           const name = getEventName(id, event);
           dispatcher.publish(name, ...properties);
         },
         navigate() {},
-        validate(validator: (model: M) => boolean) {},
+        validate: (ƒ: (model: Validation<M>) => boolean) => ƒ(model),
       },
     }),
     [id],
@@ -54,6 +56,7 @@ export function useController<
         actions: actions.controller,
         element,
       }),
+      model,
       setModel,
     }),
     [id, model, element, actions.controller],
@@ -135,15 +138,9 @@ function updateView<
   const generator = instance.controller[dispatchable](...data);
 
   while (true) {
-    const result = generator.next(State.Pending);
-
-    if (!result.done) {
-      resolvers.add(result.value());
-      continue;
-    }
-
-    if (result.value != null) instance.setModel(result.value);
-    break;
+    const result = generator.next(proxies.state(instance.model, State.Pending));
+    if (result.done) break;
+    resolvers.add(result.value());
   }
 
   Promise.allSettled(resolvers).then((resolutions) => {

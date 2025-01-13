@@ -17,5 +17,6 @@ export type ModuleInstance<
 > = {
   id: string;
   controller: ControllerInstance<A, P>;
+  model: M;
   setModel: Dispatch<StateUpdater<M>>;
 };

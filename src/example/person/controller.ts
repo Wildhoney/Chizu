@@ -1,7 +1,6 @@
 import { create, Lifecycle } from "../../library/index.ts";
 import { Route, Routes } from "../types.ts";
 import { Actions, Model, Events } from "./types.ts";
-import { DistributedEvents } from "../types.ts";
 
 export default create.controller<Model, Actions, Routes, Route.Dashboard>(
   ({ actions }) => {
@@ -10,21 +9,22 @@ export default create.controller<Model, Actions, Routes, Route.Dashboard>(
 
       *[Lifecycle.Unmount]() {},
 
-      *[DistributedEvents.UpdateName](name) {
-        const random: string = yield actions.io(() => name);
+      // *[DistributedEvents.UpdateName](name) {
+      //   const random: string = yield actions.io(() => name);
+
+      //   return actions.produce((draft) => {
+      //     draft.name = random;
+      //     // draft.name = actions.optimistic(random, name);
+      //   });
+      // },
+
+      *[Events.RandomAvatar]() {
+        const cat: Response = yield actions.io(() =>
+          fetch("https://cataas.com/cat"),
+        );
 
         return actions.produce((draft) => {
-          draft.name = random;
-          // draft.name = actions.optimistic(random, name);
-        });
-      },
-
-      *[Events.UpdateAge](age) {
-        const random = Math.random() * age;
-
-        return actions.produce((draft) => {
-          draft.age = random;
-          draft.displayParentalPermission = random < 18;
+          draft.avatar = cat.url;
         });
       },
     };
