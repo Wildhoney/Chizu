@@ -13,10 +13,10 @@ function Tree<
   const controller = useController<M, A, R, P>({ moduleOptions });
 
   return (
-    <moduleOptions.elementName ref={controller.actions.setElement}>
+    <moduleOptions.elementName ref={controller.actions.attachElement}>
       {moduleOptions.view({
         model: controller.state.model,
-        actions: controller.actions.viewActions,
+        actions: controller.state.actions,
         element: controller.state.element,
       })}
     </moduleOptions.elementName>

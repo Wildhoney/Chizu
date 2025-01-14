@@ -1,4 +1,11 @@
-import { useEffect, useId, useMemo, useRef, useState } from "preact/hooks";
+import {
+  Dispatch,
+  useEffect,
+  useId,
+  useMemo,
+  useReducer,
+  useRef,
+} from "preact/hooks";
 import {
   Actions,
   Lifecycle,
@@ -7,90 +14,166 @@ import {
   Routes,
   State,
 } from "../../types/index.ts";
-import { ModuleInstance, Props } from "./types.ts";
+import { Props, UseBindActionsReturn } from "./types.ts";
 import dispatcher from "pubsub-js";
 import { Immer, enablePatches } from "immer";
 import { Validation, ViewActions } from "../../view/types.ts";
-import { ControllerActions } from "../../controller/types.ts";
+import {
+  ControllerActions,
+  ControllerInstance,
+} from "../../controller/types.ts";
 import * as proxies from "./proxies/index.ts";
+import reducer from "./reducer/index.ts";
+import { ReducerEvents, ReducerState } from "./reducer/types.ts";
+import { ModuleOptions } from "../types.ts";
 
 const immer = new Immer();
 enablePatches();
 
+/**
+ * Controller hook that manages the lifecycle of the module.
+ *
+ * @param param0 {Props<M, A, R>}
+ */
 export function useController<
   M extends Model,
   A extends Actions,
   R extends Routes,
   P extends Parameters,
->({ moduleOptions }: Props<M, A, R>) {
+>({ moduleOptions: options }: Props<M, A, R>) {
   const id = useId();
-  const isMountInvoked = useRef<boolean>(false);
-  const [model, setModel] = useState<M>(moduleOptions.model);
-  const [pending, setPending] = useState<string[]>([]);
-  const [element, setElement] = useState<HTMLElement | null>(null);
 
-  const actions = useMemo(
+  const [state, dispatch] = useReducer<ReducerState<M, A, R>, ReducerEvents<M>>(
+    reducer,
+    {
+      id,
+      model: options.model,
+      options,
+      element: null,
+      pending: [],
+    },
+  );
+
+  const actions = useBindActions(state);
+  useBindController<M, A, R, P>(state, actions, options, dispatch);
+
+  return useMemo(
+    () => ({
+      state: {
+        model: state.model,
+        element: state.element,
+        actions: actions.view,
+      },
+      actions: {
+        attachElement(element: HTMLElement) {
+          dispatch({ type: "element", payload: element });
+        },
+      },
+    }),
+    [state.model, state.element],
+  );
+}
+
+/**
+ * Bind the controller to the module and dispatch the lifecycle events.
+ *
+ * @param state {ReducerState<M, A, R>}
+ * @param actions {UseBindActionsReturn<M, A, R>}
+ * @param options {ModuleOptions<M, A, R>}
+ * @param dispatch {Dispatch<ReducerEvents<M>>}
+ * @returns {ControllerInstance<A, P>}
+ */
+function useBindController<
+  M extends Model,
+  A extends Actions,
+  R extends Routes,
+  P extends Parameters,
+>(
+  state: ReducerState<M, A, R>,
+  actions: UseBindActionsReturn<M, A, R>,
+  options: ModuleOptions<M, A, R>,
+  dispatch: Dispatch<ReducerEvents<M>>,
+) {
+  const controller = useMemo(
+    () =>
+      options.controller({
+        actions: actions.controller,
+        model: state.model,
+        element: state.element as HTMLElement,
+      }),
+    [options.controller, actions.controller, state.model, state.element],
+  );
+
+  useDispatchLifecycleEvents<M, A, R, P>(state, actions, controller, dispatch);
+
+  return controller;
+}
+
+/**
+ * Bind the actions to the module.
+ *
+ * @param state {ReducerState<M, A, R>}
+ * @returns {UseBindActionsReturn<M, A, R>}
+ */
+function useBindActions<M extends Model, A extends Actions, R extends Routes>(
+  state: ReducerState<M, A, R>,
+): UseBindActionsReturn<M, A, R> {
+  return useMemo(
     () => ({
       controller: <ControllerActions<M, A, R>>{
         io: (ƒ) => ƒ,
-        produce: (ƒ) => immer.produceWithPatches(model, ƒ),
+        produce: (ƒ) => immer.produceWithPatches(state.model, ƒ),
         optimistic() {},
         dispatch() {},
         navigate() {},
       },
       view: <ViewActions<M, A, R>>{
         dispatch([event, ...properties]) {
-          const name = getEventName(id, event);
+          const name = getEventName(state.id, event);
           dispatcher.publish(name, ...properties);
         },
         navigate() {},
         validate: (ƒ: (model: Validation<M>) => boolean) =>
-          ƒ(proxies.validate(model, pending)),
+          ƒ(proxies.validate(state.model, state.pending)),
       },
     }),
-    [id, pending],
+    [state.id, state.pending],
   );
+}
 
-  const instance = useMemo(
-    (): ModuleInstance<M, A, P> => ({
-      id,
-      controller: moduleOptions.controller({
-        model,
-        actions: actions.controller,
-        element,
-      }),
-      model,
-      setModel,
-      setPending,
-    }),
-    [id, model, element, actions.controller],
-  );
+/**
+ * Dispatch the lifecycle events when the component mounts and unmounts.
+ *
+ * @param state {ReducerState<M, A, R>}
+ * @param actions {UseBindActionsReturn<M, A, R>}
+ * @param controller {ControllerInstance<A, P>}
+ * @param dispatch {Dispatch<ReducerEvents<M>>}
+ * @returns {void}
+ */
+function useDispatchLifecycleEvents<
+  M extends Model,
+  A extends Actions,
+  R extends Routes,
+  P extends Parameters,
+>(
+  state: ReducerState<M, A, R>,
+  actions: UseBindActionsReturn<M, A, R>,
+  controller: ControllerInstance<A, P>,
+  dispatch: Dispatch<ReducerEvents<M>>,
+): void {
+  const invoked = useRef<boolean>(false);
 
   useEffect((): void => {
-    if (element && !isMountInvoked.current) {
-      observeMethods(instance);
+    if (state.element && !invoked.current) {
+      attachControllerMethods(state, controller, dispatch);
       actions.view.dispatch([Lifecycle.Mount, {}]);
-      isMountInvoked.current = true;
+      invoked.current = true;
     }
-  }, [element, instance, actions.view]);
+  }, [state.element]);
 
   useEffect(() => {
     return () => actions.view.dispatch([Lifecycle.Unmount, {}]);
   }, []);
-
-  return useMemo(
-    () => ({
-      state: {
-        model,
-        element,
-      },
-      actions: {
-        setElement,
-        viewActions: actions.view,
-      },
-    }),
-    [model, pending, setElement],
-  );
 }
 
 /**
@@ -100,26 +183,39 @@ export function useController<
  * @param event {string}
  * @returns {string}
  */
-function getEventName(id: string, event: string) {
+function getEventName(id: string, event: string): string {
   return `${id}/${event}`;
 }
 
 /**
  * Iterate over the controller methods and apply the necessary subscriptions.
  *
- * @param instance {ModuleInstance<M, A, P>}
+ * @param state {ReducerState<M, A, R>}
+ * @param controller {ControllerInstance<A, P>}
+ * @param dispatch {Dispatch<ReducerEvents<M>>}
  * @returns {void}
  */
-function observeMethods<
+function attachControllerMethods<
   M extends Model,
   A extends Actions,
+  R extends Routes,
   P extends Parameters,
->(instance: ModuleInstance<M, A, P>) {
-  Object.keys(instance.controller).forEach((event) => {
-    const name = getEventName(instance.id, event);
+>(
+  state: ReducerState<M, A, R>,
+  controller: ControllerInstance<A, P>,
+  dispatch: Dispatch<ReducerEvents<M>>,
+) {
+  Object.keys(controller).forEach((event) => {
+    const name = getEventName(state.id, event);
 
     dispatcher.subscribe(name, (_, ...data: []) =>
-      updateView<M, A, P, typeof data>(instance, data, event),
+      updateView<M, A, R, P, typeof data>(
+        state,
+        controller,
+        data,
+        event,
+        dispatch,
+      ),
     );
   });
 }
@@ -127,26 +223,35 @@ function observeMethods<
 /**
  * Update the view with the new model from the controller subscription.
  *
- * @param instance {ModuleInstance<M, A, P>}
+ * @param state {ReducerState<M, A, R>}
+ * @param controller {ControllerInstance<A, P>}
  * @param data {D}
- * @param dispatchable {string}
+ * @param event {string}
+ * @param dispatch {Dispatch<ReducerEvents<M>>}
  * @returns {void}
  */
 function updateView<
   M extends Model,
   A extends Actions,
+  R extends Routes,
   P extends Parameters,
   D extends [],
->(instance: ModuleInstance<M, A, P>, data: D, dispatchable: string): void {
+>(
+  state: ReducerState<M, A, R>,
+  controller: ControllerInstance<A, P>,
+  data: D,
+  event: string,
+  dispatch: Dispatch<ReducerEvents<M>>,
+): void {
   const resolvers = new Set();
-  const generator = instance.controller[dispatchable](...data);
+  const generator = controller[event](...data);
 
   while (true) {
-    const result = generator.next(proxies.state(instance.model, State.Pending));
+    const result = generator.next(proxies.state(state.model, State.Pending));
     if (result.done) {
       if (result.value) {
-        const pending = result.value[1].flatMap((value) => value.path);
-        instance.setPending(pending);
+        // const pending = result.value[1].flatMap((value) => value.path);
+        // instance.setPending(pending);
       }
       break;
     }
@@ -154,7 +259,7 @@ function updateView<
   }
 
   Promise.allSettled(resolvers).then((resolutions) => {
-    const generator = instance.controller[dispatchable](...data);
+    const generator = controller[event](...data);
     generator.next();
 
     resolutions.forEach((resolution) => {
@@ -164,8 +269,8 @@ function updateView<
           : generator.next(State.Failed);
 
       if (result.done && result.value != null) {
-        instance.setPending([]);
-        instance.setModel(result.value[0]);
+        // instance.setPending([]);
+        dispatch({ type: "model", payload: result.value[0] });
       }
     });
   });

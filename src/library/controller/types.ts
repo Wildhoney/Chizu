@@ -14,7 +14,7 @@ export type ControllerActions<
 
 type ControllerArgs<M extends Model, A extends Actions, R extends Routes> = {
   model: M;
-  element: null | HTMLElement;
+  element: HTMLElement;
   actions: ControllerActions<M, A, R>;
 };
 

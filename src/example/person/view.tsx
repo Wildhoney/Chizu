@@ -5,11 +5,6 @@ import { Routes } from "../types.ts";
 // import * as styles from "./styles.module.css";
 
 export default create.view<Model, Actions, Routes>(({ model, actions }) => {
-  console.log(
-    "validate?",
-    actions.validate((model) => model.name === State.Pending),
-  );
-
   return (
     <section>
       <h1>Hey {model.name}!</h1>

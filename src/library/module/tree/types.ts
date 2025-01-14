@@ -1,8 +1,8 @@
-import { Dispatch, StateUpdater } from "preact/hooks";
-import { ControllerInstance } from "../../controller/types.ts";
-import { Actions, Model, Parameters, Routes } from "../../types/index.ts";
+import { ControllerActions } from "../../controller/types.ts";
+import { Actions, Model, Routes } from "../../types/index.ts";
 import { ModuleOptions } from "../types.ts";
 import { JSX } from "preact";
+import { ViewActions } from "../../view/types.ts";
 
 export type Props<M extends Model, A extends Actions, R extends Routes> = {
   moduleOptions: ModuleOptions<M, A, R> & {
@@ -10,14 +10,11 @@ export type Props<M extends Model, A extends Actions, R extends Routes> = {
   };
 };
 
-export type ModuleInstance<
+export type UseBindActionsReturn<
   M extends Model,
   A extends Actions,
-  P extends Parameters = undefined,
+  R extends Routes,
 > = {
-  id: string;
-  controller: ControllerInstance<A, P>;
-  model: M;
-  setModel: Dispatch<StateUpdater<M>>;
-  setPending: Dispatch<StateUpdater<string[]>>;
+  controller: ControllerActions<M, A, R>;
+  view: ViewActions<M, A, R>;
 };
