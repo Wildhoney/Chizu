@@ -11,7 +11,7 @@ export type ControllerActions<
   dispatch(event: A): void;
   navigate(route: R): void;
   state: {
-    optimistic<T>(actual: T, optimistic: T): T;
+    optimistic<T>(actual: () => T, optimistic: T): T;
   };
 };
 
@@ -31,7 +31,7 @@ export type ControllerDefinition<
 export type ControllerInstance<
   A extends Actions,
   P extends Parameters = undefined,
-> = { mount?(parameters: P): void; unmount?(): void } & Partial<Handlers<A>>;
+> = { mount?(parameters?: P): void; unmount?(): void } & Partial<Handlers<A>>;
 
 type Handlers<A extends Actions> = {
   [K in A[0]]: (payload: Payload<A, K>) => Generator<string, void, never>;

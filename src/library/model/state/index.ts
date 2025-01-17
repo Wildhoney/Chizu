@@ -2,7 +2,7 @@ export default class Optimistic<T> {
   #optimistic: T;
   #actual: () => T;
 
-  constructor(optimistic: T, actual: () => T) {
+  constructor(actual: () => T, optimistic: T) {
     this.#optimistic = optimistic;
     this.#actual = actual;
   }

@@ -11,7 +11,7 @@ export const enum State {
   Optimistic = 8,
 }
 
-export type Actions = [any] | [any, any];
+export type Actions = [any] | [any, ...Data];
 
 export type Model = Record<string, any>;
 
@@ -25,3 +25,5 @@ export const enum Lifecycle {
   Mount = "lifecycle/mount",
   Unmount = "lifecycle/unmount",
 }
+
+export type Data = any[];

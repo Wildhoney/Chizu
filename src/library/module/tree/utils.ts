@@ -6,6 +6,7 @@ import {
   useReducer,
   useRef,
 } from "preact/hooks";
+import * as proxies from "./proxies/index.ts";
 import {
   Actions,
   Lifecycle,
@@ -14,7 +15,11 @@ import {
   Routes,
   State,
 } from "../../types/index.ts";
-import { Props, UseBindActionsReturn } from "./types.ts";
+import {
+  ControllerGeneratorAction,
+  Props,
+  UseBindActionsReturn,
+} from "./types.ts";
 import dispatcher from "pubsub-js";
 import { Immer, enablePatches } from "immer";
 import { Validation, ViewActions } from "../../view/types.ts";
@@ -101,8 +106,7 @@ function useBindController<
   dispatch: Dispatch<ReducerEvents<M>>,
 ) {
   const controller = useMemo(
-    () =>
-      options.controller({
+    () => <ControllerInstance<A, P>>options.controller({
         actions: actions.controller,
         model: state.model,
         element: state.element as HTMLElement,
@@ -133,19 +137,19 @@ function useBindActions<M extends Model, A extends Actions, R extends Routes>(
         dispatch() {},
         navigate() {},
         state: {
-          optimistic(optimistic, actual) {
-            return new Optimistic(optimistic, actual);
+          optimistic(actual, optimistic) {
+            return new Optimistic(actual, optimistic);
           },
         },
       },
       view: <ViewActions<M, A, R>>{
         dispatch([event, ...properties]) {
           const name = getEventName(state.componentId, event);
-          dispatcher.publish(name, ...properties);
+          dispatcher.publish(name, properties);
         },
         navigate() {},
         validate: (ƒ: (model: Validation<M>) => boolean) => {
-          // ƒ(proxies.validate(state.model, state.pending)),
+          ƒ(proxies.validate(state.model, state.mutationRecords));
         },
       },
     }),
@@ -173,18 +177,20 @@ function useDispatchLifecycleEvents<
   controller: ControllerInstance<A, P>,
   dispatch: Dispatch<ReducerEvents<M>>,
 ): void {
+  type Action = A[0];
+
   const invoked = useRef<boolean>(false);
 
   useEffect((): void => {
     if (state.element && !invoked.current) {
       attachControllerMethods(state, controller, dispatch);
-      actions.view.dispatch([Lifecycle.Mount, {}]);
+      actions.view.dispatch(<Action>[Lifecycle.Mount, {}]);
       invoked.current = true;
     }
   }, [state.element]);
 
   useEffect(() => {
-    return () => actions.view.dispatch([Lifecycle.Unmount, {}]);
+    return () => actions.view.dispatch(<Action>[Lifecycle.Unmount, {}]);
   }, []);
 }
 
@@ -192,11 +198,11 @@ function useDispatchLifecycleEvents<
  * Get the event name of the subscription and dispatches.
  *
  * @param id {string}
- * @param event {string}
+ * @param action {string}
  * @returns {string}
  */
-function getEventName(id: string, event: string): string {
-  return `${id}/${event}`;
+function getEventName(id: string, action: string): string {
+  return `${id}/${action}`;
 }
 
 /**
@@ -217,18 +223,19 @@ function attachControllerMethods<
   controller: ControllerInstance<A, P>,
   dispatch: Dispatch<ReducerEvents<M>>,
 ) {
-  Object.keys(controller).forEach((event) => {
-    const name = getEventName(state.componentId, event);
+  type Action = A[0];
 
-    dispatcher.subscribe(name, (_, ...data: []) =>
-      mutateView<M, A, R, P, typeof data>(
+  Object.keys(controller).forEach((action: Action) => {
+    const name = getEventName(state.componentId, action);
+
+    dispatcher.subscribe(name, (_, parameters) => {
+      return mutateView<M, A, R, P>(
         state,
         controller,
-        data,
-        event,
+        <A>[action, ...parameters],
         dispatch,
-      ),
-    );
+      );
+    });
   });
 }
 
@@ -237,7 +244,6 @@ function attachControllerMethods<
  *
  * @param state {ReducerState<M, A, R>}
  * @param controller {ControllerInstance<A, P>}
- * @param data {D}
  * @param event {string}
  * @param dispatch {Dispatch<ReducerEvents<M>>}
  * @returns {void}
@@ -247,17 +253,21 @@ function mutateView<
   A extends Actions,
   R extends Routes,
   P extends Parameters,
-  D extends [],
 >(
-  state: ReducerState<M, A, R>,
+  _state: ReducerState<M, A, R>,
   controller: ControllerInstance<A, P>,
-  data: D,
-  event: string,
+  [action, ...parameters]: A,
   dispatch: Dispatch<ReducerEvents<M>>,
 ): void {
+  type Action = A[0];
+
   const dispatchId = `${Date.now()}/${Math.random()}`;
   const resolvers = new Set();
-  const generator = controller[event](...data);
+  const generator = <ControllerGeneratorAction<M>>(
+    controller[<Action>action]?.(...parameters)
+  );
+
+  if (generator == null) return;
 
   // dispatch({ type: ReducerEvent.QueueUpdate, payload: dispatchId });
 
@@ -271,8 +281,10 @@ function mutateView<
             path: mutation.path,
             state: [
               State.Pending,
-              mutation.value instanceof Optimistic ? State.Optimistic : null,
-            ].filter(Boolean),
+              ...(mutation.value instanceof Optimistic
+                ? [State.Optimistic]
+                : []),
+            ],
           };
         },
       );
@@ -294,7 +306,11 @@ function mutateView<
   }
 
   Promise.allSettled(resolvers).then((resolutions) => {
-    const generator = controller[event](...data);
+    const generator = <ControllerGeneratorAction<M>>(
+      controller[<Action>action]?.(...parameters)
+    );
+    if (generator == null) return;
+
     generator.next();
 
     resolutions.forEach((resolution) => {

@@ -5,7 +5,7 @@ import { Actions, Model, Events } from "./types.ts";
 export default create.controller<Model, Actions, Routes, Route.Dashboard>(
   ({ actions }) => {
     return {
-      *[Lifecycle.Mount](parameters) {},
+      *[Lifecycle.Mount]() {},
 
       *[Lifecycle.Unmount]() {},
 

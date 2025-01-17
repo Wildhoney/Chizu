@@ -27,7 +27,7 @@ export const enum ReducerEvent {
   MutationRecords,
 }
 
-export type MutationRecords = { path: string[]; state: State[] }[];
+export type MutationRecords = { path: (string | number)[]; state: State[] }[];
 
 export type ReducerEvents<M extends Model> =
   | {
