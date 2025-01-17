@@ -18,11 +18,12 @@ export default create.controller<Model, Actions, Routes, Route.Dashboard>(
       //   });
       // },
 
-      *[Events.RandomAvatar]() {
-        const name = yield actions.io(() => "Maria");
+      *[Events.ChangeProfile]() {
+        const name: string = yield actions.io(() => "Maria");
 
         return actions.produce((draft) => {
           draft.name = name;
+          draft.age = 24;
         });
       },
     };

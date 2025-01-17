@@ -3,6 +3,7 @@
   "version": "0.0.1",
   "type": "module",
   "dependencies": {
+    "event-emitter": "^0.3.5",
     "immer": "^10.1.1",
     "preact": "^10.25.4",
     "pubsub-js": "^1.9.5"

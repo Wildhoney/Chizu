@@ -22,10 +22,15 @@ import {
   ControllerActions,
   ControllerInstance,
 } from "../../controller/types.ts";
-import * as proxies from "./proxies/index.ts";
 import reducer from "./reducer/index.ts";
-import { ReducerEvents, ReducerState } from "./reducer/types.ts";
+import {
+  MutationRecords,
+  ReducerEvent,
+  ReducerEvents,
+  ReducerState,
+} from "./reducer/types.ts";
 import { ModuleOptions } from "../types.ts";
+import Optimistic from "../../model/state/index.ts";
 
 const immer = new Immer();
 enablePatches();
@@ -41,16 +46,17 @@ export function useController<
   R extends Routes,
   P extends Parameters,
 >({ moduleOptions: options }: Props<M, A, R>) {
-  const id = useId();
+  const componentId = useId();
 
   const [state, dispatch] = useReducer<ReducerState<M, A, R>, ReducerEvents<M>>(
     reducer,
     {
-      id,
+      componentId,
       model: options.model,
       options,
       element: null,
-      pending: [],
+      dispatchQueue: [],
+      mutationRecords: {},
     },
   );
 
@@ -66,7 +72,7 @@ export function useController<
       },
       actions: {
         attachElement(element: HTMLElement) {
-          dispatch({ type: "element", payload: element });
+          dispatch({ type: ReducerEvent.AttachElement, payload: element });
         },
       },
     }),
@@ -126,18 +132,24 @@ function useBindActions<M extends Model, A extends Actions, R extends Routes>(
         optimistic() {},
         dispatch() {},
         navigate() {},
+        state: {
+          optimistic(optimistic, actual) {
+            return new Optimistic(optimistic, actual);
+          },
+        },
       },
       view: <ViewActions<M, A, R>>{
         dispatch([event, ...properties]) {
-          const name = getEventName(state.id, event);
+          const name = getEventName(state.componentId, event);
           dispatcher.publish(name, ...properties);
         },
         navigate() {},
-        validate: (ƒ: (model: Validation<M>) => boolean) =>
-          ƒ(proxies.validate(state.model, state.pending)),
+        validate: (ƒ: (model: Validation<M>) => boolean) => {
+          // ƒ(proxies.validate(state.model, state.pending)),
+        },
       },
     }),
-    [state.id, state.pending],
+    [state.componentId],
   );
 }
 
@@ -206,10 +218,10 @@ function attachControllerMethods<
   dispatch: Dispatch<ReducerEvents<M>>,
 ) {
   Object.keys(controller).forEach((event) => {
-    const name = getEventName(state.id, event);
+    const name = getEventName(state.componentId, event);
 
     dispatcher.subscribe(name, (_, ...data: []) =>
-      updateView<M, A, R, P, typeof data>(
+      mutateView<M, A, R, P, typeof data>(
         state,
         controller,
         data,
@@ -230,7 +242,7 @@ function attachControllerMethods<
  * @param dispatch {Dispatch<ReducerEvents<M>>}
  * @returns {void}
  */
-function updateView<
+function mutateView<
   M extends Model,
   A extends Actions,
   R extends Routes,
@@ -243,19 +255,42 @@ function updateView<
   event: string,
   dispatch: Dispatch<ReducerEvents<M>>,
 ): void {
+  const dispatchId = `${Date.now()}/${Math.random()}`;
   const resolvers = new Set();
   const generator = controller[event](...data);
 
+  // dispatch({ type: ReducerEvent.QueueUpdate, payload: dispatchId });
+
   while (true) {
-    const result = generator.next(proxies.state(state.model, State.Pending));
+    const result = generator.next();
+
     if (result.done) {
-      if (result.value) {
-        // const pending = result.value[1].flatMap((value) => value.path);
-        // instance.setPending(pending);
-      }
+      const mutationRecords: MutationRecords = result.value?.[1].flatMap(
+        (mutation) => {
+          return {
+            path: mutation.path,
+            state: [
+              State.Pending,
+              mutation.value instanceof Optimistic ? State.Optimistic : null,
+            ].filter(Boolean),
+          };
+        },
+      );
+
+      dispatch({
+        type: ReducerEvent.MutationRecords,
+        payload: { dispatchId, mutationRecords },
+      });
       break;
     }
-    resolvers.add(result.value());
+
+    if (typeof result.value === "function") {
+      resolvers.add(result.value());
+    }
+
+    if (result.value instanceof Optimistic) {
+      resolvers.add(result.value.actual());
+    }
   }
 
   Promise.allSettled(resolvers).then((resolutions) => {
@@ -269,8 +304,7 @@ function updateView<
           : generator.next(State.Failed);
 
       if (result.done && result.value != null) {
-        // instance.setPending([]);
-        dispatch({ type: "model", payload: result.value[0] });
+        dispatch({ type: ReducerEvent.UpdateModel, payload: result.value[0] });
       }
     });
   });

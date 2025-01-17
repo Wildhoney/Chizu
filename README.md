@@ -24,22 +24,46 @@ Strongly typed web component library using generators and efficiently updated vi
 - Easily communicate between controllers using distributed actions.
 - State is mutated sequentially ([FIFO](<https://en.wikipedia.org/wiki/FIFO_(computing_and_electronics)>)) and [deeply merged](#state-merging) for queued mutations.
 
-## View Helpers
+## Views
 
-Use the following helpers to construct your views where `prop` is any property in your model:
-
-- `prop.pending()` yields `true` if the property is pending.
-- `prop.otherwise("-")` provide a fallback value for when the property is pending.
-- `prop.equals(State.Pending | State.Optimistic)` determines if the property is in a given state.
-
-For skeleton elements you should use the `pending()` helper as part of the `aria-busy` attribute:
+Use the `validate` function to introspect your model:
 
 ```tsx
-<img src={model.avatar} alt="avatar" aria-busy={model.avatar.pending()} />
+<img
+  src={model.avatar}
+  alt="avatar"
+  aria-busy={actions.validate((model) => modal.avatar === State.Pending)}
+/>
+```
+
+You can also use the same approach for optimistic data:
+
+```tsx
+<h1>Hello {actions.validate((model) => model.avatar === State.Optimistic)}</h1>
 ```
 
 ## Distributed Actions
 
 ## State Merging
 
-Imagine a scenario where there are three events dispatched in order of: `A` → `B` → `C`. Each mutation updates a handful of properties, setting them to pending, optimistic, etc&hellip; However the async `io` requests are resolved in a different order: `B` → `C` → `A` but Marea cannot apply `B` or `C` because it's still awaiting the resolution of `A`. Once `A` is finally resolved the states are merged in the original dispatch order of `A` → `B` → `C` and the view is updated only once.
+Imagine a scenario where there are three events dispatched in order of: `A` → `B` → `C`.
+
+Each mutation updates a handful of properties, setting them to pending, optimistic, etc&hellip; However the async `io` requests are resolved in a different order: `B` → `C` → `A` but Marea cannot apply `B` or `C` because it's still awaiting the resolution of `A`. Once `A` is finally resolved the states are merged in the original dispatch order of `A` → `B` → `C` and the view is updated only once.
+
+## Controller Passes
+
+Relevant controller actions are invoked twice when dispatching an event, so it's important your updates are idempotent &ndash; by wrapping your actions in `actions.io` the supplied function will only be invoked on the first invocation, upon second invocation the aforementioned line will be resolved with its return value.
+
+For example, take a typical and simple example of a controller update:
+
+```tsx
+*[Actions.UpdateName]() {
+    const name = yield actions.io(() => "Adam");
+
+    return actions.produce((draft) => {
+        draft.name = name;
+    });
+}
+```
+
+On the first invocation the model will remain unchanged, but the state context will be updated so in your view you know which properties are pending, optimistic, etc... however on second invocation the model will be updated accordingly.

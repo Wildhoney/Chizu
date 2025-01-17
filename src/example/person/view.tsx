@@ -26,9 +26,9 @@ export default create.view<Model, Actions, Routes>(({ model, actions }) => {
 
       <button
         // disabled={model.name.equals(State.Pending)}
-        onClick={() => actions.dispatch([Events.RandomAvatar])}
+        onClick={() => actions.dispatch([Events.ChangeProfile])}
       >
-        Another cat
+        Change profile
       </button>
     </section>
   );
