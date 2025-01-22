@@ -6,6 +6,7 @@ import {
   Data,
   Lifecycle,
   Model,
+  Name,
   Parameters,
   Routes,
 } from "../../types/index.ts";
@@ -128,18 +129,19 @@ function dispatchUpdate<M extends Model, A extends Actions, R extends Routes>(
   state: State<M, A, R>,
   update: Update,
 ) {
-  type Action = A[0];
-
   const [event, ...data] = action;
-
   const io = new Set();
-  const firstPass = controller[<Action>event](...data);
+
+  const passes = {
+    first: controller[<Name<A>>event](...data),
+    second: controller[<Name<A>>event](...data),
+  };
 
   while (true) {
-    const result = firstPass.next();
+    const result = passes.first.next();
 
     if (result.done) {
-      // console.log(result.value)
+      // const pending = (result.value[1].flatMap(value => value.path));
       break;
     }
 
@@ -148,18 +150,16 @@ function dispatchUpdate<M extends Model, A extends Actions, R extends Routes>(
 
   update();
 
-  const secondPass = controller[<Action>event](...data);
-
   Promise.allSettled(io).then((io) => {
-    if (secondPass == null) return;
+    if (passes.second == null) return;
 
-    secondPass.next();
+    passes.second.next();
 
     io.forEach((io) => {
       const result =
         io.status === "fulfilled"
-          ? secondPass.next(io.value)
-          : secondPass.next(null);
+          ? passes.second.next(io.value)
+          : passes.second.next(null);
 
       if (result.done && result.value != null && result.value?.[0] != null) {
         const model = result.value[0];
@@ -186,12 +186,10 @@ function bindActions<M extends Model, A extends Actions, R extends Routes>(
   dispatches: Dispatchers<A>,
   update: Update,
 ) {
-  type Action = A[0];
-
   Object.keys(controller)
     .filter((action) => action !== Lifecycle.Mount)
     .forEach((action) => {
-      dispatches.module.on(<Action>action, (data: Data) => {
+      dispatches.module.on(<Name<A>>action, (data: Data) => {
         dispatchUpdate(<A>[action, ...data], controller, state, update);
       });
     });

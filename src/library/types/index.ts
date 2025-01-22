@@ -28,3 +28,5 @@ export const enum Lifecycle {
 }
 
 export type Data = [any, ...any[]];
+
+export type Name<A extends Actions> = A[0];

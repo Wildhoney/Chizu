@@ -34,7 +34,7 @@ export type ControllerInstance<
 > = { mount?(parameters?: P): void; unmount?(): void } & Partial<Handlers<A>>;
 
 type Handlers<A extends Actions> = {
-  [K in A[0]]: (payload: Payload<A, K>) => Generator<string, void, never>;
+  [K in A[0]]: (payload: Payload<A, K>) => Generator<any, any, never>;
 };
 
 type Payload<A extends Actions, K> = A extends [K, infer P] ? P : never;
