@@ -41,7 +41,7 @@ export default function render<
 
     const controller = props.moduleOptions.controller(state.current.controller);
     bindActions(controller, state.current, dispatchers, update);
-    dispatchUpdate(<A>[Lifecycle.Mount], controller, state.current, update);
+    // dispatchUpdate(<A>[Lifecycle.Mount], controller, state.current, update);
   }
 
   return useMemo(
@@ -90,19 +90,25 @@ function getState<M extends Model, A extends Actions, R extends Routes>(
     controller: {
       element: null,
       model,
-      io: <T>(ƒ: () => T): (() => T) => ƒ,
-      produce: (ƒ) => immer.produceWithPatches(model, ƒ),
-      dispatch() {},
-      navigate() {},
+      actions: {
+        io: <T>(ƒ: () => T): (() => T) => ƒ,
+        produce: (ƒ) => immer.produceWithPatches(model, ƒ),
+        dispatch([action, ...data]: A) {
+          dispatches.module.emit(action, data);
+        },
+        navigate() {},
+      },
     },
     view: {
       element: null,
       model,
-      validate: <T>(ƒ: (model: Validation<M>) => T): T => ƒ(model),
-      dispatch([action, ...data]: A) {
-        dispatches.module.emit(action, data);
+      actions: {
+        validate: <T>(ƒ: (model: Validation<M>) => T): T => ƒ(model),
+        dispatch([action, ...data]: A) {
+          dispatches.module.emit(action, data);
+        },
+        navigate() {},
       },
-      navigate() {},
     },
   };
 }
@@ -156,7 +162,9 @@ function dispatchUpdate<M extends Model, A extends Actions, R extends Routes>(
           : secondPass.next(null);
 
       if (result.done && result.value != null && result.value?.[0] != null) {
-        state.view.model = result.value[0];
+        const model = result.value[0];
+        state.controller.model = model;
+        state.view.model = model;
         update();
       }
     });

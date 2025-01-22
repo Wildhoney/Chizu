@@ -18,7 +18,8 @@ export type ViewActions<
 export type ViewArgs<M extends Model, A extends Actions, R extends Routes> = {
   model: M;
   element: null | HTMLElement;
-} & ViewActions<M, A, R>;
+  actions: ViewActions<M, A, R>;
+};
 
 export type ViewDefinition<
   M extends Model,

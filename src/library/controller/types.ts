@@ -18,7 +18,8 @@ export type ControllerArgs<
 > = {
   model: M;
   element: null | HTMLElement;
-} & ControllerActions<M, A, R>;
+  actions: ControllerActions<M, A, R>;
+};
 
 export type ControllerDefinition<
   M extends Model,
