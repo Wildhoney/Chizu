@@ -1,4 +1,3 @@
-import Optimistic from "../model/state/index.ts";
 import { Actions, Model, Parameters, Routes } from "../types/index.ts";
 
 export type ControllerActions<
@@ -6,20 +5,20 @@ export type ControllerActions<
   A extends Actions,
   R extends Routes,
 > = {
-  io<T>(ƒ: (() => T) | Optimistic<T>): Awaited<T>;
+  io<T>(ƒ: () => T): () => T;
   produce(ƒ: (draft: M) => void): void;
   dispatch(event: A): void;
   navigate(route: R): void;
-  state: {
-    optimistic<T>(actual: () => T, optimistic: T): T;
-  };
 };
 
-type ControllerArgs<M extends Model, A extends Actions, R extends Routes> = {
+export type ControllerArgs<
+  M extends Model,
+  A extends Actions,
+  R extends Routes,
+> = {
   model: M;
-  element: HTMLElement;
-  actions: ControllerActions<M, A, R>;
-};
+  element: null | HTMLElement;
+} & ControllerActions<M, A, R>;
 
 export type ControllerDefinition<
   M extends Model,

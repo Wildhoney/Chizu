@@ -1,13 +1,28 @@
-import { create, Lifecycle } from "../../library/index.ts";
+import { create } from "../../library/index.ts";
 import { Route, Routes } from "../types.ts";
 import { Actions, Model, Events } from "./types.ts";
 
 export default create.controller<Model, Actions, Routes, Route.Dashboard>(
-  ({ actions }) => {
+  (controller) => {
     return {
-      *[Lifecycle.Mount]() {},
+      // *[Lifecycle.Mount]() {
+      //   // const name: string = yield controller.io(async () => "Maria");
+      //   // return controller.produce((draft) => {
+      //   //   draft.name = name;
+      //   // });
+      // },
 
-      *[Lifecycle.Unmount]() {},
+      // *[Lifecycle.Element]() {
+      //   console.log(element?.innerHTML);
+      // },
+
+      // *[Lifecycle.Mount]() {
+      //   console.log(controller.element, "Mount");
+      // },
+
+      // *[Lifecycle.Unmount]() {
+      //   console.log(controller.element, "Unmount");
+      // },
 
       // *[DistributedEvents.UpdateName](name) {
       //   const random: string = yield actions.io(() => name);
@@ -19,9 +34,16 @@ export default create.controller<Model, Actions, Routes, Route.Dashboard>(
       // },
 
       *[Events.ChangeProfile]() {
-        const name: string = yield actions.io(() => "Maria");
+        const name: string = yield controller.io(
+          () =>
+            new Promise((resolve) => {
+              setTimeout(() => {
+                resolve("Maria");
+              }, 2000);
+            }),
+        );
 
-        return actions.produce((draft) => {
+        return controller.produce((draft) => {
           draft.name = name;
           draft.age = 24;
         });

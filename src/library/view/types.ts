@@ -15,11 +15,10 @@ export type ViewActions<
   navigate(route: R): void;
 };
 
-type ViewArgs<M extends Model, A extends Actions, R extends Routes> = {
+export type ViewArgs<M extends Model, A extends Actions, R extends Routes> = {
   model: M;
   element: null | HTMLElement;
-  actions: ViewActions<M, A, R>;
-};
+} & ViewActions<M, A, R>;
 
 export type ViewDefinition<
   M extends Model,
