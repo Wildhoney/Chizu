@@ -3,7 +3,7 @@ import { Actions, Data, Model, Parameters, Routes } from "../../types/index.ts";
 import { ModuleOptions } from "../types.ts";
 import { produceWithPatches } from "immer";
 import Optimistic from "../../model/state/index.ts";
-import { Dispatch } from "preact/hooks";
+import { Dispatch, MutableRef } from "preact/hooks";
 import EventEmitter from "eventemitter3";
 import { ViewArgs } from "../../view/types.ts";
 
@@ -15,17 +15,18 @@ export type Props<M extends Model, A extends Actions, R extends Routes> = {
   };
 };
 
-export type Update = Dispatch<void>;
-
-export type Record<M extends Model, A extends Actions, R extends Routes> = {
-  controller: ControllerInstance<A, Parameters>;
-  state: State<M, A, R>;
-};
+type Update = Dispatch<void>;
 
 export type Dispatchers<A extends Actions> = {
   app: EventEmitter<A[0], Data>;
   module: EventEmitter<A[0], Data>;
 };
+
+export type Context<M extends Model, A extends Actions> = [
+  MutableRef<M>,
+  ControllerInstance<A, Parameters>,
+  Update,
+];
 
 export type State<M extends Model, A extends Actions, R extends Routes> = {
   controller: ControllerArgs<M, A, R>;

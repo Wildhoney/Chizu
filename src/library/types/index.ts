@@ -23,7 +23,7 @@ export type Parameters = undefined | string;
 
 export const enum Lifecycle {
   Mount = "lifecycle/mount",
-  Element = "lifecycle/element",
+  DOM = "lifecycle/dom",
   Unmount = "lifecycle/unmount",
 }
 

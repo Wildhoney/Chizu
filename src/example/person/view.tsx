@@ -4,10 +4,10 @@ import { Routes } from "../types.ts";
 // import { name } from "./nodes/name.tsx";
 // import * as styles from "./styles.module.css";
 
-export default create.view<Model, Actions, Routes>(({ model, actions }) => {
+export default create.view<Model, Actions, Routes>((self) => {
   return (
     <section>
-      <h1>Hey {model.name}!</h1>
+      <h1>Hey {self.model.name}!</h1>
 
       {/* {view.validate((model) => {
         console.log(model.name);
@@ -30,7 +30,7 @@ export default create.view<Model, Actions, Routes>(({ model, actions }) => {
 
       <button
         // disabled={model.name.equals(State.Pending)}
-        onClick={() => actions.dispatch([Events.ChangeProfile])}
+        onClick={() => self.actions.dispatch([Events.ChangeProfile])}
       >
         Change profile
       </button>

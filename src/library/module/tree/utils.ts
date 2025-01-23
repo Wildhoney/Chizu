@@ -1,16 +1,21 @@
 import { ComponentChildren, h } from "preact";
-import { Dispatchers, Props, State, Update } from "./types";
-import { useContext, useMemo, useReducer, useRef } from "preact/hooks";
+import { Context, Dispatchers, Props, State } from "./types";
+import {
+  MutableRef,
+  useContext,
+  useEffect,
+  useMemo,
+  useReducer,
+  useRef,
+} from "preact/hooks";
 import {
   Actions,
   Data,
   Lifecycle,
   Model,
   Name,
-  Parameters,
   Routes,
 } from "../../types/index.ts";
-import { ControllerInstance } from "../../controller/types.ts";
 import { enablePatches, Immer } from "immer";
 import { appContext } from "../../app/index.ts";
 import EventEmitter from "eventemitter3";
@@ -29,30 +34,35 @@ export default function render<
   M extends Model,
   A extends Actions,
   R extends Routes,
->(props: Props<M, A, R>): ComponentChildren {
+>({ moduleOptions }: Props<M, A, R>): ComponentChildren {
   const bootstrapped = useRef<boolean>(false);
   const dispatchers = useDispatchers();
+  const model = useRef<M>(moduleOptions.model);
+  const element = useRef<null | HTMLElement>(null);
   const [index, update] = useReducer<number, void>((index) => index + 1, 0);
   const state = useRef<State<M, A, R>>(
-    getState<M, A, R>(props.moduleOptions.model, dispatchers),
+    getState<M, A, R>(model, element, dispatchers),
   );
 
   if (!bootstrapped.current) {
     bootstrapped.current = true;
 
-    const controller = props.moduleOptions.controller(state.current.controller);
-    bindActions(controller, state.current, dispatchers, update);
-    // dispatchUpdate(<A>[Lifecycle.Mount], controller, state.current, update);
+    const controller = moduleOptions.controller(state.current.controller);
+    const context = [model, controller, update] as Context<M, A>;
+    bindActions(state, dispatchers, context);
+    dispatchUpdate(<A>[Lifecycle.Mount], state, context);
   }
+
+  useEffect(() => {
+    dispatchers.module.emit(Lifecycle.DOM, []);
+    return () => dispatchers.module.emit(Lifecycle.Unmount, []);
+  }, []);
 
   return useMemo(
     () =>
-      h(props.moduleOptions.elementName, {
-        ref(element: null | HTMLElement): void {
-          state.current.controller.element = element;
-          state.current.view.element = element;
-        },
-        children: props.moduleOptions.view(state.current.view),
+      h(moduleOptions.elementName, {
+        ref: element,
+        children: moduleOptions.view(state.current.view),
       }),
     [index],
   );
@@ -84,16 +94,22 @@ function useDispatchers() {
  * @returns {State<M, A, R>}
  */
 function getState<M extends Model, A extends Actions, R extends Routes>(
-  model: M,
+  model: MutableRef<M>,
+  element: MutableRef<null | HTMLElement>,
   dispatches: Dispatchers<A>,
 ): State<M, A, R> {
   return {
     controller: {
-      element: null,
-      model,
+      get model() {
+        // console.log('xxx', model)
+        return model.current;
+      },
+      get element() {
+        return element.current;
+      },
       actions: {
         io: <T>(ƒ: () => T): (() => T) => ƒ,
-        produce: (ƒ) => immer.produceWithPatches(model, ƒ),
+        produce: (ƒ) => immer.produceWithPatches(model.current, ƒ),
         dispatch([action, ...data]: A) {
           dispatches.module.emit(action, data);
         },
@@ -101,10 +117,14 @@ function getState<M extends Model, A extends Actions, R extends Routes>(
       },
     },
     view: {
-      element: null,
-      model,
+      get model() {
+        return model.current;
+      },
+      get element() {
+        return element.current;
+      },
       actions: {
-        validate: <T>(ƒ: (model: Validation<M>) => T): T => ƒ(model),
+        validate: <T>(ƒ: (model: Validation<M>) => T): T => ƒ(model.current),
         dispatch([action, ...data]: A) {
           dispatches.module.emit(action, data);
         },
@@ -117,6 +137,7 @@ function getState<M extends Model, A extends Actions, R extends Routes>(
 /**
  * Dispatch the update to the controller and synchronise the view.
  *
+ * @param model {MutableRef<M>}
  * @param action {A}
  * @param controller {ControllerInstance<A, Parameters>}
  * @param state {State<M, A, R>}
@@ -125,9 +146,8 @@ function getState<M extends Model, A extends Actions, R extends Routes>(
  */
 function dispatchUpdate<M extends Model, A extends Actions, R extends Routes>(
   action: A,
-  controller: ControllerInstance<A, Parameters>,
-  state: State<M, A, R>,
-  update: Update,
+  _state: MutableRef<State<M, A, R>>,
+  [model, controller, update]: Context<M, A>,
 ) {
   const [event, ...data] = action;
   const io = new Set();
@@ -162,9 +182,7 @@ function dispatchUpdate<M extends Model, A extends Actions, R extends Routes>(
           : passes.second.next(null);
 
       if (result.done && result.value != null && result.value?.[0] != null) {
-        const model = result.value[0];
-        state.controller.model = model;
-        state.view.model = model;
+        model.current = result.value[0];
         update();
       }
     });
@@ -181,16 +199,19 @@ function dispatchUpdate<M extends Model, A extends Actions, R extends Routes>(
  * @returns {void}
  */
 function bindActions<M extends Model, A extends Actions, R extends Routes>(
-  controller: ControllerInstance<A, Parameters>,
-  state: State<M, A, R>,
+  state: MutableRef<State<M, A, R>>,
   dispatches: Dispatchers<A>,
-  update: Update,
+  [model, controller, update]: Context<M, A>,
 ) {
   Object.keys(controller)
     .filter((action) => action !== Lifecycle.Mount)
     .forEach((action) => {
       dispatches.module.on(<Name<A>>action, (data: Data) => {
-        dispatchUpdate(<A>[action, ...data], controller, state, update);
+        dispatchUpdate(<A>[action, ...data], state, [
+          model,
+          controller,
+          update,
+        ]);
       });
     });
 }
