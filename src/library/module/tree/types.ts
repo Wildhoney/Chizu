@@ -26,6 +26,7 @@ export type Context<M extends Model, A extends Actions> = [
   MutableRef<M>,
   ControllerInstance<A, Parameters>,
   Update,
+  MutableRef<number>,
 ];
 
 export type State<M extends Model, A extends Actions, R extends Routes> = {

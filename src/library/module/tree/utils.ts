@@ -39,6 +39,7 @@ export default function render<
   const dispatchers = useDispatchers();
   const model = useRef<M>(moduleOptions.model);
   const element = useRef<null | HTMLElement>(null);
+  const scene = useRef<number>(1_000);
   const [index, update] = useReducer<number, void>((index) => index + 1, 0);
   const state = useRef<State<M, A, R>>(
     getState<M, A, R>(model, element, dispatchers),
@@ -48,7 +49,7 @@ export default function render<
     bootstrapped.current = true;
 
     const controller = moduleOptions.controller(state.current.controller);
-    const context = [model, controller, update] as Context<M, A>;
+    const context = [model, controller, update, scene] as Context<M, A>;
     bindActions(state, dispatchers, context);
     dispatchUpdate(<A>[Lifecycle.Mount], state, context);
   }
@@ -101,7 +102,6 @@ function getState<M extends Model, A extends Actions, R extends Routes>(
   return {
     controller: {
       get model() {
-        // console.log('xxx', model)
         return model.current;
       },
       get element() {
@@ -147,8 +147,11 @@ function getState<M extends Model, A extends Actions, R extends Routes>(
 function dispatchUpdate<M extends Model, A extends Actions, R extends Routes>(
   action: A,
   _state: MutableRef<State<M, A, R>>,
-  [model, controller, update]: Context<M, A>,
+  [model, controller, update, scene]: Context<M, A>,
 ) {
+  const now = performance.now();
+
+  const name = scene.current.toString(16);
   const [event, ...data] = action;
   const io = new Set();
 
@@ -170,6 +173,11 @@ function dispatchUpdate<M extends Model, A extends Actions, R extends Routes>(
 
   update();
 
+  console.group(`${name} (1st pass)`);
+  console.log(`Event: ${event}`);
+  console.log(`Time: ${performance.now() - now}ms`);
+  console.groupEnd();
+
   Promise.allSettled(io).then((io) => {
     if (passes.second == null) return;
 
@@ -184,6 +192,14 @@ function dispatchUpdate<M extends Model, A extends Actions, R extends Routes>(
       if (result.done && result.value != null && result.value?.[0] != null) {
         model.current = result.value[0];
         update();
+
+        console.group(`${name} (2nd pass)`);
+        console.log(`Event: ${event}`);
+        console.log(`Time: ${performance.now() - now}ms`);
+        console.log("Model", model.current);
+        console.groupEnd();
+
+        scene.current += 50;
       }
     });
   });
@@ -201,7 +217,7 @@ function dispatchUpdate<M extends Model, A extends Actions, R extends Routes>(
 function bindActions<M extends Model, A extends Actions, R extends Routes>(
   state: MutableRef<State<M, A, R>>,
   dispatches: Dispatchers<A>,
-  [model, controller, update]: Context<M, A>,
+  [model, controller, update, scene]: Context<M, A>,
 ) {
   Object.keys(controller)
     .filter((action) => action !== Lifecycle.Mount)
@@ -211,6 +227,7 @@ function bindActions<M extends Model, A extends Actions, R extends Routes>(
           model,
           controller,
           update,
+          scene,
         ]);
       });
     });

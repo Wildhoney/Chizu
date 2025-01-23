@@ -8,7 +8,7 @@ export type Model = {
 };
 
 export const enum Events {
-  ChangeProfile,
+  ChangeProfile = "change_profile",
 }
 
 export type Actions = DistributedActions | [Events.ChangeProfile];
