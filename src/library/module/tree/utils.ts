@@ -1,5 +1,11 @@
 import { ComponentChildren, h } from "preact";
-import { Context, Dispatchers, Props, State } from "./types";
+import {
+  ModuleContext,
+  ModuleDispatchers,
+  Props,
+  ModuleState,
+  ModuleQueue,
+} from "./types";
 import {
   MutableRef,
   useContext,
@@ -15,6 +21,7 @@ import {
   Model,
   Name,
   Routes,
+  State,
 } from "../../types/index.ts";
 import { enablePatches, Immer } from "immer";
 import { appContext } from "../../app/index.ts";
@@ -27,7 +34,7 @@ enablePatches();
 /**
  * Render the module tree with the given options.
  *
- * @param props {Props<M, A, R>}
+ * @param moduleOptions {ModuleOptions<M, A, R> & { elementName: ElementName }}
  * @returns {ComponentChildren}
  */
 export default function render<
@@ -36,20 +43,24 @@ export default function render<
   R extends Routes,
 >({ moduleOptions }: Props<M, A, R>): ComponentChildren {
   const bootstrapped = useRef<boolean>(false);
-  const dispatchers = useDispatchers();
+  const dispatchers = useModuleDispatchers();
   const model = useRef<M>(moduleOptions.model);
   const element = useRef<null | HTMLElement>(null);
   const scene = useRef<number>(1_000);
+  const queue = useRef<ModuleQueue>(new Set<Promise<void>>());
   const [index, update] = useReducer<number, void>((index) => index + 1, 0);
-  const state = useRef<State<M, A, R>>(
-    getState<M, A, R>(model, element, dispatchers),
+  const state = useRef<ModuleState<M, A, R>>(
+    getModuleState<M, A, R>(model, element, dispatchers),
   );
 
   if (!bootstrapped.current) {
     bootstrapped.current = true;
 
     const controller = moduleOptions.controller(state.current.controller);
-    const context = [model, controller, update, scene] as Context<M, A>;
+    const context = [model, controller, update, scene, queue] as ModuleContext<
+      M,
+      A
+    >;
     bindActions(state, dispatchers, context);
     dispatchUpdate(<A>[Lifecycle.Mount], state, context);
   }
@@ -72,9 +83,9 @@ export default function render<
 /**
  * Get both the app dispatch from the app context and the module dispatcher.
  *
- * @returns {Dispatchers<A>}
+ * @returns {ModuleDispatchers<A>}
  */
-function useDispatchers() {
+function useModuleDispatchers() {
   const app = useContext(appContext);
   const moduleDispatcher = useRef(new EventEmitter());
 
@@ -90,15 +101,16 @@ function useDispatchers() {
 /**
  * Get the initial state of the module.
  *
- * @param model {M}
- * @param dispatches {Dispatchers<A>}
- * @returns {State<M, A, R>}
+ * @param model {MutableRef<M>}
+ * @param element {MutableRef<null | HTMLElement>}
+ * @param dispatches {ModuleDispatchers<A>}
+ * @returns {ModuleState<M, A, R>}
  */
-function getState<M extends Model, A extends Actions, R extends Routes>(
+function getModuleState<M extends Model, A extends Actions, R extends Routes>(
   model: MutableRef<M>,
   element: MutableRef<null | HTMLElement>,
-  dispatches: Dispatchers<A>,
-): State<M, A, R> {
+  dispatches: ModuleDispatchers<A>,
+): ModuleState<M, A, R> {
   return {
     controller: {
       get model() {
@@ -137,19 +149,24 @@ function getState<M extends Model, A extends Actions, R extends Routes>(
 /**
  * Dispatch the update to the controller and synchronise the view.
  *
- * @param model {MutableRef<M>}
  * @param action {A}
- * @param controller {ControllerInstance<A, Parameters>}
- * @param state {State<M, A, R>}
- * @param update {Update}
+ * @param state {MutableRef<ModuleState<M, A, R>>}
+ * @param context {ModuleContext<M, A>}
  * @returns {void}
  */
-function dispatchUpdate<M extends Model, A extends Actions, R extends Routes>(
+async function dispatchUpdate<
+  M extends Model,
+  A extends Actions,
+  R extends Routes,
+>(
   action: A,
-  _state: MutableRef<State<M, A, R>>,
-  [model, controller, update, scene]: Context<M, A>,
+  _state: MutableRef<ModuleState<M, A, R>>,
+  [model, controller, update, scene, queue]: ModuleContext<M, A>,
 ) {
   const now = performance.now();
+
+  const task = Promise.withResolvers<void>();
+  queue.current.add(task.promise);
 
   const name = scene.current.toString(16);
   const [event, ...data] = action;
@@ -164,7 +181,17 @@ function dispatchUpdate<M extends Model, A extends Actions, R extends Routes>(
     const result = passes.first.next();
 
     if (result.done) {
-      // const pending = (result.value[1].flatMap(value => value.path));
+      const mutations =
+        result.value?.[1].flatMap((value) => ({
+          path: value.path,
+          state: State.Pending,
+        })) ?? [];
+
+      console.group(`${name} (1st pass)`);
+      console.log(`Event: ${event}`);
+      console.log(`Time: ${performance.now() - now}ms`);
+      console.log("Mutations", mutations);
+      console.groupEnd();
       break;
     }
 
@@ -173,10 +200,13 @@ function dispatchUpdate<M extends Model, A extends Actions, R extends Routes>(
 
   update();
 
-  console.group(`${name} (1st pass)`);
-  console.log(`Event: ${event}`);
-  console.log(`Time: ${performance.now() - now}ms`);
-  console.groupEnd();
+  await Promise.all([...queue.current].slice(0, -1));
+
+  if (io.size === 0) {
+    task.resolve();
+    queue.current.delete(task.promise);
+    return;
+  }
 
   Promise.allSettled(io).then((io) => {
     if (passes.second == null) return;
@@ -201,6 +231,11 @@ function dispatchUpdate<M extends Model, A extends Actions, R extends Routes>(
 
         scene.current += 50;
       }
+
+      if (result.done) {
+        task.resolve();
+        queue.current.delete(task.promise);
+      }
     });
   });
 }
@@ -208,16 +243,15 @@ function dispatchUpdate<M extends Model, A extends Actions, R extends Routes>(
 /**
  * Bind the actions to the module.
  *
- * @param controller {ControllerInstance<A, Parameters>}
- * @param state {State<M, A, R>}
- * @param dispatches {Dispatchers<A>}
- * @param update {Update}
+ * @param state {MutableRef<ModuleState<M, A, R>>}
+ * @param dispatches {ModuleDispatchers<A>}
+ * @param context {ModuleContext<M, A>}
  * @returns {void}
  */
 function bindActions<M extends Model, A extends Actions, R extends Routes>(
-  state: MutableRef<State<M, A, R>>,
-  dispatches: Dispatchers<A>,
-  [model, controller, update, scene]: Context<M, A>,
+  state: MutableRef<ModuleState<M, A, R>>,
+  dispatches: ModuleDispatchers<A>,
+  [model, controller, update, scene, queue]: ModuleContext<M, A>,
 ) {
   Object.keys(controller)
     .filter((action) => action !== Lifecycle.Mount)
@@ -228,6 +262,7 @@ function bindActions<M extends Model, A extends Actions, R extends Routes>(
           controller,
           update,
           scene,
+          queue,
         ]);
       });
     });

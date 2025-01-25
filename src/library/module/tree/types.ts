@@ -15,21 +15,28 @@ export type Props<M extends Model, A extends Actions, R extends Routes> = {
   };
 };
 
-type Update = Dispatch<void>;
+type ModuleUpdate = Dispatch<void>;
 
-export type Dispatchers<A extends Actions> = {
+export type ModuleDispatchers<A extends Actions> = {
   app: EventEmitter<A[0], Data>;
   module: EventEmitter<A[0], Data>;
 };
 
-export type Context<M extends Model, A extends Actions> = [
+export type ModuleContext<M extends Model, A extends Actions> = [
   MutableRef<M>,
   ControllerInstance<A, Parameters>,
-  Update,
+  ModuleUpdate,
   MutableRef<number>,
+  MutableRef<ModuleQueue>,
 ];
 
-export type State<M extends Model, A extends Actions, R extends Routes> = {
+export type ModuleQueue = Set<Promise<void>>;
+
+export type ModuleState<
+  M extends Model,
+  A extends Actions,
+  R extends Routes,
+> = {
   controller: ControllerArgs<M, A, R>;
   view: ViewArgs<M, A, R>;
 };

@@ -27,29 +27,26 @@ Strongly typed web component library using generators and efficiently updated vi
 
 ## Controllers
 
-
 Each controller can `yield` as many actions as they desire, during the first pass of the action all of the associated promises will be collated and resolved asynchronously, once all of the promises have resolved the controller action is invoked a second time, passing in the result of the tasks and finally updating the model and re-rendering the associated view.
 
 It's important to note that controllers are instantiated once when its associated view is mounted to the DOM, that makes them predictable for doing tasks without resorting to memoization &mdash; such as `setInterval`.
 
-Furthermore you should not destructure `self` because otherwse the `self.model` and `self.element` variables will not be updated between action invocations. 
+Furthermore you should not destructure `self` because otherwse the `self.model` and `self.element` variables will not be updated between action invocations.
 
 During the first pass the model isn't updated, but the view is re-rendered and mutations updated which allows for displaying a pending state between passes. Once the controller action has completed its second pass, the model is updated and the view is re-rendered a second time with the updated model.
 
 ```tsx
-export default create.controller<Model, Actions, Routes>(
-  (self) => {
-    return {
-      *[Events.ChangeProfile]() {
-        const name: string = yield self.actions.io(() => "Maria");
+export default create.controller<Model, Actions, Routes>((self) => {
+  return {
+    *[Events.ChangeProfile]() {
+      const name: string = yield self.actions.io(() => "Maria");
 
-        return self.actions.produce((draft) => {
-          draft.name = name;
-        });
-      },
-    };
-  },
-);
+      return self.actions.produce((draft) => {
+        draft.name = name;
+      });
+    },
+  };
+});
 ```
 
 <!-- ## Views
