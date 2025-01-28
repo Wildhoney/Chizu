@@ -5,6 +5,7 @@ import {
   Props,
   ModuleState,
   ModuleQueue,
+  ModuleMutations,
 } from "./types";
 import {
   MutableRef,
@@ -27,8 +28,11 @@ import { enablePatches, Immer } from "immer";
 import { appContext } from "../../app/index.ts";
 import EventEmitter from "eventemitter3";
 import { Validation } from "../../view/types.ts";
+import validate from "../validate/index.ts";
+import parse from "../parse/index.ts";
 
 const immer = new Immer();
+immer.setAutoFreeze(false);
 enablePatches();
 
 /**
@@ -47,20 +51,25 @@ export default function render<
   const model = useRef<M>(moduleOptions.model);
   const element = useRef<null | HTMLElement>(null);
   const scene = useRef<number>(1_000);
+  const mutations = useRef<ModuleMutations>({});
   const queue = useRef<ModuleQueue>(new Set<Promise<void>>());
   const [index, update] = useReducer<number, void>((index) => index + 1, 0);
   const state = useRef<ModuleState<M, A, R>>(
-    getModuleState<M, A, R>(model, element, dispatchers),
+    getModuleState<M, A, R>(model, element, dispatchers, mutations),
   );
 
   if (!bootstrapped.current) {
     bootstrapped.current = true;
 
     const controller = moduleOptions.controller(state.current.controller);
-    const context = [model, controller, update, scene, queue] as ModuleContext<
-      M,
-      A
-    >;
+    const context = [
+      model,
+      controller,
+      update,
+      scene,
+      queue,
+      mutations,
+    ] as ModuleContext<M, A>;
     bindActions(state, dispatchers, context);
     dispatchUpdate(<A>[Lifecycle.Mount], state, context);
   }
@@ -74,7 +83,7 @@ export default function render<
     () =>
       h(moduleOptions.elementName, {
         ref: element,
-        children: moduleOptions.view(state.current.view),
+        children: parse(moduleOptions.view(state.current.view)),
       }),
     [index],
   );
@@ -110,6 +119,7 @@ function getModuleState<M extends Model, A extends Actions, R extends Routes>(
   model: MutableRef<M>,
   element: MutableRef<null | HTMLElement>,
   dispatches: ModuleDispatchers<A>,
+  mutations: MutableRef<ModuleMutations>,
 ): ModuleState<M, A, R> {
   return {
     controller: {
@@ -136,7 +146,8 @@ function getModuleState<M extends Model, A extends Actions, R extends Routes>(
         return element.current;
       },
       actions: {
-        validate: <T>(ƒ: (model: Validation<M>) => T): T => ƒ(model.current),
+        validate: <T>(ƒ: (model: Validation<M>) => T): T =>
+          ƒ(validate<M>(model.current, mutations.current)),
         dispatch([action, ...data]: A) {
           dispatches.module.emit(action, data);
         },
@@ -161,14 +172,19 @@ async function dispatchUpdate<
 >(
   action: A,
   _state: MutableRef<ModuleState<M, A, R>>,
-  [model, controller, update, scene, queue]: ModuleContext<M, A>,
+  [model, controller, update, scene, queue, mutations]: ModuleContext<M, A>,
 ) {
   const now = performance.now();
+  const colour = [...Array(6)]
+    .map(() => Math.floor(Math.random() * 14).toString(16))
+    .join("");
 
   const task = Promise.withResolvers<void>();
   queue.current.add(task.promise);
 
   const name = scene.current.toString(16);
+  scene.current += 50;
+
   const [event, ...data] = action;
   const io = new Set();
 
@@ -181,16 +197,21 @@ async function dispatchUpdate<
     const result = passes.first.next();
 
     if (result.done) {
-      const mutations =
+      const records =
         result.value?.[1].flatMap((value) => ({
           path: value.path,
           state: State.Pending,
         })) ?? [];
 
-      console.group(`${name} (1st pass)`);
-      console.log(`Event: ${event}`);
-      console.log(`Time: ${performance.now() - now}ms`);
-      console.log("Mutations", mutations);
+      mutations.current[name] = records;
+
+      console.groupCollapsed(
+        `Marea / %c ${name} (1st pass) `,
+        `background: #${colour}; color: white; border-radius: 2px`,
+      );
+      console.log("Event", event);
+      console.log("Time", `${performance.now() - now}ms`);
+      console.log("Mutations", records);
       console.groupEnd();
       break;
     }
@@ -200,11 +221,24 @@ async function dispatchUpdate<
 
   update();
 
-  await Promise.all([...queue.current].slice(0, -1));
+  const previous = [...queue.current].slice(0, -1);
+
+  if (previous.length > 0) {
+    console.groupCollapsed(
+      `Marea / %c ${name} (Pending) `,
+      `background: #${colour}; color: white; border-radius: 2px`,
+    );
+    console.log("Event", event);
+    console.log("Awaiting", previous);
+    console.groupEnd();
+  }
+
+  await Promise.all(previous);
 
   if (io.size === 0) {
     task.resolve();
     queue.current.delete(task.promise);
+    delete mutations.current[name];
     return;
   }
 
@@ -223,18 +257,20 @@ async function dispatchUpdate<
         model.current = result.value[0];
         update();
 
-        console.group(`${name} (2nd pass)`);
-        console.log(`Event: ${event}`);
-        console.log(`Time: ${performance.now() - now}ms`);
+        console.groupCollapsed(
+          `Marea / %c ${name} (2nd pass) `,
+          `background: #${colour}; color: white; border-radius: 2px`,
+        );
+        console.log("Event", event);
+        console.log("Time", `${performance.now() - now}ms`);
         console.log("Model", model.current);
         console.groupEnd();
-
-        scene.current += 50;
       }
 
       if (result.done) {
         task.resolve();
         queue.current.delete(task.promise);
+        delete mutations.current[name];
       }
     });
   });
@@ -251,7 +287,7 @@ async function dispatchUpdate<
 function bindActions<M extends Model, A extends Actions, R extends Routes>(
   state: MutableRef<ModuleState<M, A, R>>,
   dispatches: ModuleDispatchers<A>,
-  [model, controller, update, scene, queue]: ModuleContext<M, A>,
+  [model, controller, update, scene, queue, mutations]: ModuleContext<M, A>,
 ) {
   Object.keys(controller)
     .filter((action) => action !== Lifecycle.Mount)
@@ -263,6 +299,7 @@ function bindActions<M extends Model, A extends Actions, R extends Routes>(
           update,
           scene,
           queue,
+          mutations,
         ]);
       });
     });

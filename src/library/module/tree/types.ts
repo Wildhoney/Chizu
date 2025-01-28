@@ -1,5 +1,12 @@
 import { ControllerArgs, ControllerInstance } from "../../controller/types.ts";
-import { Actions, Data, Model, Parameters, Routes } from "../../types/index.ts";
+import {
+  Actions,
+  Data,
+  Model,
+  Parameters,
+  Routes,
+  State,
+} from "../../types/index.ts";
 import { ModuleOptions } from "../types.ts";
 import { produceWithPatches } from "immer";
 import Optimistic from "../../model/state/index.ts";
@@ -28,6 +35,7 @@ export type ModuleContext<M extends Model, A extends Actions> = [
   ModuleUpdate,
   MutableRef<number>,
   MutableRef<ModuleQueue>,
+  MutableRef<ModuleMutations>,
 ];
 
 export type ModuleQueue = Set<Promise<void>>;
@@ -40,6 +48,14 @@ export type ModuleState<
   controller: ControllerArgs<M, A, R>;
   view: ViewArgs<M, A, R>;
 };
+
+export type ModuleMutations = Record<
+  string,
+  {
+    name: string;
+    mutations: [{ path: string; state: State[] }];
+  }
+>;
 
 type ProduceWithPatches = ReturnType<typeof produceWithPatches>;
 
