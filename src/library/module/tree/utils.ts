@@ -11,6 +11,7 @@ import {
   MutableRef,
   useContext,
   useEffect,
+  useLayoutEffect,
   useMemo,
   useReducer,
   useRef,
@@ -29,7 +30,6 @@ import { appContext } from "../../app/index.ts";
 import EventEmitter from "eventemitter3";
 import { Validation } from "../../view/types.ts";
 import validate from "../validate/index.ts";
-import parse from "../parse/index.ts";
 
 const immer = new Immer();
 immer.setAutoFreeze(false);
@@ -79,11 +79,27 @@ export default function render<
     return () => dispatchers.module.emit(Lifecycle.Unmount, []);
   }, []);
 
+  useLayoutEffect(() => {
+    const busy = element.current?.querySelectorAll("*[aria-busy]") ?? [];
+
+    for (const element of busy) {
+      if (
+        element.getAttribute("aria-busy") === "true" &&
+        element.getAttribute("aria-hidden") !== "true"
+      ) {
+        element.classList.add("busy");
+        continue;
+      }
+
+      element.classList.remove("busy");
+    }
+  }, [index]);
+
   return useMemo(
     () =>
       h(moduleOptions.elementName, {
         ref: element,
-        children: parse(moduleOptions.view(state.current.view)),
+        children: moduleOptions.view(state.current.view),
       }),
     [index],
   );
@@ -148,6 +164,10 @@ function getModuleState<M extends Model, A extends Actions, R extends Routes>(
       actions: {
         validate: <T>(ƒ: (model: Validation<M>) => T): T =>
           ƒ(validate<M>(model.current, mutations.current)),
+        pending: <T>(ƒ: (model: Validation<M>) => T): boolean =>
+          Boolean(
+            ƒ(validate<M>(model.current, mutations.current)) & State.Pending,
+          ),
         dispatch([action, ...data]: A) {
           dispatches.module.emit(action, data);
         },

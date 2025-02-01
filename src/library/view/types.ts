@@ -11,6 +11,7 @@ export type ViewActions<
   R extends Routes,
 > = {
   validate<T>(ƒ: (model: Validation<M>) => T): T;
+  pending<T>(ƒ: (model: Validation<M>) => T): boolean;
   dispatch(event: A): void;
   navigate(route: R): void;
 };

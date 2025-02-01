@@ -20,7 +20,7 @@ export default function validate<M extends Model>(
           .map((mutation) => mutation.state),
       );
 
-      return [...states].reduce((acc, num) => acc ^ num, 0);
+      return [...states].reduce((current, state) => current ^ state, 0);
     },
   });
 }
