@@ -2,8 +2,7 @@ import { create } from "../../library/index.ts";
 import { Model } from "./types.ts";
 
 export default create.model<Model>({
-  name: "Adam",
-  age: 16,
-  displayParentalPermission: false,
-  avatar: null,
+  id: 1,
+  task: null,
+  tasks: [],
 });

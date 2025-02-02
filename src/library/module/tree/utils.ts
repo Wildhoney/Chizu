@@ -241,59 +241,37 @@ async function dispatchUpdate<
 
   update();
 
-  const previous = [...queue.current].slice(0, -1);
+  const results = await Promise.allSettled(io);
+  // await Promise.all(previous);
 
-  if (previous.length > 0) {
-    console.groupCollapsed(
-      `Marea / %c ${name} (Pending) `,
-      `background: #${colour}; color: white; border-radius: 2px`,
-    );
-    console.log("Event", event);
-    console.log("Awaiting", previous);
-    console.groupEnd();
-  }
+  if (passes.second == null) return;
 
-  await Promise.all(previous);
+  passes.second.next();
 
-  if (io.size === 0) {
-    task.resolve();
-    queue.current.delete(task.promise);
-    delete mutations.current[name];
-    return;
-  }
+  results.forEach((io) => {
+    const result =
+      io.status === "fulfilled"
+        ? passes.second.next(io.value)
+        : passes.second.next(null);
 
-  Promise.allSettled(io).then((io) => {
-    if (passes.second == null) return;
+    if (result.done && result.value != null && result.value?.[0] != null) {
+      model.current = result.value[0];
+      update();
 
-    passes.second.next();
-
-    io.forEach((io) => {
-      const result =
-        io.status === "fulfilled"
-          ? passes.second.next(io.value)
-          : passes.second.next(null);
-
-      if (result.done && result.value != null && result.value?.[0] != null) {
-        model.current = result.value[0];
-        update();
-
-        console.groupCollapsed(
-          `Marea / %c ${name} (2nd pass) `,
-          `background: #${colour}; color: white; border-radius: 2px`,
-        );
-        console.log("Event", event);
-        console.log("Time", `${performance.now() - now}ms`);
-        console.log("Model", model.current);
-        console.groupEnd();
-      }
-
-      if (result.done) {
-        task.resolve();
-        queue.current.delete(task.promise);
-        delete mutations.current[name];
-      }
-    });
+      console.groupCollapsed(
+        `Marea / %c ${name} (2nd pass) `,
+        `background: #${colour}; color: white; border-radius: 2px`,
+      );
+      console.log("Event", event);
+      console.log("Time", `${performance.now() - now}ms`);
+      console.log("Model", model.current);
+      console.groupEnd();
+    }
   });
+
+  task.resolve();
+  queue.current.delete(task.promise);
+  delete mutations.current[name];
 }
 
 /**
