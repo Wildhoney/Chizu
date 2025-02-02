@@ -6,16 +6,12 @@ export default create.controller<Model, Actions, Routes, Route.Dashboard>(
   (self) => {
     return {
       *[Events.Task](task: string) {
-        yield self.actions.io(() => null);
-
         return self.actions.produce((draft) => {
           draft.task = task;
         });
       },
 
       *[Events.Add]() {
-        yield self.actions.io(() => null);
-
         return self.actions.produce((draft) => {
           if (self.model.task) {
             draft.task = null;
@@ -31,8 +27,6 @@ export default create.controller<Model, Actions, Routes, Route.Dashboard>(
       },
 
       *[Events.Completed](id: Id) {
-        yield self.actions.io(() => null);
-
         return self.actions.produce((draft) => {
           const task = draft.tasks.find((task) => task.id === id);
 
@@ -43,8 +37,6 @@ export default create.controller<Model, Actions, Routes, Route.Dashboard>(
       },
 
       *[Events.Remove](id: Id) {
-        yield self.actions.io(() => null);
-
         return self.actions.produce((draft) => {
           draft.tasks = draft.tasks.filter((task) => task.id !== id);
         });

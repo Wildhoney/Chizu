@@ -209,9 +209,11 @@ async function dispatchUpdate<
   const io = new Set();
 
   const passes = {
-    first: controller[<Name<A>>event](...data),
-    second: controller[<Name<A>>event](...data),
+    first: controller[<Name<A>>event]?.(...data),
+    second: controller[<Name<A>>event]?.(...data),
   };
+
+  if (passes.first == null) return;
 
   while (true) {
     const result = passes.first.next();
@@ -241,19 +243,13 @@ async function dispatchUpdate<
 
   update();
 
-  const results = await Promise.allSettled(io);
-  // await Promise.all(previous);
-
   if (passes.second == null) return;
 
-  passes.second.next();
+  const results = await Promise.allSettled(io);
 
-  results.forEach((io) => {
-    const result =
-      io.status === "fulfilled"
-        ? passes.second.next(io.value)
-        : passes.second.next(null);
+  const result = passes.second.next();
 
+  function flush() {
     if (result.done && result.value != null && result.value?.[0] != null) {
       model.current = result.value[0];
       update();
@@ -266,6 +262,19 @@ async function dispatchUpdate<
       console.log("Time", `${performance.now() - now}ms`);
       console.log("Model", model.current);
       console.groupEnd();
+    }
+  }
+
+  if (result.done) return void flush();
+
+  results.forEach((io) => {
+    const result =
+      io.status === "fulfilled"
+        ? passes.second.next(io.value)
+        : passes.second.next(null);
+
+    if (result.done && result.value != null && result.value?.[0] != null) {
+      return void flush();
     }
   });
 
