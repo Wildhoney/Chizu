@@ -1,6 +1,6 @@
 import { DistributedActions } from "../types.ts";
 
-export type Id = number;
+type Id = number;
 
 type Task = {
   id: Id;

@@ -1,4 +1,4 @@
-import { ComponentChildren, h } from "preact";
+import { ComponentChildren, h, render as renderTree, hydrate } from "preact";
 import {
   ModuleContext,
   ModuleDispatchers,
@@ -95,11 +95,25 @@ export default function render<
     }
   }, [index]);
 
+  function attachShadowRoot(root: null | HTMLDivElement) {
+    if (root && !root.shadowRoot) {
+      element.current = root;
+      const shadow = root.attachShadow({ mode: "open" });
+      renderTree(moduleOptions.view(state.current.view), shadow);
+    }
+  }
+
+  useEffect(() => {
+    renderTree(
+      moduleOptions.view(state.current.view),
+      element.current?.shadowRoot as ShadowRoot,
+    );
+  }, [index]);
+
   return useMemo(
     () =>
       h(moduleOptions.elementName, {
-        ref: element,
-        children: moduleOptions.view(state.current.view),
+        ref: attachShadowRoot,
       }),
     [index],
   );

@@ -1,11 +1,11 @@
 import { create } from "../../library/index.ts";
 import { Route, Routes } from "../types.ts";
-import { Actions, Model, Events, Id } from "./types.ts";
+import { Actions, Model, Events } from "./types.ts";
 
 export default create.controller<Model, Actions, Routes, Route.Dashboard>(
   (self) => {
     return {
-      *[Events.Task](task: string) {
+      *[Events.Task](task) {
         return self.actions.produce((draft) => {
           draft.task = task;
         });
@@ -26,7 +26,7 @@ export default create.controller<Model, Actions, Routes, Route.Dashboard>(
         });
       },
 
-      *[Events.Completed](id: Id) {
+      *[Events.Completed](id) {
         return self.actions.produce((draft) => {
           const task = draft.tasks.find((task) => task.id === id);
 
@@ -36,7 +36,7 @@ export default create.controller<Model, Actions, Routes, Route.Dashboard>(
         });
       },
 
-      *[Events.Remove](id: Id) {
+      *[Events.Remove](id) {
         return self.actions.produce((draft) => {
           draft.tasks = draft.tasks.filter((task) => task.id !== id);
         });

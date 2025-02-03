@@ -92,3 +92,35 @@ For example, take a typical and simple example of a controller update:
 ```
 
 On the first invocation the model will remain unchanged, but the state context will be updated so in your view you know which properties are pending, optimistic, etc... however on second invocation the model will be updated accordingly.
+
+## Todo App
+
+Start with your types because in a way they are a high-level overview of how your component functions:
+
+```ts
+type Task = {
+  id: Id;
+  task: string;
+  date: Date;
+  completed: boolean;
+};
+
+export type Model = {
+  id: number;
+  task: null | string;
+  tasks: Task[];
+};
+
+export const enum Events {
+  Task,
+  Add,
+  Completed,
+  Remove,
+}
+
+export type Actions =
+  | [Events.Task, string]
+  | [Events.Add]
+  | [Events.Completed, Id]
+  | [Events.Remove, Id];
+```

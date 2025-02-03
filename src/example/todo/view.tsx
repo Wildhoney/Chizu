@@ -22,27 +22,29 @@ export default create.view<Model, Actions, Routes>((self) => {
         Add task
       </button>
 
-      {self.model.tasks.length === 0 && <p>You have no tasks yet.</p>}
-
-      <ol>
-        {self.model.tasks.map((task) => (
-          <li key={task.id}>
-            <input
-              type="checkbox"
-              checked={task.completed}
-              onChange={() =>
-                self.actions.dispatch([Events.Completed, task.id])
-              }
-            />
-            {task.task} {task.completed ? "✅" : ""}
-            <button
-              onClick={() => self.actions.dispatch([Events.Remove, task.id])}
-            >
-              Remove
-            </button>
-          </li>
-        ))}
-      </ol>
+      {self.model.tasks.length === 0 ? (
+        <p>You have no tasks yet.</p>
+      ) : (
+        <ol>
+          {self.model.tasks.map((task) => (
+            <li key={task.id}>
+              <input
+                type="checkbox"
+                checked={task.completed}
+                onChange={() =>
+                  self.actions.dispatch([Events.Completed, task.id])
+                }
+              />
+              {task.task} {task.completed ? "✅" : ""}
+              <button
+                onClick={() => self.actions.dispatch([Events.Remove, task.id])}
+              >
+                Remove
+              </button>
+            </li>
+          ))}
+        </ol>
+      )}
     </section>
   );
 });
