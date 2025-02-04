@@ -1,4 +1,4 @@
-import app from "./app/index.ts";
+import app from "./app/index.tsx";
 import module from "./module/index.tsx";
 import model from "./model/index.ts";
 import view from "./view/index.ts";

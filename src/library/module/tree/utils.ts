@@ -1,4 +1,4 @@
-import { ComponentChildren, h, render as renderTree, hydrate } from "preact";
+import * as preact from "preact";
 import {
   ModuleContext,
   ModuleDispatchers,
@@ -9,7 +9,6 @@ import {
 } from "./types";
 import {
   MutableRef,
-  useContext,
   useEffect,
   useLayoutEffect,
   useMemo,
@@ -26,7 +25,6 @@ import {
   State,
 } from "../../types/index.ts";
 import { enablePatches, Immer } from "immer";
-import { appContext } from "../../app/index.ts";
 import EventEmitter from "eventemitter3";
 import { Validation } from "../../view/types.ts";
 import validate from "../validate/index.ts";
@@ -45,8 +43,9 @@ export default function render<
   M extends Model,
   A extends Actions,
   R extends Routes,
->({ moduleOptions }: Props<M, A, R>): ComponentChildren {
+>({ moduleOptions }: Props<M, A, R>): preact.ComponentChildren {
   const bootstrapped = useRef<boolean>(false);
+  const shadowed = useRef<boolean>(false);
   const dispatchers = useModuleDispatchers();
   const model = useRef<M>(moduleOptions.model);
   const element = useRef<null | HTMLElement>(null);
@@ -99,12 +98,17 @@ export default function render<
     if (root && !root.shadowRoot) {
       element.current = root;
       const shadow = root.attachShadow({ mode: "open" });
-      renderTree(moduleOptions.view(state.current.view), shadow);
+      preact.render(moduleOptions.view(state.current.view), shadow);
     }
   }
 
-  useEffect(() => {
-    renderTree(
+  useLayoutEffect(() => {
+    if (!shadowed.current) {
+      shadowed.current = true;
+      return;
+    }
+
+    preact.render(
       moduleOptions.view(state.current.view),
       element.current?.shadowRoot as ShadowRoot,
     );
@@ -112,7 +116,7 @@ export default function render<
 
   return useMemo(
     () =>
-      h(moduleOptions.elementName, {
+      preact.h(moduleOptions.elementName, {
         ref: attachShadowRoot,
       }),
     [index],
@@ -125,12 +129,11 @@ export default function render<
  * @returns {ModuleDispatchers<A>}
  */
 function useModuleDispatchers() {
-  const app = useContext(appContext);
   const moduleDispatcher = useRef(new EventEmitter());
 
   return useMemo(
     () => ({
-      app,
+      app: {},
       module: moduleDispatcher.current,
     }),
     [],
@@ -255,7 +258,9 @@ async function dispatchUpdate<
     io.add(result.value());
   }
 
-  update();
+  if (io.size > 0) {
+    update();
+  }
 
   if (passes.second == null) return;
 
