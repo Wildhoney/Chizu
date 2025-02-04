@@ -1,4 +1,11 @@
-import { Actions, Model, Parameters, Routes } from "../types/index.ts";
+import {
+  Actions,
+  Lifecycle,
+  Model,
+  Parameters,
+  Props,
+  Routes,
+} from "../types/index.ts";
 
 export type ControllerActions<
   M extends Model,
@@ -25,13 +32,18 @@ export type ControllerDefinition<
   M extends Model,
   A extends Actions,
   R extends Routes,
-  P extends Parameters = undefined,
-> = (controller: ControllerArgs<M, A, R>) => ControllerInstance<A, P>;
+  P1 extends Props,
+  P2 extends Parameters = undefined,
+> = (controller: ControllerArgs<M, A, R>) => ControllerInstance<A, P1, P2>;
 
 export type ControllerInstance<
   A extends Actions,
-  P extends Parameters = undefined,
-> = { mount?(parameters?: P): void; unmount?(): void } & Partial<Handlers<A>>;
+  P1 extends Props,
+  P2 extends Parameters = undefined,
+> = {
+  [Lifecycle.Mount]?(arguments: { props: P1; route: P2 }): void;
+  [Lifecycle.Unmount]?(): void;
+} & Partial<Handlers<A>>;
 
 type Handlers<A extends Actions> = {
   [K in A[0]]: (payload: Payload<A, K>) => Generator<any, any, never>;

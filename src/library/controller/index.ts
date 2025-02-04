@@ -1,11 +1,12 @@
-import { Actions, Model, Parameters, Routes } from "../types/index.ts";
+import { Actions, Model, Parameters, Props, Routes } from "../types/index.ts";
 import { ControllerDefinition } from "./types.ts";
 
 export default function controller<
   M extends Model,
   A extends Actions,
   R extends Routes,
-  P extends Parameters = undefined,
->(definition: ControllerDefinition<M, A, R, P>) {
+  P1 extends Props,
+  P2 extends Parameters = undefined,
+>(definition: ControllerDefinition<M, A, R, P1, P2>) {
   return definition;
 }

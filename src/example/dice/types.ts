@@ -7,3 +7,7 @@ export const enum Events {
 }
 
 export type Actions = [Events.Roll];
+
+export type Props = {
+  initialKite: string;
+};

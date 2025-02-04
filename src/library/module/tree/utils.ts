@@ -2,10 +2,10 @@ import * as preact from "preact";
 import {
   ModuleContext,
   ModuleDispatchers,
-  Props,
   ModuleState,
   ModuleQueue,
   ModuleMutations,
+  ModuleProps,
 } from "./types";
 import {
   MutableRef,
@@ -43,7 +43,7 @@ export default function render<
   M extends Model,
   A extends Actions,
   R extends Routes,
->({ moduleOptions }: Props<M, A, R>): preact.ComponentChildren {
+>({ moduleOptions }: ModuleProps<M, A, R>): preact.ComponentChildren {
   const bootstrapped = useRef<boolean>(false);
   const shadowed = useRef<boolean>(false);
   const dispatchers = useModuleDispatchers();
@@ -69,8 +69,14 @@ export default function render<
       queue,
       mutations,
     ] as ModuleContext<M, A>;
+
     bindActions(state, dispatchers, context);
-    dispatchUpdate(<A>[Lifecycle.Mount], state, context);
+
+    dispatchUpdate(
+      <A>[Lifecycle.Mount, { props: moduleOptions.elementProps }],
+      state,
+      context,
+    );
   }
 
   useEffect(() => {
@@ -230,6 +236,7 @@ async function dispatchUpdate<
     second: controller[<Name<A>>event]?.(...data),
   };
 
+  // We don't continue if the first pass is not defined.
   if (passes.first == null) return;
 
   while (true) {
@@ -262,9 +269,12 @@ async function dispatchUpdate<
     update();
   }
 
+  // We don't continue if the second pass is not defined.
   if (passes.second == null) return;
 
-  const results = await Promise.allSettled(io);
+  // It's important we don't await if we don't need to, so that actions like
+  // the `Lifecycle.Mount` can run synchronously.
+  const results = io.size > 0 ? await Promise.allSettled(io) : [];
 
   const result = passes.second.next();
 

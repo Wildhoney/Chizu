@@ -4,6 +4,7 @@ import {
   Data,
   Model,
   Parameters,
+  Props,
   Routes,
   State,
 } from "../../types/index.ts";
@@ -16,9 +17,14 @@ import { ViewArgs } from "../../view/types.ts";
 
 export type ElementName = string;
 
-export type Props<M extends Model, A extends Actions, R extends Routes> = {
+export type ModuleProps<
+  M extends Model,
+  A extends Actions,
+  R extends Routes,
+> = {
   moduleOptions: ModuleOptions<M, A, R> & {
     elementName: ElementName;
+    elementProps: Props;
   };
 };
 

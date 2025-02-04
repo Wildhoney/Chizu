@@ -30,3 +30,5 @@ export const enum Lifecycle {
 export type Data = [any, ...any[]];
 
 export type Name<A extends Actions> = A[0];
+
+export type Props = Record<string, string>;

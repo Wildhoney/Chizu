@@ -23,7 +23,7 @@ export default create.view<Model, Actions, Routes>((self) => {
         Add task
       </button>
 
-      <Dice />
+      <Dice initialKite="6" />
 
       {self.model.tasks.length === 0 ? (
         <p>You have no tasks yet.</p>
