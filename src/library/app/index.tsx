@@ -7,6 +7,5 @@ export default function app<R extends Routes = any>(
   options: AppOptions<R>,
 ): void {
   const Module = closest<R>(options);
-
   if (Module) preact.render(<Module />, document.body);
 }

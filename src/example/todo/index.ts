@@ -2,10 +2,9 @@ import { create } from "../../library/index.ts";
 import controller from "./controller.ts";
 import model from "./model.ts";
 import view from "./view.tsx";
-import { Model, Actions } from "./types.ts";
-import { Routes } from "../types.ts";
+import { Module } from "./types.ts";
 
-export default create.module<Model, Actions, Routes>`x-person`({
+export default create.module<Module>`x-person`({
   controller,
   model,
   view,

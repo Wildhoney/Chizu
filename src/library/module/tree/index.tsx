@@ -1,14 +1,14 @@
 import { ComponentChildren } from "preact";
-import { Actions, Model, Routes } from "../../types/index.ts";
+import { Stitched } from "../../types/index.ts";
 import { memo } from "preact/compat";
 import render from "./utils.ts";
 import { ModuleProps } from "./types.ts";
 
 export default memo(
-  function Tree<M extends Model, A extends Actions, R extends Routes>({
+  function Tree<S extends Stitched>({
     moduleOptions,
-  }: ModuleProps<M, A, R>): ComponentChildren {
-    return render<M, A, R>({ moduleOptions });
+  }: ModuleProps<S>): ComponentChildren {
+    return render<S>({ moduleOptions });
   },
-  () => true,
+  (a, b) => JSON.stringify(a) === JSON.stringify(b),
 );

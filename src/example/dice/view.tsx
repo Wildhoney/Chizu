@@ -1,8 +1,7 @@
 import { create } from "../../library/index.ts";
-import { Actions, Events, Model } from "./types.ts";
-import { Routes } from "../types.ts";
+import { Events, Module } from "./types.ts";
 
-export default create.view<Model, Actions, Routes>((self) => {
+export default create.view<Module>((self) => {
   return (
     <section>
       <p>

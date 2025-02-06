@@ -1,4 +1,5 @@
-import { DistributedActions } from "../types.ts";
+import { Stitch } from "../../library/types/index.ts";
+import { DistributedActions, Route, Routes } from "../types.ts";
 
 type Id = number;
 
@@ -28,3 +29,5 @@ export type Actions =
   | [Events.Add]
   | [Events.Completed, Id]
   | [Events.Remove, Id];
+
+export type Module = Stitch<Model, Actions, {}, [Routes, Route.Dashboard]>;

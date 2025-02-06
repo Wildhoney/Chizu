@@ -1,13 +1,5 @@
 import { ControllerArgs, ControllerInstance } from "../../controller/types.ts";
-import {
-  Actions,
-  Data,
-  Model,
-  Parameters,
-  Props,
-  Routes,
-  State,
-} from "../../types/index.ts";
+import { Data, Model, Props, State, Stitched } from "../../types/index.ts";
 import { ModuleOptions } from "../types.ts";
 import { produceWithPatches } from "immer";
 import Optimistic from "../../model/state/index.ts";
@@ -17,12 +9,8 @@ import { ViewArgs } from "../../view/types.ts";
 
 export type ElementName = string;
 
-export type ModuleProps<
-  M extends Model,
-  A extends Actions,
-  R extends Routes,
-> = {
-  moduleOptions: ModuleOptions<M, A, R> & {
+export type ModuleProps<S extends Stitched> = {
+  moduleOptions: ModuleOptions<S> & {
     elementName: ElementName;
     elementProps: Props;
   };
@@ -30,14 +18,14 @@ export type ModuleProps<
 
 type ModuleUpdate = Dispatch<void>;
 
-export type ModuleDispatchers<A extends Actions> = {
-  app: EventEmitter<A[0], Data>;
-  module: EventEmitter<A[0], Data>;
+export type ModuleDispatchers<S extends Stitched> = {
+  app: EventEmitter<S["Actions"][0], Data>;
+  module: EventEmitter<S["Actions"][0], Data>;
 };
 
-export type ModuleContext<M extends Model, A extends Actions> = [
-  MutableRef<M>,
-  ControllerInstance<A, Parameters>,
+export type ModuleContext<S extends Stitched> = [
+  MutableRef<S["Model"]>,
+  ControllerInstance<S>,
   ModuleUpdate,
   MutableRef<number>,
   MutableRef<ModuleQueue>,
@@ -46,13 +34,9 @@ export type ModuleContext<M extends Model, A extends Actions> = [
 
 export type ModuleQueue = Set<Promise<void>>;
 
-export type ModuleState<
-  M extends Model,
-  A extends Actions,
-  R extends Routes,
-> = {
-  controller: ControllerArgs<M, A, R>;
-  view: ViewArgs<M, A, R>;
+export type ModuleState<S extends Stitched> = {
+  controller: ControllerArgs<S>;
+  view: ViewArgs<S>;
 };
 
 export type ModuleMutations = Record<

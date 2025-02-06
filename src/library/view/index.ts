@@ -1,10 +1,8 @@
-import { Actions, Model, Routes } from "../types/index.ts";
+import { Stitched } from "../types/index.ts";
 import { ViewDefinition } from "./types.ts";
 
-export default function view<
-  M extends Model,
-  A extends Actions,
-  R extends Routes,
->(definition: ViewDefinition<M, A, R>) {
+export default function view<S extends Stitched>(
+  definition: ViewDefinition<S>,
+) {
   return definition;
 }

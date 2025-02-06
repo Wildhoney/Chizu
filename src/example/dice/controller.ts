@@ -1,18 +1,17 @@
 import { create, Lifecycle } from "../../library/index.ts";
-import { Route, Routes } from "../types.ts";
-import { Actions, Model, Events, Props } from "./types.ts";
+import { Events, Module } from "./types.ts";
 
-export default create.controller<
-  Model,
-  Actions,
-  Routes,
-  Props,
-  Route.Dashboard
->((self) => {
+export default create.controller<Module>((self) => {
   return {
-    *[Lifecycle.Mount](parameters) {
+    *[Lifecycle.Mount]() {
       return self.actions.produce((draft) => {
-        draft.kite = Number(parameters.props.initialKite);
+        draft.kite = Number(self.attributes.initialKite);
+      });
+    },
+
+    *[Lifecycle.Derive]() {
+      return self.actions.produce((draft) => {
+        draft.kite = Number(self.attributes.taskCount);
       });
     },
 

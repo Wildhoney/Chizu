@@ -1,9 +1,8 @@
 import { create } from "../../library/index.ts";
-import { Actions, Events, Model } from "./types.ts";
-import { Routes } from "../types.ts";
+import { Events, Module } from "./types.ts";
 import Dice from "../dice/index.ts";
 
-export default create.view<Model, Actions, Routes>((self) => {
+export default create.view<Module>((self) => {
   return (
     <section>
       <h1>Todo app</h1>
@@ -23,7 +22,7 @@ export default create.view<Model, Actions, Routes>((self) => {
         Add task
       </button>
 
-      <Dice initialKite="6" />
+      <Dice taskCount={String(self.model.tasks.length)} initialKite="6" />
 
       {self.model.tasks.length === 0 ? (
         <p>You have no tasks yet.</p>

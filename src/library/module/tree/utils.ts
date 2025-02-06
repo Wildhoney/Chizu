@@ -15,15 +15,7 @@ import {
   useReducer,
   useRef,
 } from "preact/hooks";
-import {
-  Actions,
-  Data,
-  Lifecycle,
-  Model,
-  Name,
-  Routes,
-  State,
-} from "../../types/index.ts";
+import { Data, Lifecycle, Name, State, Stitched } from "../../types/index.ts";
 import { enablePatches, Immer } from "immer";
 import EventEmitter from "eventemitter3";
 import { Validation } from "../../view/types.ts";
@@ -39,22 +31,22 @@ enablePatches();
  * @param moduleOptions {ModuleOptions<M, A, R> & { elementName: ElementName }}
  * @returns {ComponentChildren}
  */
-export default function render<
-  M extends Model,
-  A extends Actions,
-  R extends Routes,
->({ moduleOptions }: ModuleProps<M, A, R>): preact.ComponentChildren {
+export default function render<S extends Stitched>({
+  moduleOptions,
+}: ModuleProps<S>): preact.ComponentChildren {
+  
   const bootstrapped = useRef<boolean>(false);
   const shadowed = useRef<boolean>(false);
   const dispatchers = useModuleDispatchers();
-  const model = useRef<M>(moduleOptions.model);
+  const model = useRef<S["Model"]>(moduleOptions.model);
   const element = useRef<null | HTMLElement>(null);
   const scene = useRef<number>(1_000);
   const mutations = useRef<ModuleMutations>({});
+  const attributes = useRef<S['Props']>(moduleOptions.elementProps);
   const queue = useRef<ModuleQueue>(new Set<Promise<void>>());
   const [index, update] = useReducer<number, void>((index) => index + 1, 0);
-  const state = useRef<ModuleState<M, A, R>>(
-    getModuleState<M, A, R>(model, element, dispatchers, mutations),
+  const state = useRef<ModuleState<S>>(
+    getModuleState<S>(model, element, dispatchers, mutations, attributes),
   );
 
   if (!bootstrapped.current) {
@@ -68,19 +60,20 @@ export default function render<
       scene,
       queue,
       mutations,
-    ] as ModuleContext<M, A>;
+    ] as ModuleContext<S>;
 
     bindActions(state, dispatchers, context);
 
+
     dispatchUpdate(
-      <A>[Lifecycle.Mount, { props: moduleOptions.elementProps }],
+      <S["Actions"]>[Lifecycle.Mount, moduleOptions.elementProps],
       state,
       context,
     );
   }
 
   useEffect(() => {
-    dispatchers.module.emit(Lifecycle.DOM, []);
+    dispatchers.module.emit(Lifecycle.Tree, []);
     return () => dispatchers.module.emit(Lifecycle.Unmount, []);
   }, []);
 
@@ -120,6 +113,11 @@ export default function render<
     );
   }, [index]);
 
+  useEffect((): void => {
+    attributes.current = moduleOptions.elementProps;
+    dispatchers.module.emit(Lifecycle.Derive, [])
+  }, [JSON.stringify(moduleOptions.elementProps)]);
+
   return useMemo(
     () =>
       preact.h(moduleOptions.elementName, {
@@ -132,14 +130,14 @@ export default function render<
 /**
  * Get both the app dispatch from the app context and the module dispatcher.
  *
- * @returns {ModuleDispatchers<A>}
+ * @returns {ModuleDispatchers<S>}
  */
 function useModuleDispatchers() {
   const moduleDispatcher = useRef(new EventEmitter());
 
   return useMemo(
     () => ({
-      app: {},
+      app: moduleDispatcher.current,
       module: moduleDispatcher.current,
     }),
     [],
@@ -154,12 +152,13 @@ function useModuleDispatchers() {
  * @param dispatches {ModuleDispatchers<A>}
  * @returns {ModuleState<M, A, R>}
  */
-function getModuleState<M extends Model, A extends Actions, R extends Routes>(
-  model: MutableRef<M>,
+function getModuleState<S extends Stitched>(
+  model: MutableRef<S["Model"]>,
   element: MutableRef<null | HTMLElement>,
-  dispatches: ModuleDispatchers<A>,
+  dispatches: ModuleDispatchers<S>,
   mutations: MutableRef<ModuleMutations>,
-): ModuleState<M, A, R> {
+  attributes: MutableRef<S['Props']>,
+): ModuleState<S> {
   return {
     controller: {
       get model() {
@@ -168,10 +167,13 @@ function getModuleState<M extends Model, A extends Actions, R extends Routes>(
       get element() {
         return element.current;
       },
+      get attributes() {
+        return attributes.current;
+      },
       actions: {
         io: <T>(ƒ: () => T): (() => T) => ƒ,
         produce: (ƒ) => immer.produceWithPatches(model.current, ƒ),
-        dispatch([action, ...data]: A) {
+        dispatch([action, ...data]: S["Actions"]) {
           dispatches.module.emit(action, data);
         },
         navigate() {},
@@ -185,13 +187,14 @@ function getModuleState<M extends Model, A extends Actions, R extends Routes>(
         return element.current;
       },
       actions: {
-        validate: <T>(ƒ: (model: Validation<M>) => T): T =>
-          ƒ(validate<M>(model.current, mutations.current)),
-        pending: <T>(ƒ: (model: Validation<M>) => T): boolean =>
+        validate: <T>(ƒ: (model: Validation<S["Model"]>) => T): T =>
+          ƒ(validate<S["Model"]>(model.current, mutations.current)),
+        pending: <T>(ƒ: (model: Validation<S["Model"]>) => T): boolean =>
           Boolean(
-            ƒ(validate<M>(model.current, mutations.current)) & State.Pending,
+            ƒ(validate<S["Model"]>(model.current, mutations.current)) &
+              State.Pending,
           ),
-        dispatch([action, ...data]: A) {
+        dispatch([action, ...data]: S["Actions"]) {
           dispatches.module.emit(action, data);
         },
         navigate() {},
@@ -208,14 +211,10 @@ function getModuleState<M extends Model, A extends Actions, R extends Routes>(
  * @param context {ModuleContext<M, A>}
  * @returns {void}
  */
-async function dispatchUpdate<
-  M extends Model,
-  A extends Actions,
-  R extends Routes,
->(
-  action: A,
-  _state: MutableRef<ModuleState<M, A, R>>,
-  [model, controller, update, scene, queue, mutations]: ModuleContext<M, A>,
+async function dispatchUpdate<S extends Stitched>(
+  action: S["Actions"],
+  _state: MutableRef<ModuleState<S>>,
+  [model, controller, update, scene, queue, mutations]: ModuleContext<S>,
 ) {
   const now = performance.now();
   const colour = [...Array(6)]
@@ -232,8 +231,8 @@ async function dispatchUpdate<
   const io = new Set();
 
   const passes = {
-    first: controller[<Name<A>>event]?.(...data),
-    second: controller[<Name<A>>event]?.(...data),
+    first: controller[<Name<S["Actions"]>>event]?.(...data),
+    second: controller[<Name<S["Actions"]>>event]?.(...data),
   };
 
   // We don't continue if the first pass is not defined.
@@ -320,16 +319,16 @@ async function dispatchUpdate<
  * @param context {ModuleContext<M, A>}
  * @returns {void}
  */
-function bindActions<M extends Model, A extends Actions, R extends Routes>(
-  state: MutableRef<ModuleState<M, A, R>>,
-  dispatches: ModuleDispatchers<A>,
-  [model, controller, update, scene, queue, mutations]: ModuleContext<M, A>,
+function bindActions<S extends Stitched>(
+  state: MutableRef<ModuleState<S>>,
+  dispatches: ModuleDispatchers<S>,
+  [model, controller, update, scene, queue, mutations]: ModuleContext<S>,
 ) {
   Object.keys(controller)
     .filter((action) => action !== Lifecycle.Mount)
     .forEach((action) => {
-      dispatches.module.on(<Name<A>>action, (data: Data) => {
-        dispatchUpdate(<A>[action, ...data], state, [
+      dispatches.module.on(<Name<S["Actions"]>>action, (data: Data) => {
+        dispatchUpdate(<S["Actions"]>[action, ...data], state, [
           model,
           controller,
           update,

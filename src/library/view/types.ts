@@ -1,29 +1,23 @@
 import { ComponentChildren } from "preact";
-import { Actions, Model, Routes, State } from "../types/index.ts";
+import { Model, State, Stitched } from "../types/index.ts";
 
 export type Validation<M extends Model> = {
   [K in keyof M]: M[K] extends Model ? Validation<M[K]> : State;
 };
 
-export type ViewActions<
-  M extends Model,
-  A extends Actions,
-  R extends Routes,
-> = {
-  validate<T>(ƒ: (model: Validation<M>) => T): T;
-  pending<T>(ƒ: (model: Validation<M>) => T): boolean;
-  dispatch(event: A): void;
-  navigate(route: R): void;
+export type ViewActions<S extends Stitched> = {
+  validate<T>(ƒ: (model: Validation<S["Model"]>) => T): T;
+  pending<T>(ƒ: (model: Validation<S["Model"]>) => T): boolean;
+  dispatch(event: S["Actions"]): void;
+  navigate(route: S["Routes"]): void;
 };
 
-export type ViewArgs<M extends Model, A extends Actions, R extends Routes> = {
-  model: M;
+export type ViewArgs<S extends Stitched> = {
+  model: S["Model"];
   element: null | HTMLElement;
-  actions: ViewActions<M, A, R>;
+  actions: ViewActions<S>;
 };
 
-export type ViewDefinition<
-  M extends Model,
-  A extends Actions,
-  R extends Routes,
-> = (actions: ViewArgs<M, A, R>) => ComponentChildren;
+export type ViewDefinition<S extends Stitched> = (
+  actions: ViewArgs<S>,
+) => ComponentChildren;

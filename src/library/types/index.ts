@@ -23,7 +23,8 @@ export type Parameters = undefined | string;
 
 export const enum Lifecycle {
   Mount = "lifecycle/mount",
-  DOM = "lifecycle/dom",
+  Tree = "lifecycle/tree",
+  Derive = "lifecycle/derive",
   Unmount = "lifecycle/unmount",
 }
 
@@ -32,3 +33,22 @@ export type Data = [any, ...any[]];
 export type Name<A extends Actions> = A[0];
 
 export type Props = Record<string, string>;
+
+export type Stitch<
+  M extends Model,
+  A extends Actions,
+  P extends Props,
+  R extends Routes | [Routes, Parameters],
+> = {
+  Model: M;
+  Actions: A;
+  Props: P;
+  Routes: R;
+};
+
+export type Stitched = {
+  Model: Model;
+  Actions: Actions;
+  Props: Props;
+  Routes: Routes | [Routes, Parameters];
+};
