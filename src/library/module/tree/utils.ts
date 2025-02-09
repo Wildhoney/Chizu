@@ -256,6 +256,7 @@ async function dispatchUpdate<S extends Stitched>(
       );
       console.log("Event", event);
       console.log("Time", `${performance.now() - now}ms`);
+      console.log("Actions", [...io]);
       console.log("Mutations", records);
       console.groupEnd();
       break;
