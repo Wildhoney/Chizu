@@ -31,6 +31,7 @@ export type ModuleContext<S extends Stitched> = [
   MutableRef<number>,
   MutableRef<ModuleQueue>,
   MutableRef<ModuleMutations>,
+  MutableRef<null | HTMLElement>,
 ];
 
 export type ModuleQueue = Set<Promise<void>>;

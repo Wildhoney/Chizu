@@ -60,6 +60,7 @@ export default function render<S extends Stitched>({
       scene,
       queue,
       mutations,
+      element,
     ] as ModuleContext<S>;
 
     bindActions(state, dispatchers, context);
@@ -220,6 +221,7 @@ async function dispatchUpdate<S extends Stitched>(
     scene,
     queue,
     mutations,
+    element,
   ]: ModuleContext<S>,
 ) {
   function flush(result: any, log: boolean): void {
@@ -232,6 +234,7 @@ async function dispatchUpdate<S extends Stitched>(
           `Marea / %c ${elementName} - ${name} (2nd pass) `,
           `background: #${colour}; color: white; border-radius: 2px`,
         );
+        console.log("Node", element.current);
         console.log("Event", event);
         console.log("Time", `${performance.now() - now}ms`);
         console.log("Model", model.current);
@@ -278,6 +281,7 @@ async function dispatchUpdate<S extends Stitched>(
         `Marea / %c ${elementName} - ${name} (${io.size === 0 ? "single" : "1st"} pass) `,
         `background: #${colour}; color: white; border-radius: 2px`,
       );
+      console.log("Node", element.current);
       console.log("Event", event);
       console.log("Time", `${performance.now() - now}ms`);
       console.log("Actions", [...io]);
@@ -344,6 +348,7 @@ function bindActions<S extends Stitched>(
     scene,
     queue,
     mutations,
+    element,
   ]: ModuleContext<S>,
 ) {
   Object.keys(controller)
@@ -358,6 +363,7 @@ function bindActions<S extends Stitched>(
           scene,
           queue,
           mutations,
+          element,
         ]);
       });
     });
