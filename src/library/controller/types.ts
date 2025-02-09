@@ -10,7 +10,6 @@ export type ControllerActions<S extends Stitched> = {
 export type ControllerArgs<S extends Stitched> = {
   model: S["Model"];
   element: null | HTMLElement;
-  attributes: S['Props'];
   actions: ControllerActions<S>;
 };
 
@@ -20,6 +19,8 @@ export type ControllerDefinition<S extends Stitched> = (
 
 export type ControllerInstance<S extends Stitched> = {
   [Lifecycle.Mount]?(parameters: S["Routes"]): void;
+  [Lifecycle.Derive]?(attributes: S["Props"]): void;
+  [Lifecycle.Tree]?(): void;
   [Lifecycle.Unmount]?(): void;
 } & Partial<Handlers<S["Actions"]>>;
 

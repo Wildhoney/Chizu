@@ -34,16 +34,15 @@ enablePatches();
 export default function render<S extends Stitched>({
   moduleOptions,
 }: ModuleProps<S>): preact.ComponentChildren {
-  
   const bootstrapped = useRef<boolean>(false);
-  const shadowed = useRef<boolean>(false);
   const dispatchers = useModuleDispatchers();
   const model = useRef<S["Model"]>(moduleOptions.model);
   const element = useRef<null | HTMLElement>(null);
   const scene = useRef<number>(1_000);
   const mutations = useRef<ModuleMutations>({});
-  const attributes = useRef<S['Props']>(moduleOptions.elementProps);
+  const attributes = useRef<S["Props"]>(moduleOptions.elementProps);
   const queue = useRef<ModuleQueue>(new Set<Promise<void>>());
+  const rendered = useRef<boolean>(false);
   const [index, update] = useReducer<number, void>((index) => index + 1, 0);
   const state = useRef<ModuleState<S>>(
     getModuleState<S>(model, element, dispatchers, mutations, attributes),
@@ -64,9 +63,10 @@ export default function render<S extends Stitched>({
 
     bindActions(state, dispatchers, context);
 
+    dispatchUpdate(<S["Actions"]>[Lifecycle.Mount], state, context);
 
     dispatchUpdate(
-      <S["Actions"]>[Lifecycle.Mount, moduleOptions.elementProps],
+      <S["Actions"]>[Lifecycle.Derive, moduleOptions.elementProps],
       state,
       context,
     );
@@ -102,11 +102,6 @@ export default function render<S extends Stitched>({
   }
 
   useLayoutEffect(() => {
-    if (!shadowed.current) {
-      shadowed.current = true;
-      return;
-    }
-
     preact.render(
       moduleOptions.view(state.current.view),
       element.current?.shadowRoot as ShadowRoot,
@@ -114,8 +109,13 @@ export default function render<S extends Stitched>({
   }, [index]);
 
   useEffect((): void => {
+    if (!rendered.current) {
+      rendered.current = true;
+      return;
+    }
+
     attributes.current = moduleOptions.elementProps;
-    dispatchers.module.emit(Lifecycle.Derive, [])
+    dispatchers.module.emit(Lifecycle.Derive, [moduleOptions.elementProps]);
   }, [JSON.stringify(moduleOptions.elementProps)]);
 
   return useMemo(
@@ -157,7 +157,7 @@ function getModuleState<S extends Stitched>(
   element: MutableRef<null | HTMLElement>,
   dispatches: ModuleDispatchers<S>,
   mutations: MutableRef<ModuleMutations>,
-  attributes: MutableRef<S['Props']>,
+  attributes: MutableRef<S["Props"]>,
 ): ModuleState<S> {
   return {
     controller: {

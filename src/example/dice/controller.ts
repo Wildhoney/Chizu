@@ -3,15 +3,9 @@ import { Events, Module } from "./types.ts";
 
 export default create.controller<Module>((self) => {
   return {
-    *[Lifecycle.Mount]() {
+    *[Lifecycle.Derive](attributes) {
       return self.actions.produce((draft) => {
-        draft.kite = Number(self.attributes.initialKite);
-      });
-    },
-
-    *[Lifecycle.Derive]() {
-      return self.actions.produce((draft) => {
-        draft.kite = Number(self.attributes.taskCount);
+        draft.kite = Number(attributes.taskCount);
       });
     },
 
