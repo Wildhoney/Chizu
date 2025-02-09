@@ -24,8 +24,6 @@ export default create.view<Module>((self) => {
 
       <Dice taskCount={String(self.model.tasks.length)} initialKite="6" />
 
-      <Dice taskCount={String(self.model.tasks.length)} initialKite="6" />
-
       {self.model.tasks.length === 0 ? (
         <p>You have no tasks yet.</p>
       ) : (

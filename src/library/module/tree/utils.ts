@@ -36,6 +36,7 @@ export default function render<S extends Stitched>({
 }: ModuleProps<S>): preact.ComponentChildren {
   const bootstrapped = useRef<boolean>(false);
   const dispatchers = useModuleDispatchers();
+  const mounted = useRef<boolean>(false);
   const model = useRef<S["Model"]>(moduleOptions.model);
   const element = useRef<null | HTMLElement>(null);
   const scene = useRef<number>(1_000);
@@ -47,10 +48,12 @@ export default function render<S extends Stitched>({
   const state = useRef<ModuleState<S>>(
     getModuleState<S>(model, element, dispatchers, mutations, attributes),
   );
+  const hash = useMemo(
+    () => `${index}.${JSON.stringify(attributes.current)}`,
+    [index, JSON.stringify(attributes.current)],
+  );
 
-  if (!bootstrapped.current) {
-    bootstrapped.current = true;
-
+  const context = useMemo(() => {
     const controller = moduleOptions.controller(state.current.controller);
     const context = [
       moduleOptions.elementName,
@@ -63,7 +66,11 @@ export default function render<S extends Stitched>({
       element,
     ] as ModuleContext<S>;
 
-    bindActions(state, dispatchers, context);
+    return context;
+  }, []);
+
+  if (!bootstrapped.current) {
+    bootstrapped.current = true;
 
     dispatchUpdate<S>([Lifecycle.Mount], state, context);
 
@@ -72,6 +79,8 @@ export default function render<S extends Stitched>({
       state,
       context,
     );
+
+    bindActions(state, dispatchers, context);
   }
 
   useEffect(() => {
@@ -93,9 +102,9 @@ export default function render<S extends Stitched>({
 
       element.classList.remove("busy");
     }
-  }, [index]);
+  }, [hash]);
 
-  function attachShadowRoot(root: null | HTMLDivElement) {
+  function attachShadowRoot(root: null | HTMLElement): void {
     if (root && !root.shadowRoot) {
       element.current = root;
       const shadow = root.attachShadow({ mode: "open" });
@@ -104,11 +113,16 @@ export default function render<S extends Stitched>({
   }
 
   useLayoutEffect(() => {
+    if (!mounted.current) {
+      mounted.current = true;
+      return;
+    }
+
     preact.render(
       moduleOptions.view(state.current.view),
       element.current?.shadowRoot as ShadowRoot,
     );
-  }, [index]);
+  }, [hash]);
 
   useEffect((): void => {
     if (!rendered.current) {
@@ -125,7 +139,7 @@ export default function render<S extends Stitched>({
       preact.h(moduleOptions.elementName, {
         ref: attachShadowRoot,
       }),
-    [index],
+    [hash],
   );
 }
 
@@ -278,7 +292,7 @@ async function dispatchUpdate<S extends Stitched>(
       mutations.current[name] = records;
 
       console.groupCollapsed(
-        `Marea / %c ${elementName} - ${name} (${io.size === 0 ? "single" : "1st"} pass) `,
+        `Marea / %c ${elementName} - ${name} (1st pass) `,
         `background: #${colour}; color: white; border-radius: 2px`,
       );
       console.log("Node", element.current);
@@ -288,19 +302,15 @@ async function dispatchUpdate<S extends Stitched>(
       console.log("Mutations", records);
       console.groupEnd();
 
-      if (io.size === 0) {
-        flush(result, false);
-      }
-
       break;
     }
 
     io.add(result.value());
   }
 
-  if (io.size === 0) return void task.resolve();
-
-  update();
+  if (io.size > 0) {
+    update();
+  }
 
   // We don't continue if the second pass is not defined.
   if (passes.second == null) return;
