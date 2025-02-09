@@ -24,6 +24,7 @@ export type ModuleDispatchers<S extends Stitched> = {
 };
 
 export type ModuleContext<S extends Stitched> = [
+  ElementName,
   MutableRef<S["Model"]>,
   ControllerInstance<S>,
   ModuleUpdate,

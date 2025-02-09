@@ -53,6 +53,7 @@ export default function render<S extends Stitched>({
 
     const controller = moduleOptions.controller(state.current.controller);
     const context = [
+      moduleOptions.elementName,
       model,
       controller,
       update,
@@ -63,10 +64,10 @@ export default function render<S extends Stitched>({
 
     bindActions(state, dispatchers, context);
 
-    dispatchUpdate(<S["Actions"]>[Lifecycle.Mount], state, context);
+    dispatchUpdate<S>([Lifecycle.Mount], state, context);
 
-    dispatchUpdate(
-      <S["Actions"]>[Lifecycle.Derive, moduleOptions.elementProps],
+    dispatchUpdate<S>(
+      [Lifecycle.Derive, moduleOptions.elementProps],
       state,
       context,
     );
@@ -167,9 +168,6 @@ function getModuleState<S extends Stitched>(
       get element() {
         return element.current;
       },
-      get attributes() {
-        return attributes.current;
-      },
       actions: {
         io: <T>(ƒ: () => T): (() => T) => ƒ,
         produce: (ƒ) => immer.produceWithPatches(model.current, ƒ),
@@ -214,8 +212,34 @@ function getModuleState<S extends Stitched>(
 async function dispatchUpdate<S extends Stitched>(
   action: S["Actions"],
   _state: MutableRef<ModuleState<S>>,
-  [model, controller, update, scene, queue, mutations]: ModuleContext<S>,
+  [
+    elementName,
+    model,
+    controller,
+    update,
+    scene,
+    queue,
+    mutations,
+  ]: ModuleContext<S>,
 ) {
+  function flush(result: any, log: boolean): void {
+    if (result.done && result.value != null && result.value?.[0] != null) {
+      model.current = result.value[0];
+      update();
+
+      if (log) {
+        console.groupCollapsed(
+          `Marea / %c ${elementName} - ${name} (2nd pass) `,
+          `background: #${colour}; color: white; border-radius: 2px`,
+        );
+        console.log("Event", event);
+        console.log("Time", `${performance.now() - now}ms`);
+        console.log("Model", model.current);
+        console.groupEnd();
+      }
+    }
+  }
+
   const now = performance.now();
   const colour = [...Array(6)]
     .map(() => Math.floor(Math.random() * 14).toString(16))
@@ -251,7 +275,7 @@ async function dispatchUpdate<S extends Stitched>(
       mutations.current[name] = records;
 
       console.groupCollapsed(
-        `Marea / %c ${name} (1st pass) `,
+        `Marea / %c ${elementName} - ${name} (${io.size === 0 ? "single" : "1st"} pass) `,
         `background: #${colour}; color: white; border-radius: 2px`,
       );
       console.log("Event", event);
@@ -259,15 +283,20 @@ async function dispatchUpdate<S extends Stitched>(
       console.log("Actions", [...io]);
       console.log("Mutations", records);
       console.groupEnd();
+
+      if (io.size === 0) {
+        flush(result, false);
+      }
+
       break;
     }
 
     io.add(result.value());
   }
 
-  if (io.size > 0) {
-    update();
-  }
+  if (io.size === 0) return void task.resolve();
+
+  update();
 
   // We don't continue if the second pass is not defined.
   if (passes.second == null) return;
@@ -278,23 +307,7 @@ async function dispatchUpdate<S extends Stitched>(
 
   const result = passes.second.next();
 
-  function flush() {
-    if (result.done && result.value != null && result.value?.[0] != null) {
-      model.current = result.value[0];
-      update();
-
-      console.groupCollapsed(
-        `Marea / %c ${name} (2nd pass) `,
-        `background: #${colour}; color: white; border-radius: 2px`,
-      );
-      console.log("Event", event);
-      console.log("Time", `${performance.now() - now}ms`);
-      console.log("Model", model.current);
-      console.groupEnd();
-    }
-  }
-
-  if (result.done) return void flush();
+  if (result.done) return void flush(result, true);
 
   results.forEach((io) => {
     const result =
@@ -303,7 +316,7 @@ async function dispatchUpdate<S extends Stitched>(
         : passes.second.next(null);
 
     if (result.done && result.value != null && result.value?.[0] != null) {
-      return void flush();
+      return void flush(result, true);
     }
   });
 
@@ -323,13 +336,22 @@ async function dispatchUpdate<S extends Stitched>(
 function bindActions<S extends Stitched>(
   state: MutableRef<ModuleState<S>>,
   dispatches: ModuleDispatchers<S>,
-  [model, controller, update, scene, queue, mutations]: ModuleContext<S>,
+  [
+    elementName,
+    model,
+    controller,
+    update,
+    scene,
+    queue,
+    mutations,
+  ]: ModuleContext<S>,
 ) {
   Object.keys(controller)
     .filter((action) => action !== Lifecycle.Mount)
     .forEach((action) => {
       dispatches.module.on(<Name<S["Actions"]>>action, (data: Data) => {
-        dispatchUpdate(<S["Actions"]>[action, ...data], state, [
+        dispatchUpdate<S>([action, ...data], state, [
+          elementName,
           model,
           controller,
           update,
