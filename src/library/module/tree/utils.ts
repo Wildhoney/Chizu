@@ -306,7 +306,10 @@ async function dispatchUpdate<S extends Stitched>(
       console.log("Mutations", result.value?.[1]);
       console.groupEnd();
 
-      flush(result, false);
+      if (io.size === 0) {
+        flush(result, false);
+      }
+
       break;
     }
 
