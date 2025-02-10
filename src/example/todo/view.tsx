@@ -30,6 +30,7 @@ export default create.view<Module>((self) => {
         <ol>
           {self.model.tasks.map((task) => (
             <li key={task.id}>
+              {task.id}{" "}
               <input
                 type="checkbox"
                 checked={task.completed}

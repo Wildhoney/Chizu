@@ -7,7 +7,7 @@ export type Validation<M extends Model> = {
 
 export type ViewActions<S extends Stitched> = {
   validate<T>(ƒ: (model: Validation<S["Model"]>) => T): T;
-  pending<T>(ƒ: (model: Validation<S["Model"]>) => T): boolean;
+  pending(ƒ: (model: Validation<S["Model"]>) => State): boolean;
   dispatch(event: S["Actions"]): void;
   navigate(route: S["Routes"]): void;
 };

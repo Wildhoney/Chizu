@@ -18,9 +18,9 @@ export type ModuleProps<S extends Stitched> = {
 
 type ModuleUpdate = Dispatch<void>;
 
-export type ModuleDispatchers<S extends Stitched> = {
-  app: EventEmitter<S["Actions"][0], Data>;
-  module: EventEmitter<S["Actions"][0], Data>;
+export type ModuleDispatchers<_S extends Stitched> = {
+  app: EventEmitter<string, Data>;
+  module: EventEmitter<string, Data>;
 };
 
 export type ModuleContext<S extends Stitched> = [

@@ -15,7 +15,7 @@ export default create.controller<Module>((self) => {
           draft.task = null;
 
           draft.tasks.push({
-            id: ++self.model.id,
+            id: ++draft.id,
             task: self.model.task,
             date: new Date(),
             completed: false,

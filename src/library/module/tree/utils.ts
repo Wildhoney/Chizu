@@ -15,7 +15,7 @@ import {
   useReducer,
   useRef,
 } from "preact/hooks";
-import { Data, Lifecycle, Name, State, Stitched } from "../../types/index.ts";
+import { Data, Lifecycle, State, Stitched } from "../../types/index.ts";
 import { enablePatches, Immer } from "immer";
 import EventEmitter from "eventemitter3";
 import { Validation } from "../../view/types.ts";
@@ -46,7 +46,7 @@ export default function render<S extends Stitched>({
   const rendered = useRef<boolean>(false);
   const [index, update] = useReducer<number, void>((index) => index + 1, 0);
   const state = useRef<ModuleState<S>>(
-    getModuleState<S>(model, element, dispatchers, mutations, attributes),
+    getModuleState<S>(model, element, dispatchers, mutations),
   );
   const hash = useMemo(
     () => `${index}.${JSON.stringify(attributes.current)}`,
@@ -173,7 +173,6 @@ function getModuleState<S extends Stitched>(
   element: MutableRef<null | HTMLElement>,
   dispatches: ModuleDispatchers<S>,
   mutations: MutableRef<ModuleMutations>,
-  attributes: MutableRef<S["Props"]>,
 ): ModuleState<S> {
   return {
     controller: {
@@ -202,11 +201,12 @@ function getModuleState<S extends Stitched>(
       actions: {
         validate: <T>(ƒ: (model: Validation<S["Model"]>) => T): T =>
           ƒ(validate<S["Model"]>(model.current, mutations.current)),
-        pending: <T>(ƒ: (model: Validation<S["Model"]>) => T): boolean =>
-          Boolean(
-            ƒ(validate<S["Model"]>(model.current, mutations.current)) &
-              State.Pending,
-          ),
+        pending: (ƒ: (model: Validation<S["Model"]>) => State): boolean => {
+          const state = ƒ(
+            validate<S["Model"]>(model.current, mutations.current),
+          );
+          return Boolean(state & State.Pending);
+        },
         dispatch([action, ...data]: S["Actions"]) {
           dispatches.module.emit(action, data);
         },
@@ -254,6 +254,10 @@ async function dispatchUpdate<S extends Stitched>(
         console.log("Model", model.current);
         console.groupEnd();
       }
+
+      task.resolve();
+      queue.current.delete(task.promise);
+      delete mutations.current[name];
     }
   }
 
@@ -292,25 +296,26 @@ async function dispatchUpdate<S extends Stitched>(
       mutations.current[name] = records;
 
       console.groupCollapsed(
-        `Marea / %c ${elementName} - ${name} (1st pass) `,
+        `Marea / %c ${elementName} - ${name} (${io.size > 0 ? "1st" : "single"} pass) `,
         `background: #${colour}; color: white; border-radius: 2px`,
       );
       console.log("Node", element.current);
       console.log("Event", event);
       console.log("Time", `${performance.now() - now}ms`);
       console.log("Actions", [...io]);
-      console.log("Mutations", records);
+      console.log("Mutations", result.value?.[1]);
       console.groupEnd();
 
+      flush(result, false);
       break;
     }
 
     io.add(result.value());
   }
 
-  if (io.size > 0) {
-    update();
-  }
+  if (io.size === 0) return;
+
+  update();
 
   // We don't continue if the second pass is not defined.
   if (passes.second == null) return;
@@ -333,10 +338,6 @@ async function dispatchUpdate<S extends Stitched>(
       return void flush(result, true);
     }
   });
-
-  task.resolve();
-  queue.current.delete(task.promise);
-  delete mutations.current[name];
 }
 
 /**
@@ -364,7 +365,7 @@ function bindActions<S extends Stitched>(
   Object.keys(controller)
     .filter((action) => action !== Lifecycle.Mount)
     .forEach((action) => {
-      dispatches.module.on(<Name<S["Actions"]>>action, (data: Data) => {
+      dispatches.module.on(action, (data: Data) => {
         dispatchUpdate<S>([action, ...data], state, [
           elementName,
           model,
