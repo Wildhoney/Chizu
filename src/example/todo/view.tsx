@@ -1,6 +1,7 @@
 import { create } from "../../library/index.ts";
 import { Events, Module } from "./types.ts";
 import Dice from "../dice/index.ts";
+import { DistributedEvents } from "../types.ts";
 
 export default create.view<Module>((self) => {
   return (
@@ -23,6 +24,12 @@ export default create.view<Module>((self) => {
       </button>
 
       <Dice taskCount={String(self.model.tasks.length)} initialKite="6" />
+
+      <button
+        onClick={(): void => self.actions.dispatch([DistributedEvents.Reset])}
+      >
+        Reset
+      </button>
 
       {self.model.tasks.length === 0 ? (
         <p>You have no tasks yet.</p>

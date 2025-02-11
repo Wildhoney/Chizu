@@ -1,5 +1,5 @@
 import { Stitch } from "../../library/types/index.ts";
-import { Route, Routes } from "../types.ts";
+import { DistributedActions, Route, Routes } from "../types.ts";
 
 export type Model = {
   kite: number;
@@ -9,7 +9,7 @@ export const enum Events {
   Roll,
 }
 
-export type Actions = [Events.Roll];
+export type Actions = DistributedActions | [Events.Roll];
 
 export type Props = {
   initialKite: string;

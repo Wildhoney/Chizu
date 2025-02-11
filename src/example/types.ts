@@ -4,8 +4,8 @@ export const enum Route {
 
 export type Routes = typeof Route;
 
-export const enum DistributedEvents {
-  UpdateName = "distributed/update-name",
+export enum DistributedEvents {
+  Reset = "distributed/reset",
 }
 
-export type DistributedActions = [DistributedEvents.UpdateName, string];
+export type DistributedActions = [DistributedEvents.Reset];

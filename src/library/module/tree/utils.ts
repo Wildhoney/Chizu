@@ -20,6 +20,8 @@ import { enablePatches, Immer } from "immer";
 import EventEmitter from "eventemitter3";
 import { Validation } from "../../view/types.ts";
 import validate from "../validate/index.ts";
+import { createPortal } from "preact/compat";
+import { useApp } from "../../app/index.tsx";
 
 const immer = new Immer();
 immer.setAutoFreeze(false);
@@ -34,9 +36,9 @@ enablePatches();
 export default function render<S extends Stitched>({
   moduleOptions,
 }: ModuleProps<S>): preact.ComponentChildren {
+  const appOptions = useApp();
   const bootstrapped = useRef<boolean>(false);
   const dispatchers = useModuleDispatchers();
-  const mounted = useRef<boolean>(false);
   const model = useRef<S["Model"]>(moduleOptions.model);
   const element = useRef<null | HTMLElement>(null);
   const scene = useRef<number>(1_000);
@@ -46,12 +48,21 @@ export default function render<S extends Stitched>({
   const rendered = useRef<boolean>(false);
   const [index, update] = useReducer<number, void>((index) => index + 1, 0);
   const state = useRef<ModuleState<S>>(
-    getModuleState<S>(model, element, dispatchers, mutations),
+    getModuleState<S>(
+      model,
+      element,
+      dispatchers,
+      mutations,
+      appOptions.distributedEvents,
+    ),
   );
   const hash = useMemo(
     () => `${index}.${JSON.stringify(attributes.current)}`,
     [index, JSON.stringify(attributes.current)],
   );
+
+  const shadowHostRef = useRef<null | HTMLElement>(null);
+  const shadowRootRef = useRef<null | HTMLElement>(null);
 
   const context = useMemo(() => {
     const controller = moduleOptions.controller(state.current.controller);
@@ -89,40 +100,13 @@ export default function render<S extends Stitched>({
   }, []);
 
   useLayoutEffect(() => {
-    const busy = element.current?.querySelectorAll("*[aria-busy]") ?? [];
-
-    for (const element of busy) {
-      if (
-        element.getAttribute("aria-busy") === "true" &&
-        element.getAttribute("aria-hidden") !== "true"
-      ) {
-        element.classList.add("busy");
-        continue;
-      }
-
-      element.classList.remove("busy");
+    if (shadowHostRef.current && !shadowRootRef.current) {
+      shadowRootRef.current = shadowHostRef.current.attachShadow({
+        mode: "open",
+      });
+      update();
     }
-  }, [hash]);
-
-  function attachShadowRoot(root: null | HTMLElement): void {
-    if (root && !root.shadowRoot) {
-      element.current = root;
-      const shadow = root.attachShadow({ mode: "open" });
-      preact.render(moduleOptions.view(state.current.view), shadow);
-    }
-  }
-
-  useLayoutEffect(() => {
-    if (!mounted.current) {
-      mounted.current = true;
-      return;
-    }
-
-    preact.render(
-      moduleOptions.view(state.current.view),
-      element.current?.shadowRoot as ShadowRoot,
-    );
-  }, [hash]);
+  }, []);
 
   useEffect((): void => {
     if (!rendered.current) {
@@ -137,7 +121,13 @@ export default function render<S extends Stitched>({
   return useMemo(
     () =>
       preact.h(moduleOptions.elementName, {
-        ref: attachShadowRoot,
+        ref: shadowHostRef,
+        children:
+          shadowRootRef.current &&
+          createPortal(
+            moduleOptions.view(state.current.view),
+            shadowRootRef.current,
+          ),
       }),
     [hash],
   );
@@ -149,12 +139,13 @@ export default function render<S extends Stitched>({
  * @returns {ModuleDispatchers<S>}
  */
 function useModuleDispatchers() {
-  const moduleDispatcher = useRef(new EventEmitter());
+  const moduleEmitter = useRef(new EventEmitter());
+  const appEmitter = useApp().appEmitter;
 
   return useMemo(
     () => ({
-      app: moduleDispatcher.current,
-      module: moduleDispatcher.current,
+      app: appEmitter,
+      module: moduleEmitter.current,
     }),
     [],
   );
@@ -173,6 +164,7 @@ function getModuleState<S extends Stitched>(
   element: MutableRef<null | HTMLElement>,
   dispatches: ModuleDispatchers<S>,
   mutations: MutableRef<ModuleMutations>,
+  distributedEvents: any,
 ): ModuleState<S> {
   return {
     controller: {
@@ -208,7 +200,11 @@ function getModuleState<S extends Stitched>(
           return Boolean(state & State.Pending);
         },
         dispatch([action, ...data]: S["Actions"]) {
-          dispatches.module.emit(action, data);
+          const eventEmitter = Object.values(distributedEvents).includes(action)
+            ? dispatches.app
+            : dispatches.module;
+
+          eventEmitter.emit(action, data);
         },
         navigate() {},
       },
@@ -369,6 +365,19 @@ function bindActions<S extends Stitched>(
     .filter((action) => action !== Lifecycle.Mount)
     .forEach((action) => {
       dispatches.module.on(action, (data: Data) => {
+        dispatchUpdate<S>([action, ...data], state, [
+          elementName,
+          model,
+          controller,
+          update,
+          scene,
+          queue,
+          mutations,
+          element,
+        ]);
+      });
+
+      dispatches.app.on(action, (data: Data) => {
         dispatchUpdate<S>([action, ...data], state, [
           elementName,
           model,

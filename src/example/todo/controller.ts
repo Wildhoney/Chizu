@@ -1,5 +1,6 @@
 import { create } from "../../library/index.ts";
 import { Events, Module } from "./types.ts";
+import { DistributedEvents } from "../types.ts";
 
 export default create.controller<Module>((self) => {
   return {
@@ -37,6 +38,13 @@ export default create.controller<Module>((self) => {
     *[Events.Remove](id) {
       return self.actions.produce((draft) => {
         draft.tasks = draft.tasks.filter((task) => task.id !== id);
+      });
+    },
+
+    *[DistributedEvents.Reset]() {
+      return self.actions.produce((draft) => {
+        draft.tasks = [];
+        draft.id = 0;
       });
     },
   };
