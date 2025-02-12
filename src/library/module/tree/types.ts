@@ -3,9 +3,10 @@ import { Data, Model, Props, State, Stitched } from "../../types/index.ts";
 import { ModuleOptions } from "../types.ts";
 import { produceWithPatches } from "immer";
 import Optimistic from "../../model/state/index.ts";
-import { Dispatch, MutableRef } from "preact/hooks";
 import EventEmitter from "eventemitter3";
 import { ViewArgs } from "../../view/types.ts";
+
+import * as React from "react";
 
 export type ElementName = string;
 
@@ -16,7 +17,7 @@ export type ModuleProps<S extends Stitched> = {
   };
 };
 
-type ModuleUpdate = Dispatch<void>;
+type ModuleUpdate = React.Dispatch<void>;
 
 export type ModuleDispatchers<_S extends Stitched> = {
   app: EventEmitter<string, Data>;
@@ -25,13 +26,13 @@ export type ModuleDispatchers<_S extends Stitched> = {
 
 export type ModuleContext<S extends Stitched> = [
   ElementName,
-  MutableRef<S["Model"]>,
+  React.RefObject<S["Model"]>,
   ControllerInstance<S>,
   ModuleUpdate,
-  MutableRef<number>,
-  MutableRef<ModuleQueue>,
-  MutableRef<ModuleMutations>,
-  MutableRef<null | HTMLElement>,
+  React.RefObject<number>,
+  React.RefObject<ModuleQueue>,
+  React.RefObject<ModuleMutations>,
+  React.RefObject<null | HTMLElement>,
 ];
 
 export type ModuleQueue = Set<Promise<void>>;

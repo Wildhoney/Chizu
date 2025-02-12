@@ -2,16 +2,16 @@ import EventEmitter from "eventemitter3";
 import { Routes } from "../types/index.ts";
 import { AppContext, AppOptions } from "./types.ts";
 import { closest } from "./utils.ts";
-import * as preact from "preact";
-import { useContext } from "preact/hooks";
+import * as ReactDOM from "react-dom/client";
+import * as React from "react";
 
-const Context = preact.createContext<AppContext>({
+const Context = React.createContext<AppContext>({
   appEmitter: new EventEmitter(),
   distributedEvents: null,
 });
 
 export function useApp() {
-  return useContext(Context);
+  return React.useContext(Context);
 }
 
 export default function app<R extends Routes, DE>(
@@ -24,13 +24,13 @@ export default function app<R extends Routes, DE>(
   };
 
   const Child = options.routes["/"];
+  const root = ReactDOM.createRoot(document.body);
 
   if (Module)
-    preact.render(
+    root.render(
       <Tree options={appOptions}>
         <Child />
       </Tree>,
-      document.body,
     );
 }
 

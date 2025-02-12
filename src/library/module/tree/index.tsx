@@ -1,13 +1,12 @@
-import { ComponentChildren } from "preact";
 import { Stitched } from "../../types/index.ts";
-import { memo } from "preact/compat";
+import * as React from "react";
 import render from "./utils.ts";
 import { ModuleProps } from "./types.ts";
 
-export default memo(
+export default React.memo(
   function Tree<S extends Stitched>({
     moduleOptions,
-  }: ModuleProps<S>): ComponentChildren {
+  }: ModuleProps<S>): React.ReactNode {
     return render<S>({ moduleOptions });
   },
   (a, b) => JSON.stringify(a) === JSON.stringify(b),

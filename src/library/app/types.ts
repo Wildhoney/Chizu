@@ -1,9 +1,9 @@
 import EventEmitter from "eventemitter3";
 import { RoutePaths, Routes } from "../types/index.ts";
-import { ElementType } from "preact/compat";
+import * as React from "react";
 
 export type AppOptions<R extends Routes, DE> = {
-  routes: Record<RoutePaths<R>, ElementType>;
+  routes: Record<RoutePaths<R>, React.ElementType>;
   distributedEvents: DE;
 };
 

@@ -1,5 +1,5 @@
-import { ComponentChildren } from "preact";
 import { Model, State, Stitched } from "../types/index.ts";
+import * as React from "react";
 
 export type Validation<M extends Model> = {
   [K in keyof M]: M[K] extends Model ? Validation<M[K]> : State;
@@ -20,4 +20,4 @@ export type ViewArgs<S extends Stitched> = {
 
 export type ViewDefinition<S extends Stitched> = (
   actions: ViewArgs<S>,
-) => ComponentChildren;
+) => React.ReactNode;

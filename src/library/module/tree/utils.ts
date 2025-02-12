@@ -1,4 +1,3 @@
-import * as preact from "preact";
 import {
   ModuleContext,
   ModuleDispatchers,
@@ -6,22 +5,15 @@ import {
   ModuleQueue,
   ModuleMutations,
   ModuleProps,
-} from "./types";
-import {
-  MutableRef,
-  useEffect,
-  useLayoutEffect,
-  useMemo,
-  useReducer,
-  useRef,
-} from "preact/hooks";
+} from "./types.ts";
 import { Data, Lifecycle, State, Stitched } from "../../types/index.ts";
 import { enablePatches, Immer } from "immer";
 import EventEmitter from "eventemitter3";
 import { Validation } from "../../view/types.ts";
 import validate from "../validate/index.ts";
-import { createPortal } from "preact/compat";
+import * as React from "react";
 import { useApp } from "../../app/index.tsx";
+import * as ReactDOM from "react-dom";
 
 const immer = new Immer();
 immer.setAutoFreeze(false);
@@ -35,19 +27,22 @@ enablePatches();
  */
 export default function render<S extends Stitched>({
   moduleOptions,
-}: ModuleProps<S>): preact.ComponentChildren {
+}: ModuleProps<S>): React.ReactNode {
   const appOptions = useApp();
-  const bootstrapped = useRef<boolean>(false);
+  const bootstrapped = React.useRef<boolean>(false);
   const dispatchers = useModuleDispatchers();
-  const model = useRef<S["Model"]>(moduleOptions.model);
-  const element = useRef<null | HTMLElement>(null);
-  const scene = useRef<number>(1_000);
-  const mutations = useRef<ModuleMutations>({});
-  const attributes = useRef<S["Props"]>(moduleOptions.elementProps);
-  const queue = useRef<ModuleQueue>(new Set<Promise<void>>());
-  const rendered = useRef<boolean>(false);
-  const [index, update] = useReducer<number, void>((index) => index + 1, 0);
-  const state = useRef<ModuleState<S>>(
+  const model = React.useRef<S["Model"]>(moduleOptions.model);
+  const element = React.useRef<null | HTMLElement>(null);
+  const scene = React.useRef<number>(1_000);
+  const mutations = React.useRef<ModuleMutations>({});
+  const attributes = React.useRef<S["Props"]>(moduleOptions.elementProps);
+  const queue = React.useRef<ModuleQueue>(new Set<Promise<void>>());
+  const rendered = React.useRef<boolean>(false);
+  const [index, update] = React.useReducer<number, void>(
+    (index) => index + 1,
+    0,
+  );
+  const state = React.useRef<ModuleState<S>>(
     getModuleState<S>(
       model,
       element,
@@ -56,15 +51,15 @@ export default function render<S extends Stitched>({
       appOptions.distributedEvents,
     ),
   );
-  const hash = useMemo(
+  const hash = React.useMemo(
     () => `${index}.${JSON.stringify(attributes.current)}`,
     [index, JSON.stringify(attributes.current)],
   );
 
-  const shadowHostRef = useRef<null | HTMLElement>(null);
-  const shadowRootRef = useRef<null | HTMLElement>(null);
+  const shadowHostRef = React.useRef<null | HTMLElement>(null);
+  const shadowRootRef = React.useRef<null | ShadowRoot>(null);
 
-  const context = useMemo(() => {
+  const context = React.useMemo(() => {
     const controller = moduleOptions.controller(state.current.controller);
     const context = [
       moduleOptions.elementName,
@@ -94,12 +89,12 @@ export default function render<S extends Stitched>({
     bindActions(state, dispatchers, context);
   }
 
-  useEffect(() => {
+  React.useEffect(() => {
     dispatchers.module.emit(Lifecycle.Tree, []);
-    return () => dispatchers.module.emit(Lifecycle.Unmount, []);
+    return () => void dispatchers.module.emit(Lifecycle.Unmount, []);
   }, []);
 
-  useLayoutEffect(() => {
+  React.useLayoutEffect(() => {
     if (shadowHostRef.current && !shadowRootRef.current) {
       shadowRootRef.current = shadowHostRef.current.attachShadow({
         mode: "open",
@@ -108,7 +103,7 @@ export default function render<S extends Stitched>({
     }
   }, []);
 
-  useEffect((): void => {
+  React.useEffect((): void => {
     if (!rendered.current) {
       rendered.current = true;
       return;
@@ -118,13 +113,13 @@ export default function render<S extends Stitched>({
     dispatchers.module.emit(Lifecycle.Derive, [moduleOptions.elementProps]);
   }, [JSON.stringify(moduleOptions.elementProps)]);
 
-  return useMemo(
+  return React.useMemo(
     () =>
-      preact.h(moduleOptions.elementName, {
+      React.createElement(moduleOptions.elementName, {
         ref: shadowHostRef,
         children:
           shadowRootRef.current &&
-          createPortal(
+          ReactDOM.createPortal(
             moduleOptions.view(state.current.view),
             shadowRootRef.current,
           ),
@@ -139,10 +134,10 @@ export default function render<S extends Stitched>({
  * @returns {ModuleDispatchers<S>}
  */
 function useModuleDispatchers() {
-  const moduleEmitter = useRef(new EventEmitter());
+  const moduleEmitter = React.useRef(new EventEmitter());
   const appEmitter = useApp().appEmitter;
 
-  return useMemo(
+  return React.useMemo(
     () => ({
       app: appEmitter,
       module: moduleEmitter.current,
@@ -154,16 +149,16 @@ function useModuleDispatchers() {
 /**
  * Get the initial state of the module.
  *
- * @param model {MutableRef<M>}
- * @param element {MutableRef<null | HTMLElement>}
+ * @param model {RefObject<M>}
+ * @param element {RefObject<null | HTMLElement>}
  * @param dispatches {ModuleDispatchers<A>}
  * @returns {ModuleState<M, A, R>}
  */
 function getModuleState<S extends Stitched>(
-  model: MutableRef<S["Model"]>,
-  element: MutableRef<null | HTMLElement>,
+  model: React.RefObject<S["Model"]>,
+  element: React.RefObject<null | HTMLElement>,
   dispatches: ModuleDispatchers<S>,
-  mutations: MutableRef<ModuleMutations>,
+  mutations: React.RefObject<ModuleMutations>,
   distributedEvents: any,
 ): ModuleState<S> {
   return {
@@ -216,13 +211,13 @@ function getModuleState<S extends Stitched>(
  * Dispatch the update to the controller and synchronise the view.
  *
  * @param action {A}
- * @param state {MutableRef<ModuleState<M, A, R>>}
+ * @param state {RefObject<ModuleState<M, A, R>>}
  * @param context {ModuleContext<M, A>}
  * @returns {void}
  */
 async function dispatchUpdate<S extends Stitched>(
   action: S["Actions"],
-  _state: MutableRef<ModuleState<S>>,
+  _state: React.RefObject<ModuleState<S>>,
   [
     elementName,
     model,
@@ -342,13 +337,13 @@ async function dispatchUpdate<S extends Stitched>(
 /**
  * Bind the actions to the module.
  *
- * @param state {MutableRef<ModuleState<M, A, R>>}
+ * @param state {RefObject<ModuleState<M, A, R>>}
  * @param dispatches {ModuleDispatchers<A>}
  * @param context {ModuleContext<M, A>}
  * @returns {void}
  */
 function bindActions<S extends Stitched>(
-  state: MutableRef<ModuleState<S>>,
+  state: React.RefObject<ModuleState<S>>,
   dispatches: ModuleDispatchers<S>,
   [
     elementName,

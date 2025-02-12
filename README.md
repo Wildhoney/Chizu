@@ -15,7 +15,7 @@ Strongly typed web component library using generators and efficiently updated vi
 
 ## Benefits
 
-- Thoughtful event-driven architecture superset of [Preact](https://github.com/preactjs/preact).
+- Thoughtful event-driven architecture superset of [React](https://react.dev/).
 - Ablility to transpile to self-contained web components.
 - Mostly standard JavaScript without quirky rules and exceptions.
 - Clear separation of concerns between business logic and markup.
