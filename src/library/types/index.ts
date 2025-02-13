@@ -46,7 +46,7 @@ export type Stitch<
   Routes: R;
 };
 
-export type Stitched = {
+export type Module = {
   Model: Model;
   Actions: Actions;
   Props: Props;

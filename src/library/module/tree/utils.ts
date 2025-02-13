@@ -22,30 +22,26 @@ enablePatches();
 /**
  * Render the module tree with the given options.
  *
- * @param moduleOptions {ModuleOptions<M, A, R> & { elementName: ElementName }}
+ * @param Options {Options<M, A, R> & { elementName: ElementName }}
  * @returns {ComponentChildren}
  */
 export default function render<S extends Stitched>({
-  moduleOptions,
+  Options,
 }: ModuleProps<S>): React.ReactNode {
   const appOptions = useApp();
   const bootstrapped = React.useRef<boolean>(false);
   const dispatchers = useModuleDispatchers();
-  const model = React.useRef<S["Model"]>(moduleOptions.model);
+  const model = React.useRef<S["Model"]>(Options.model);
   const element = React.useRef<null | HTMLElement>(null);
   const scene = React.useRef<number>(1_000);
   const mutations = React.useRef<ModuleMutations>({});
-  const attributes = React.useRef<S["Props"]>(moduleOptions.elementProps);
+  const attributes = React.useRef<S["Props"]>(Options.elementProps);
   const queue = React.useRef<ModuleQueue>(new Set<Promise<void>>());
   const rendered = React.useRef<boolean>(false);
-  const [index, update] = React.useReducer<number, void>(
-    (index) => index + 1,
-    0,
-  );
+  const [index, update] = React.useReducer((index) => index + 1, 0);
   const state = React.useRef<ModuleState<S>>(
     getModuleState<S>(
       model,
-      element,
       dispatchers,
       mutations,
       appOptions.distributedEvents,
@@ -60,9 +56,9 @@ export default function render<S extends Stitched>({
   const shadowRootRef = React.useRef<null | ShadowRoot>(null);
 
   const context = React.useMemo(() => {
-    const controller = moduleOptions.controller(state.current.controller);
+    const controller = Options.controller(state.current.controller);
     const context = [
-      moduleOptions.elementName,
+      Options.elementName,
       model,
       controller,
       update,
@@ -80,11 +76,7 @@ export default function render<S extends Stitched>({
 
     dispatchUpdate<S>([Lifecycle.Mount], state, context);
 
-    dispatchUpdate<S>(
-      [Lifecycle.Derive, moduleOptions.elementProps],
-      state,
-      context,
-    );
+    dispatchUpdate<S>([Lifecycle.Derive, Options.elementProps], state, context);
 
     bindActions(state, dispatchers, context);
   }
@@ -109,18 +101,18 @@ export default function render<S extends Stitched>({
       return;
     }
 
-    attributes.current = moduleOptions.elementProps;
-    dispatchers.module.emit(Lifecycle.Derive, [moduleOptions.elementProps]);
-  }, [JSON.stringify(moduleOptions.elementProps)]);
+    attributes.current = Options.elementProps;
+    dispatchers.module.emit(Lifecycle.Derive, [Options.elementProps]);
+  }, [JSON.stringify(Options.elementProps)]);
 
   return React.useMemo(
     () =>
-      React.createElement(moduleOptions.elementName, {
+      React.createElement(Options.elementName, {
         ref: shadowHostRef,
         children:
           shadowRootRef.current &&
           ReactDOM.createPortal(
-            moduleOptions.view(state.current.view),
+            Options.view(state.current.view),
             shadowRootRef.current,
           ),
       }),
@@ -156,7 +148,6 @@ function useModuleDispatchers() {
  */
 function getModuleState<S extends Stitched>(
   model: React.RefObject<S["Model"]>,
-  element: React.RefObject<null | HTMLElement>,
   dispatches: ModuleDispatchers<S>,
   mutations: React.RefObject<ModuleMutations>,
   distributedEvents: any,
@@ -165,9 +156,6 @@ function getModuleState<S extends Stitched>(
     controller: {
       get model() {
         return model.current;
-      },
-      get element() {
-        return element.current;
       },
       actions: {
         io: <T>(ƒ: () => T): (() => T) => ƒ,
@@ -181,9 +169,6 @@ function getModuleState<S extends Stitched>(
     view: {
       get model() {
         return model.current;
-      },
-      get element() {
-        return element.current;
       },
       actions: {
         validate: <T>(ƒ: (model: Validation<S["Model"]>) => T): T =>

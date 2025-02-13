@@ -1,6 +1,6 @@
 import { ControllerArgs, ControllerInstance } from "../../controller/types.ts";
-import { Data, Model, Props, State, Stitched } from "../../types/index.ts";
-import { ModuleOptions } from "../types.ts";
+import { Data, Model, Module, State } from "../../types/index.ts";
+import { Options } from "../types.ts";
 import { produceWithPatches } from "immer";
 import Optimistic from "../../model/state/index.ts";
 import EventEmitter from "eventemitter3";
@@ -10,11 +10,10 @@ import * as React from "react";
 
 export type ElementName = string;
 
-export type ModuleProps<S extends Stitched> = {
-  moduleOptions: ModuleOptions<S> & {
-    elementName: ElementName;
-    elementProps: Props;
-  };
+export type TreeProps<M extends Module> = {
+  name: ElementName;
+  attributes: M["Props"];
+  options: Options<M>;
 };
 
 type ModuleUpdate = React.Dispatch<void>;

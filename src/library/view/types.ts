@@ -14,7 +14,6 @@ export type ViewActions<S extends Stitched> = {
 
 export type ViewArgs<S extends Stitched> = {
   model: S["Model"];
-  element: null | HTMLElement;
   actions: ViewActions<S>;
 };
 

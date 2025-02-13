@@ -1,13 +1,10 @@
 import { Stitched } from "../../types/index.ts";
 import * as React from "react";
-import render from "./utils.ts";
-import { ModuleProps } from "./types.ts";
+import { TreeProps } from "./types.ts";
+import { renderer } from "../../renderer/index.tsx";
 
-export default React.memo(
-  function Tree<S extends Stitched>({
-    moduleOptions,
-  }: ModuleProps<S>): React.ReactNode {
-    return render<S>({ moduleOptions });
-  },
-  (a, b) => JSON.stringify(a) === JSON.stringify(b),
-);
+export default function Tree<S extends Stitched>(
+  props: TreeProps<S>,
+): React.ReactNode {
+  return renderer<S>(props);
+}

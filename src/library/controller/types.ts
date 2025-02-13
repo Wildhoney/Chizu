@@ -9,7 +9,6 @@ export type ControllerActions<S extends Stitched> = {
 
 export type ControllerArgs<S extends Stitched> = {
   model: S["Model"];
-  element: null | HTMLElement;
   actions: ControllerActions<S>;
 };
 
