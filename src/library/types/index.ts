@@ -11,7 +11,11 @@ export const enum State {
   Optimistic = 8,
 }
 
-export type Actions = [any] | [any, ...Data];
+type ActionName = Lifecycle | string | number;
+
+type ActionPayload = [any, ...any[]];
+
+export type Actions = [ActionName] | [ActionName, ...ActionPayload];
 
 export type Model = Record<string, any>;
 
@@ -27,8 +31,6 @@ export const enum Lifecycle {
   Derive = "lifecycle/derive",
   Unmount = "lifecycle/unmount",
 }
-
-export type Data = [any, ...any[]];
 
 export type Name<A extends Actions> = A[0];
 
@@ -49,6 +51,6 @@ export type Stitch<
 export type Module = {
   Model: Model;
   Actions: Actions;
-  Props: Props;
+  Attributes: Props;
   Routes: Routes | [Routes, Parameters];
 };

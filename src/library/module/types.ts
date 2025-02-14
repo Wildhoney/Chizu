@@ -1,9 +1,9 @@
 import { ControllerDefinition } from "../controller/types.ts";
-import { Stitched } from "../types/index.ts";
+import { Module } from "../types/index.ts";
 import { ViewDefinition } from "../view/types.ts";
 
-export type Options<S extends Stitched> = {
-  model: S["Model"];
-  view: ViewDefinition<S>;
-  controller: ControllerDefinition<S>;
+export type Options<M extends Module> = {
+  model: M["Model"];
+  view: ViewDefinition<M>;
+  controller: ControllerDefinition<M>;
 };

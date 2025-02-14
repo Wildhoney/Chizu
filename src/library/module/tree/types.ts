@@ -12,7 +12,7 @@ export type ElementName = string;
 
 export type TreeProps<M extends Module> = {
   name: ElementName;
-  attributes: M["Props"];
+  attributes: M["Attributes"];
   options: Options<M>;
 };
 

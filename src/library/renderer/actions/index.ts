@@ -16,10 +16,10 @@ export default function useActions(props: Props) {
         actions: {
           io: <T>(ƒ: () => T): (() => T) => ƒ,
           produce(ƒ: (draft: any) => void) {
-            return immer.produceWithPatches(model.current, ƒ);
+            return immer.produceWithPatches(props.model.current, ƒ);
           },
           dispatch([action, ...data]) {
-            return dispatches.module.emit(action, data);
+            return props.dispatchers.emit(action, data);
           },
           navigate() {},
         },
@@ -29,25 +29,19 @@ export default function useActions(props: Props) {
           return props.model.current;
         },
         actions: {
-          validate<T>(ƒ: (model: Validation<S["Model"]>) => T): T {
-            return ƒ(
-              validate<S["Model"]>(props.model.current, mutations.current),
-            );
-          },
-          pending(ƒ: (model: Validation<S["Model"]>) => State): boolean {
-            const state = ƒ(
-              validate<S["Model"]>(props.model.current, mutations.current),
-            );
-            return Boolean(state & State.Pending);
-          },
+          // validate<T>(ƒ: (model: Validation<S["Model"]>) => T): T {
+          //   return ƒ(
+          //     validate<S["Model"]>(props.model.current, mutations.current),
+          //   );
+          // },
+          // pending(ƒ: (model: Validation<S["Model"]>) => State): boolean {
+          //   const state = ƒ(
+          //     validate<S["Model"]>(props.model.current, mutations.current),
+          //   );
+          //   return Boolean(state & State.Pending);
+          // },
           dispatch([action, ...data]) {
-            const eventEmitter = Object.values(distributedEvents).includes(
-              action,
-            )
-              ? dispatches.app
-              : dispatches.module;
-
-            eventEmitter.emit(action, data);
+            return props.dispatchers.emit(action, data);
           },
           navigate() {},
         },
