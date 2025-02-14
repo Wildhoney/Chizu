@@ -1,27 +1,27 @@
-import { Actions, Lifecycle, Stitched } from "../types/index.ts";
+import { Actions, Lifecycle, Module } from "../types/index.ts";
 
-export type ControllerActions<S extends Stitched> = {
+export type ControllerActions<M extends Module> = {
   io<T>(ƒ: () => T): () => T;
-  produce(ƒ: (draft: S["Model"]) => void): void;
-  dispatch(event: S["Actions"]): void;
-  navigate(route: S["Routes"]): void;
+  produce(ƒ: (draft: M["Model"]) => void): void;
+  dispatch(event: M["Actions"]): void;
+  navigate(route: M["Routes"]): void;
 };
 
-export type ControllerArgs<S extends Stitched> = {
+export type ControllerArgs<S extends Module> = {
   model: S["Model"];
   actions: ControllerActions<S>;
 };
 
-export type ControllerDefinition<S extends Stitched> = (
-  controller: ControllerArgs<S>,
-) => ControllerInstance<S>;
+export type ControllerDefinition<M extends Module> = (
+  controller: ControllerArgs<M>,
+) => ControllerInstance<M>;
 
-export type ControllerInstance<S extends Stitched> = {
-  [Lifecycle.Mount]?(parameters: S["Routes"]): void;
-  [Lifecycle.Derive]?(attributes: S["Props"]): void;
+export type ControllerInstance<M extends Module> = {
+  [Lifecycle.Mount]?(parameters: M["Routes"]): void;
+  [Lifecycle.Derive]?(attributes: M["Attributes"]): void;
   [Lifecycle.Tree]?(): void;
   [Lifecycle.Unmount]?(): void;
-} & Partial<Handlers<S["Actions"]>>;
+} & Partial<Handlers<M["Actions"]>>;
 
 type Handlers<A extends Actions> = {
   [K in A[0]]: (payload: Payload<A, K>) => Generator<any, any, never>;

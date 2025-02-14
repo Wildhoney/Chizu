@@ -1,8 +1,8 @@
-import { Stitched } from "../types/index.ts";
+import { Module } from "../types/index.ts";
 import { ControllerDefinition } from "./types.ts";
 
-export default function controller<S extends Stitched>(
-  definition: ControllerDefinition<S>,
+export default function controller<M extends Module>(
+  definition: ControllerDefinition<M>,
 ) {
   return definition;
 }

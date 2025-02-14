@@ -1,22 +1,22 @@
-import { Model, State, Stitched } from "../types/index.ts";
+import { Model, State, Module } from "../types/index.ts";
 import * as React from "react";
 
 export type Validation<M extends Model> = {
   [K in keyof M]: M[K] extends Model ? Validation<M[K]> : State;
 };
 
-export type ViewActions<S extends Stitched> = {
-  validate<T>(ƒ: (model: Validation<S["Model"]>) => T): T;
-  pending(ƒ: (model: Validation<S["Model"]>) => State): boolean;
-  dispatch(event: S["Actions"]): void;
-  navigate(route: S["Routes"]): void;
+export type ViewActions<M extends Module> = {
+  validate<T>(ƒ: (model: Validation<M["Model"]>) => T): T;
+  pending(ƒ: (model: Validation<M["Model"]>) => State): boolean;
+  dispatch(event: M["Actions"]): void;
+  navigate(route: M["Routes"]): void;
 };
 
-export type ViewArgs<S extends Stitched> = {
-  model: S["Model"];
-  actions: ViewActions<S>;
+export type ViewArgs<M extends Module> = {
+  model: M["Model"];
+  actions: ViewActions<M>;
 };
 
-export type ViewDefinition<S extends Stitched> = (
-  actions: ViewArgs<S>,
+export type ViewDefinition<M extends Module> = (
+  actions: ViewArgs<M>,
 ) => React.ReactNode;

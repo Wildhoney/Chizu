@@ -1,4 +1,4 @@
-import { Stitch } from "../../library/types/index.ts";
+import { ModuleOptions } from "../../library/types/index.ts";
 import { DistributedActions, Route, Routes } from "../types.ts";
 
 export type Model = {
@@ -16,4 +16,9 @@ export type Props = {
   taskCount: string;
 };
 
-export type Module = Stitch<Model, Actions, Props, [Routes, Route.Dashboard]>;
+export type Module = ModuleOptions<
+  Model,
+  Actions,
+  Props,
+  [Routes, Route.Dashboard]
+>;

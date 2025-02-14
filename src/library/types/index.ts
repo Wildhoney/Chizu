@@ -34,23 +34,23 @@ export const enum Lifecycle {
 
 export type Name<A extends Actions> = A[0];
 
-export type Props = Record<string, string>;
+export type Attributes = Record<string, string>;
 
-export type Stitch<
-  M extends Model,
-  A extends Actions,
-  P extends Props,
-  R extends Routes | [Routes, Parameters],
+export type ModuleOptions<
+  A extends Model,
+  B extends Actions,
+  C extends Attributes,
+  D extends Routes | [Routes, Parameters],
 > = {
-  Model: M;
-  Actions: A;
-  Props: P;
-  Routes: R;
+  Model: A;
+  Actions: B;
+  Attributes: C;
+  Routes: D;
 };
 
 export type Module = {
   Model: Model;
   Actions: Actions;
-  Attributes: Props;
+  Attributes: Attributes;
   Routes: Routes | [Routes, Parameters];
 };

@@ -9,7 +9,7 @@ export function useDispatchHandler<M extends Module>(
       const io = new Set();
 
       function commit(model: M["Model"]): void {
-        props.model.current = result.value[0];
+        props.model.current = model;
         props.update.rerender();
       }
 
