@@ -1,7 +1,7 @@
 import { Module } from "../../types/index.ts";
 import { UseDispatchHandlerProps } from "./types.ts";
 
-export function useDispatchHandler<M extends Module>(props: UseDispatchHandlerProps) {
+export function useDispatchHandler<M extends Module>(props: UseDispatchHandlerProps<M>) {
   const colour = [...Array(6)].map(() => Math.floor(Math.random() * 14).toString(16)).join("");
 
   function commit(model: M["Model"], log: boolean): void {

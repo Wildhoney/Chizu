@@ -1,11 +1,12 @@
 import { useApp } from "../../app/index.tsx";
+import { Module } from "../../types/index.ts";
 import { Head, Tail } from "../types.ts";
 import { Props } from "./types.ts";
 import { useDispatchHandler } from "./utils.ts";
 import EventEmitter from "eventemitter3";
 import * as React from "react";
 
-export default function useDispatchers(props: Props) {
+export default function useDispatchers<M extends Module>(props: Props<M>) {
   const app = useApp();
   const dispatchHandler = useDispatchHandler(props);
 
@@ -19,8 +20,8 @@ export default function useDispatchers(props: Props) {
         broadcast.on(action, dispatchHandler(action, ƒ));
       },
       dispatch(action: Head<M["Actions"]>, data: Tail<M["Actions"]>) {
-        unicast.emit(action, data);
-        broadcast.emit(action, data);
+        const isBroadcast = String(action).startsWith("distributed");
+        isBroadcast ? broadcast.emit(action, data) : unicast.emit(action, data);
       },
     };
   }, []);

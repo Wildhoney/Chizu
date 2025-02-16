@@ -14,4 +14,4 @@ export type Props<M extends Module> = {
 
 export type UseDispatchers = ReturnType<typeof useDispatchers>;
 
-export type UseDispatchHandlerProps = Props;
+export type UseDispatchHandlerProps<M extends Module> = Props<M>;

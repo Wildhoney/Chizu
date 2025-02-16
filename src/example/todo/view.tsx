@@ -18,7 +18,7 @@ export default create.view<Module>((self) => {
         Add task
       </button>
 
-      {self.model.tasks.length <= 1 && <Dice taskCount={String(self.model.tasks.length)} initialKite="6" />}
+      <Dice taskCount={String(self.model.tasks.length)} initialKite="6" />
 
       <button onClick={(): void => self.actions.dispatch([DistributedEvents.Reset])}>Reset</button>
 
