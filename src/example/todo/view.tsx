@@ -1,7 +1,7 @@
 import { create } from "../../library/index.ts";
-import { Events, Module } from "./types.ts";
 import Dice from "../dice/index.ts";
 import { DistributedEvents } from "../types.ts";
+import { Events, Module } from "./types.ts";
 
 export default create.view<Module>((self) => {
   return (
@@ -11,25 +11,16 @@ export default create.view<Module>((self) => {
       <input
         type="text"
         value={self.model.task ?? ""}
-        onChange={(event) =>
-          self.actions.dispatch([Events.Task, event.currentTarget.value])
-        }
+        onChange={(event) => self.actions.dispatch([Events.Task, event.currentTarget.value])}
       />
 
-      <button
-        disabled={!self.model.task}
-        onClick={() => self.actions.dispatch([Events.Add])}
-      >
+      <button disabled={!self.model.task} onClick={() => self.actions.dispatch([Events.Add])}>
         Add task
       </button>
 
-      <Dice taskCount={String(self.model.tasks.length)} initialKite="6" />
+      {self.model.tasks.length <= 1 && <Dice taskCount={String(self.model.tasks.length)} initialKite="6" />}
 
-      <button
-        onClick={(): void => self.actions.dispatch([DistributedEvents.Reset])}
-      >
-        Reset
-      </button>
+      <button onClick={(): void => self.actions.dispatch([DistributedEvents.Reset])}>Reset</button>
 
       {self.model.tasks.length === 0 ? (
         <p>You have no tasks yet.</p>
@@ -41,16 +32,10 @@ export default create.view<Module>((self) => {
               <input
                 type="checkbox"
                 checked={task.completed}
-                onChange={() =>
-                  self.actions.dispatch([Events.Completed, task.id])
-                }
+                onChange={() => self.actions.dispatch([Events.Completed, task.id])}
               />
               {task.task} {task.completed ? "✅" : ""}
-              <button
-                onClick={() => self.actions.dispatch([Events.Remove, task.id])}
-              >
-                Remove
-              </button>
+              <button onClick={() => self.actions.dispatch([Events.Remove, task.id])}>Remove</button>
             </li>
           ))}
         </ol>

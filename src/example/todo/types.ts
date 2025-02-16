@@ -30,9 +30,4 @@ export type Actions =
   | [Events.Completed, Id]
   | [Events.Remove, Id];
 
-export type Module = ModuleOptions<
-  Model,
-  Actions,
-  {},
-  [Routes, Route.Dashboard]
->;
+export type Module = ModuleOptions<Model, Actions, {}, [Routes, Route.Dashboard]>;

@@ -1,6 +1,6 @@
 import { create } from "../../library/index.ts";
-import { Events, Module } from "./types.ts";
 import { DistributedEvents } from "../types.ts";
+import { Events, Module } from "./types.ts";
 
 export default create.controller<Module>((self) => {
   return {

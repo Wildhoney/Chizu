@@ -1,4 +1,4 @@
-import { Model, State, Module } from "../types/index.ts";
+import { Model, Module, State } from "../types/index.ts";
 import * as React from "react";
 
 export type Validation<M extends Model> = {
@@ -17,6 +17,4 @@ export type ViewArgs<M extends Module> = {
   actions: ViewActions<M>;
 };
 
-export type ViewDefinition<M extends Module> = (
-  actions: ViewArgs<M>,
-) => React.ReactNode;
+export type ViewDefinition<M extends Module> = (actions: ViewArgs<M>) => React.ReactNode;

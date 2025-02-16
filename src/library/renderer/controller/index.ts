@@ -8,11 +8,9 @@ export default function useController<M extends Module>(props: Props<M>) {
     props.phase.current = props.phase.current ^ Phase.InvokedController;
 
     const controller = props.options.controller(props.actions.controller);
-    const actions = Object.entries(controller);
 
-    actions.forEach(([name, ƒ]) => {
-      props.dispatchers.bind(name, ƒ);
-    });
+    const actions = Object.entries(controller);
+    actions.forEach(([name, ƒ]) => props.dispatchers.attach(name, ƒ));
 
     return controller;
   }, []);

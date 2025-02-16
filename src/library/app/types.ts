@@ -1,13 +1,11 @@
-import EventEmitter from "eventemitter3";
 import { RoutePaths, Routes } from "../types/index.ts";
+import EventEmitter from "eventemitter3";
 import * as React from "react";
 
-export type AppOptions<R extends Routes, DE> = {
+export type AppOptions<R extends Routes> = {
   routes: Record<RoutePaths<R>, React.ElementType>;
-  distributedEvents: DE;
 };
 
 export type AppContext = {
   appEmitter: EventEmitter;
-  distributedEvents: null | any;
 };

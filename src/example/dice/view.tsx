@@ -8,9 +8,7 @@ export default create.view<Module>((self) => {
         You rolled a <strong>{self.model.kite}</strong>
       </p>
 
-      <button onClick={(): void => self.actions.dispatch([Events.Roll])}>
-        Roll again
-      </button>
+      <button onClick={(): void => self.actions.dispatch([Events.Roll])}>Roll again</button>
     </section>
   );
 });

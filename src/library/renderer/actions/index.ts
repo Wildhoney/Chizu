@@ -1,6 +1,6 @@
-import * as React from "react";
 import { Props } from "./types.ts";
-import { enablePatches, Immer } from "immer";
+import { Immer, enablePatches } from "immer";
+import * as React from "react";
 
 const immer = new Immer();
 immer.setAutoFreeze(false);
@@ -19,7 +19,7 @@ export default function useActions(props: Props) {
             return immer.produceWithPatches(props.model.current, ƒ);
           },
           dispatch([action, ...data]) {
-            return props.dispatchers.emit(action, data);
+            return props.dispatchers.dispatch(action, data);
           },
           navigate() {},
         },
@@ -41,7 +41,7 @@ export default function useActions(props: Props) {
           //   return Boolean(state & State.Pending);
           // },
           dispatch([action, ...data]) {
-            return props.dispatchers.emit(action, data);
+            return props.dispatchers.dispatch(action, data);
           },
           navigate() {},
         },

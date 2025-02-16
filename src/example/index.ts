@@ -1,10 +1,9 @@
 import { create } from "../library/index.ts";
 import todo from "./todo/index.ts";
-import { DistributedEvents, Routes } from "./types.ts";
+import { Routes } from "./types.ts";
 
-export default create.app<Routes, typeof DistributedEvents>({
+export default create.app<Routes>({
   routes: {
     "/": todo,
   },
-  distributedEvents: DistributedEvents,
 });

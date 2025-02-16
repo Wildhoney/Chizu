@@ -1,5 +1,5 @@
-import * as React from "react";
 import { Props } from "./types";
+import * as React from "react";
 
 export default function useElements(props: Props) {
   const customElement = React.useRef<null | HTMLElement>(null);

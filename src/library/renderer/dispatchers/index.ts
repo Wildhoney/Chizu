@@ -1,33 +1,27 @@
-import * as React from "react";
 import { useApp } from "../../app/index.tsx";
-import EventEmitter from "eventemitter3";
-import { Module } from "../../types/index.ts";
-import { useDispatchHandler } from "./utils.ts";
+import { Head, Tail } from "../types.ts";
 import { Props } from "./types.ts";
+import { useDispatchHandler } from "./utils.ts";
+import EventEmitter from "eventemitter3";
+import * as React from "react";
 
-export default function useDispatchers<M extends Module>(props: Props<M>) {
+export default function useDispatchers(props: Props) {
   const app = useApp();
   const dispatchHandler = useDispatchHandler(props);
 
-  const dispatchers = React.useMemo(
-    () => ({
-      unicast: new EventEmitter(),
-      broadcast: app.appEmitter,
-    }),
-    [],
-  );
+  return React.useMemo(() => {
+    const unicast = new EventEmitter();
+    const broadcast = app.appEmitter;
 
-  return React.useMemo(
-    () => ({
-      emit(action, ƒ) {
-        dispatchers.unicast.emit(action, ƒ);
-        // dispatchers.broadcast.emit(action, ƒ);
+    return {
+      attach(action: Head<M["Actions"]>, ƒ) {
+        unicast.on(action, dispatchHandler(action, ƒ));
+        broadcast.on(action, dispatchHandler(action, ƒ));
       },
-      bind(action, ƒ) {
-        dispatchers.unicast.on(action, dispatchHandler(action, ƒ));
-        // dispatchers.broadcast.on(action, dispatch(ƒ));
+      dispatch(action: Head<M["Actions"]>, data: Tail<M["Actions"]>) {
+        unicast.emit(action, data);
+        broadcast.emit(action, data);
       },
-    }),
-    [dispatchers],
-  );
+    };
+  }, []);
 }

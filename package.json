@@ -13,6 +13,7 @@
     "@babel/preset-env": "^7.26.0",
     "@babel/preset-typescript": "^7.26.0",
     "@jest/globals": "^29.7.0",
+    "@trivago/prettier-plugin-sort-imports": "^5.2.2",
     "@types/pubsub-js": "^1.8.6",
     "@types/react": "^19.0.8",
     "@types/react-dom": "^19.0.3",

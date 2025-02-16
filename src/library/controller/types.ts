@@ -12,9 +12,7 @@ export type ControllerArgs<S extends Module> = {
   actions: ControllerActions<S>;
 };
 
-export type ControllerDefinition<M extends Module> = (
-  controller: ControllerArgs<M>,
-) => ControllerInstance<M>;
+export type ControllerDefinition<M extends Module> = (controller: ControllerArgs<M>) => ControllerInstance<M>;
 
 export type ControllerInstance<M extends Module> = {
   [Lifecycle.Mount]?(parameters: M["Routes"]): void;

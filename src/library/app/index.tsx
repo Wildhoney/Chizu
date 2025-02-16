@@ -1,26 +1,22 @@
-import EventEmitter from "eventemitter3";
 import { Routes } from "../types/index.ts";
 import { AppContext, AppOptions } from "./types.ts";
 import { closest } from "./utils.ts";
-import * as ReactDOM from "react-dom/client";
+import EventEmitter from "eventemitter3";
 import * as React from "react";
+import * as ReactDOM from "react-dom/client";
 
 const Context = React.createContext<AppContext>({
   appEmitter: new EventEmitter(),
-  distributedEvents: null,
 });
 
 export function useApp() {
   return React.useContext(Context);
 }
 
-export default function app<R extends Routes, DE>(
-  options: AppOptions<R, DE>,
-): void {
+export default function app<R extends Routes>(options: AppOptions<R>): void {
   const Module = closest<R>(options);
   const appOptions = {
     appEmitter: new EventEmitter(),
-    distributedEvents: options.distributedEvents,
   };
 
   const Child = options.routes["/"];

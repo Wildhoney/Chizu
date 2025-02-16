@@ -1,7 +1,7 @@
+import renderer from "../renderer/index.tsx";
 import { Module } from "../types/index.ts";
 import { ElementName, Options } from "./types.ts";
 import * as React from "react";
-import renderer from "../renderer/index.tsx";
 
 export default function module<M extends Module>(name: TemplateStringsArray) {
   return (options: Options<M>): React.ElementType<M["Attributes"]> => {

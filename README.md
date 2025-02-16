@@ -119,9 +119,5 @@ export const enum Events {
   Remove,
 }
 
-export type Actions =
-  | [Events.Task, string]
-  | [Events.Add]
-  | [Events.Completed, Id]
-  | [Events.Remove, Id];
+export type Actions = [Events.Task, string] | [Events.Add] | [Events.Completed, Id] | [Events.Remove, Id];
 ```

@@ -1,6 +1,6 @@
-import { create, Lifecycle } from "../../library/index.ts";
-import { Events, Module } from "./types.ts";
+import { Lifecycle, create } from "../../library/index.ts";
 import { DistributedEvents } from "../types.ts";
+import { Events, Module } from "./types.ts";
 
 export default create.controller<Module>((self) => {
   return {
@@ -11,7 +11,6 @@ export default create.controller<Module>((self) => {
     },
 
     *[Events.Roll]() {
-      console.log("Yah!");
       return self.actions.produce((draft) => {
         draft.kite = Math.floor(Math.random() * (6 - 1 + 1) + 1);
       });
