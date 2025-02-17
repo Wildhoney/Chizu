@@ -1,4 +1,4 @@
-import { ModuleOptions } from "../../library/types/index.ts";
+import { Create } from "../../library/index.ts";
 import { DistributedActions, Route, Routes } from "../types.ts";
 
 export type Model = {
@@ -16,4 +16,4 @@ export type Props = {
   taskCount: string;
 };
 
-export type Module = ModuleOptions<Model, Actions, Props, [Routes, Route.Dashboard]>;
+export type Module = Create.ModuleOptions<Model, Actions, Props, [Routes, Route.Dashboard]>;

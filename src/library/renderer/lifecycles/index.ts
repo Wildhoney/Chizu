@@ -5,6 +5,7 @@ import * as React from "react";
 
 export default function useLifecycles<M extends Module>(props: Props<M>) {
   React.useEffect((): void => {
+    props.dispatchers.dispatch(Lifecycle.Mount, []);
     props.dispatchers.dispatch(Lifecycle.Derive, [props.options.attributes]);
   }, [props.options.attributes]);
 

@@ -14,8 +14,10 @@ export default function useActions(props: Props) {
           return props.model.current;
         },
         actions: {
-          io: <T>(ƒ: () => T): (() => T) => ƒ,
-          produce(ƒ: (draft: any) => void) {
+          io(ƒ, optimistic) {
+            return [ƒ, optimistic];
+          },
+          produce(ƒ) {
             return immer.produceWithPatches(props.model.current, ƒ);
           },
           dispatch([action, ...data]) {

@@ -1,7 +1,7 @@
 import { Actions, Lifecycle, Module } from "../types/index.ts";
 
 export type ControllerActions<M extends Module> = {
-  io<T>(ƒ: () => T): () => T;
+  io<T>(ƒ: () => T | Promise<T>, optimistic?: Awaited<T>): [() => T, undefined | Awaited<T>];
   produce(ƒ: (draft: M["Model"]) => void): void;
   dispatch(event: M["Actions"]): void;
   navigate(route: M["Routes"]): void;

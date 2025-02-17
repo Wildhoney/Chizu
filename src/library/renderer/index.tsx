@@ -13,6 +13,8 @@ import * as React from "react";
 import * as ReactDOM from "react-dom";
 
 export default function renderer<M extends Module>({ options }: Props<M>): ReactElement {
+  const colour = React.useMemo(() => [...Array(6)].map(() => Math.floor(Math.random() * 14).toString(16)).join(""), []);
+
   const phase = usePhase();
   const update = useUpdate();
   const elements = useElements({ update });
@@ -24,14 +26,23 @@ export default function renderer<M extends Module>({ options }: Props<M>): React
   useController({ options, phase, dispatchers, actions });
   useLifecycles({ options, dispatchers, phase });
 
-  return React.useMemo(
-    () =>
-      React.createElement(options.name, {
-        ref: elements.customElement,
-        children:
-          elements.shadowBoundary.current &&
-          ReactDOM.createPortal(options.view(actions.view), elements.shadowBoundary.current),
-      }),
-    [update.hash],
-  );
+  return React.useMemo(() => {
+    if (elements.shadowBoundary.current) {
+      console.group(
+        `Marea / %crender pass`,
+        `background: #${colour}; color: white; border-radius: 2px; padding: 0 4px`,
+      );
+      console.groupCollapsed(elements.customElement.current);
+      console.log("Node", elements.customElement.current);
+      console.groupEnd();
+      console.groupEnd();
+    }
+
+    return React.createElement(options.name, {
+      ref: elements.customElement,
+      children:
+        elements.shadowBoundary.current &&
+        ReactDOM.createPortal(options.view(actions.view), elements.shadowBoundary.current),
+    });
+  }, [update.hash]);
 }

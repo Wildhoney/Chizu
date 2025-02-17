@@ -40,7 +40,7 @@ During the first pass the model isn't updated, but the view is re-rendered and m
 export default create.controller<Model, Actions, Routes>((self) => {
   return {
     *[Events.ChangeProfile]() {
-      const name: string = yield self.actions.io(() => "Maria");
+      const name: string = yield self.actions.io<string>(() => "Maria");
 
       return self.actions.produce((draft) => {
         draft.name = name;
