@@ -19,7 +19,7 @@ export default create.controller<Module>((self) => {
             resolve(Math.floor(Math.random() * (6 - 1 + 1) + 1));
           }, 1_000);
         });
-      }, 0);
+      });
 
       return self.actions.produce((draft) => {
         draft.kite = kite;

@@ -1,5 +1,5 @@
 import { Module } from "../../types/index.ts";
-import { AnalysePassProps, OptimisticPassProps, Props } from "./types.ts";
+import { AnalysePassProps, FinalPassProps, OptimisticPassProps, Props } from "./types.ts";
 import { getColour } from "./utils.ts";
 import * as React from "react";
 
@@ -54,7 +54,7 @@ export default function useLogger<M extends Module>(props: Props<M>) {
         console.groupEnd();
         console.groupEnd();
       },
-      finalPass() {
+      finalPass({ event, model, duration }: FinalPassProps) {
         const colour = getColour();
 
         console.group(
@@ -62,10 +62,10 @@ export default function useLogger<M extends Module>(props: Props<M>) {
           `background: #${colour}; color: white; border-radius: 2px; padding: 0 4px`,
         );
         console.groupCollapsed(props.elements.customElement.current);
-        console.log("Event", name);
+        console.log("Event", event);
 
-        if (secondDuration) {
-          console.log("Time", `${performance.now() - secondDuration}ms`);
+        if (duration) {
+          console.log("Time", `${performance.now() - duration}ms`);
         }
 
         console.log("Model", model.current);

@@ -1,5 +1,6 @@
 import { create } from "../../library/index.ts";
 import Dice from "../dice/index.ts";
+import GithubFollowers from "../github-followers/index.ts";
 import { DistributedEvents } from "../types.ts";
 import { Events, Module } from "./types.ts";
 
@@ -19,6 +20,8 @@ export default create.view<Module>((self) => {
       </button>
 
       <Dice taskCount={String(self.model.tasks.length)} initialKite="6" />
+
+      <GithubFollowers />
 
       <button onClick={(): void => self.actions.dispatch([DistributedEvents.Reset])}>Reset</button>
 

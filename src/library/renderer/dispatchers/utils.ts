@@ -1,5 +1,7 @@
 import { Module } from "../../types/index.ts";
+import universal from "../../universal/index.ts";
 import { UseDispatchHandlerProps } from "./types.ts";
+import { applyPatches } from "immer";
 
 export function useDispatchHandler<M extends Module>(props: UseDispatchHandlerProps<M>) {
   const colour = [...Array(6)].map(() => Math.floor(Math.random() * 14).toString(16)).join("");
@@ -8,7 +10,7 @@ export function useDispatchHandler<M extends Module>(props: UseDispatchHandlerPr
     return async (payload): Promise<void> => {
       function commit(model: M["Model"], log: boolean, duration: null | number): void {
         if (log) {
-          props.logger.finalPass();
+          props.logger.finalPass({ event: name, model, duration });
         }
 
         props.model.current = model;
@@ -26,7 +28,7 @@ export function useDispatchHandler<M extends Module>(props: UseDispatchHandlerPr
       };
 
       while (true) {
-        const result = analysePass.generator.next();
+        const result = analysePass.generator.next(universal);
 
         if (result.done) {
           props.logger.analysePass({
@@ -58,7 +60,7 @@ export function useDispatchHandler<M extends Module>(props: UseDispatchHandlerPr
       optimisticPass.generator.next();
 
       optimistics.forEach((optimistic) => {
-        const result = optimisticPass.generator.next(optimistic);
+        const result = optimisticPass.generator.next(optimistic ?? universal);
 
         if (result.done && result.value != null && result.value?.[0] != null) {
           props.logger.optimisticPass({
@@ -69,7 +71,11 @@ export function useDispatchHandler<M extends Module>(props: UseDispatchHandlerPr
             mutations: result.value,
           });
 
-          return void commit(result.value?.[0], false, optimisticPass.duration);
+          const patches = result.value[1].filter(({ value }) => value !== universal);
+          props.model.current = applyPatches(props.model.current, patches);
+          return void props.update.rerender();
+
+          // return void commit(result.value?.[0], false, optimisticPass.duration);
         }
       });
 

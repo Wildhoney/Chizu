@@ -25,3 +25,9 @@ export type OptimisticPassProps = {
   duration: number;
   mutations: any;
 };
+
+export type FinalPassProps = {
+  event: string;
+  model: any;
+  duration: number;
+};
