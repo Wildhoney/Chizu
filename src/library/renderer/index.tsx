@@ -4,6 +4,7 @@ import useController from "./controller/index.ts";
 import useDispatchers from "./dispatchers/index.ts";
 import useElements from "./elements/index.ts";
 import useLifecycles from "./lifecycles/index.ts";
+import useLogger from "./logger/index.ts";
 import useModel from "./model/index.ts";
 import usePhase from "./phase/index.ts";
 import { Props } from "./types.ts";
@@ -13,30 +14,20 @@ import * as React from "react";
 import * as ReactDOM from "react-dom";
 
 export default function renderer<M extends Module>({ options }: Props<M>): ReactElement {
-  const colour = React.useMemo(() => [...Array(6)].map(() => Math.floor(Math.random() * 14).toString(16)).join(""), []);
-
   const phase = usePhase();
   const update = useUpdate();
   const elements = useElements({ update });
 
   const model = useModel({ options });
-  const dispatchers = useDispatchers({ options, update, model, elements });
+  const logger = useLogger({ options, elements });
+  const dispatchers = useDispatchers({ options, update, model, elements, logger });
   const actions = useActions({ model, dispatchers });
 
   useController({ options, phase, dispatchers, actions });
   useLifecycles({ options, dispatchers, phase });
 
   return React.useMemo(() => {
-    if (elements.shadowBoundary.current) {
-      console.group(
-        `Marea / %crender pass`,
-        `background: #${colour}; color: white; border-radius: 2px; padding: 0 4px`,
-      );
-      console.groupCollapsed(elements.customElement.current);
-      console.log("Node", elements.customElement.current);
-      console.groupEnd();
-      console.groupEnd();
-    }
+    logger.renderPass();
 
     return React.createElement(options.name, {
       ref: elements.customElement,

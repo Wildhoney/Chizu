@@ -1,5 +1,6 @@
 import { Module } from "../../types/index.ts";
 import { UseElements } from "../elements/types.ts";
+import { UseLogger } from "../logger/types.ts";
 import { UseModel } from "../model/types.ts";
 import { UseOptions } from "../types.ts";
 import { UseUpdate } from "../update/types.ts";
@@ -10,6 +11,7 @@ export type Props<M extends Module> = {
   update: UseUpdate;
   model: UseModel;
   elements: UseElements;
+  logger: UseLogger;
 };
 
 export type UseDispatchers = ReturnType<typeof useDispatchers>;

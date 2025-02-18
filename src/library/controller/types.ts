@@ -15,10 +15,10 @@ export type ControllerArgs<S extends Module> = {
 export type ControllerDefinition<M extends Module> = (controller: ControllerArgs<M>) => ControllerInstance<M>;
 
 export type ControllerInstance<M extends Module> = {
-  [Lifecycle.Mount]?(parameters: M["Routes"]): void;
-  [Lifecycle.Derive]?(attributes: M["Attributes"]): void;
-  [Lifecycle.Tree]?(): void;
-  [Lifecycle.Unmount]?(): void;
+  [Lifecycle.Mount]?(parameters: M["Routes"]): Generator<never, void, unknown>;
+  [Lifecycle.Derive]?(attributes: M["Attributes"]): Generator<never, void, unknown>;
+  [Lifecycle.Tree]?(): Generator<never, void, unknown>;
+  [Lifecycle.Unmount]?(): Generator<never, void, unknown>;
 } & Partial<Handlers<M["Actions"]>>;
 
 type Handlers<A extends Actions> = {

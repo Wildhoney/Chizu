@@ -6,22 +6,9 @@ export function useDispatchHandler<M extends Module>(props: UseDispatchHandlerPr
 
   return (name, ƒ) => {
     return async (payload): Promise<void> => {
-      function commit(model: M["Model"], log: boolean, secondDuration: null | number): void {
+      function commit(model: M["Model"], log: boolean, duration: null | number): void {
         if (log) {
-          console.group(
-            `Marea / %cfinal pass`,
-            `background: #${colour}; color: white; border-radius: 2px; padding: 0 4px`,
-          );
-          console.groupCollapsed(props.elements.customElement.current);
-          console.log("Event", name);
-
-          if (secondDuration) {
-            console.log("Time", `${performance.now() - secondDuration}ms`);
-          }
-
-          console.log("Model", model.current);
-          console.groupEnd();
-          console.groupEnd();
+          props.logger.finalPass();
         }
 
         props.model.current = model;
@@ -33,25 +20,22 @@ export function useDispatchHandler<M extends Module>(props: UseDispatchHandlerPr
       const io = new Set();
       const optimistics = new Set();
 
-      const firstDuration = performance.now();
-      const pass = ƒ(...payload);
+      const analysePass = {
+        duration: performance.now(),
+        generator: ƒ(...payload),
+      };
 
       while (true) {
-        const result = pass.next();
+        const result = analysePass.generator.next();
 
         if (result.done) {
-          console.group(
-            `Marea / %canalyse pass`,
-            `background: #${colour}; color: white; border-radius: 2px; padding: 0 4px`,
-          );
-          console.groupCollapsed(props.elements.customElement.current);
-          console.log("Node", props.elements.customElement.current);
-          console.log("Event", name, payload);
-          console.log("Time", `${performance.now() - firstDuration}ms`);
-          console.log("Actions", [...io]);
-          console.log("Mutations", result.value?.[1]);
-          console.groupEnd();
-          console.groupEnd();
+          props.logger.analysePass({
+            event: name,
+            payload,
+            io,
+            duration: analysePass.duration,
+            mutations: result.value?.[1],
+          });
 
           if (io.size === 0) {
             return void commit(result.value?.[0], false, null);
@@ -67,47 +51,45 @@ export function useDispatchHandler<M extends Module>(props: UseDispatchHandlerPr
 
       if (io.size === 0) return;
 
-      const thirdDuration = performance.now();
-      const thirdPass = ƒ(...payload);
-      thirdPass.next();
+      const optimisticPass = {
+        duration: performance.now(),
+        generator: ƒ(...payload),
+      };
+      optimisticPass.generator.next();
 
       optimistics.forEach((optimistic) => {
-        const result = thirdPass.next(optimistic);
+        const result = optimisticPass.generator.next(optimistic);
 
         if (result.done && result.value != null && result.value?.[0] != null) {
-          console.group(
-            `Marea / %coptimistic pass`,
-            `background: #${colour}; color: white; border-radius: 2px; padding: 0 4px`,
-          );
-          console.groupCollapsed(props.elements.customElement.current);
-          console.log("Node", props.elements.customElement.current);
-          console.log("Event", name, payload);
-          console.log("Time", `${performance.now() - firstDuration}ms`);
-          console.log("Actions", [...io]);
-          console.log("Mutations", result.value?.[1]);
-          console.groupEnd();
-          console.groupEnd();
+          props.logger.optimisticPass({
+            event: name,
+            payload,
+            io,
+            duration: optimisticPass.duration,
+            mutations: result.value,
+          });
 
-          return void commit(result.value?.[0], false, thirdDuration);
+          return void commit(result.value?.[0], false, optimisticPass.duration);
         }
       });
 
-      const secondDuration = performance.now();
-      const secondPass = ƒ(...payload);
+      const finalPass = {
+        duration: performance.now(),
+        generator: ƒ(...payload),
+      };
 
       // It's important we don't await if we don't need to, so that actions like
       // the `Lifecycle.Mount` can run synchronously.
       const results = io.size > 0 ? await Promise.allSettled(io) : [];
+      const result = finalPass.generator.next();
 
-      const result = secondPass.next();
-
-      if (result.done) return void commit(result.value?.[0], true, secondDuration);
+      if (result.done) return void commit(result.value?.[0], true, finalPass.duration);
 
       results.forEach((io) => {
-        const result = io.status === "fulfilled" ? secondPass.next(io.value) : secondPass.next(null);
+        const result = io.status === "fulfilled" ? finalPass.generator.next(io.value) : finalPass.generator.next(null);
 
         if (result.done && result.value != null && result.value?.[0] != null) {
-          return void commit(result.value?.[0], true, secondDuration);
+          return void commit(result.value?.[0], true, finalPass.duration);
         }
       });
     };
