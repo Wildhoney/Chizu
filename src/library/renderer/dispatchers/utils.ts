@@ -1,26 +1,35 @@
+import { Absent, Present } from "../../functor/maybe/index.ts";
 import { Module } from "../../types/index.ts";
-import universal from "../../universal/index.ts";
+import { Head, Tail } from "../types.ts";
 import { UseDispatchHandlerProps } from "./types.ts";
-import { applyPatches } from "immer";
 
 export function useDispatchHandler<M extends Module>(props: UseDispatchHandlerProps<M>) {
-  const colour = [...Array(6)].map(() => Math.floor(Math.random() * 14).toString(16)).join("");
+  return (name: Head<M["Actions"]>, ƒ) => {
+    return async (payload: Tail<M["Actions"]>): Promise<void> => {
+      if (props.queue.current.size > 0) {
+        await Promise.allSettled([...props.queue.current].slice(1));
+      }
 
-  return (name, ƒ) => {
-    return async (payload): Promise<void> => {
-      function commit(model: M["Model"], log: boolean, duration: null | number): void {
-        if (log) {
-          props.logger.finalPass({ event: name, model, duration });
-        }
+      const model = props.model.current;
 
+      const task = Promise.withResolvers<void>();
+      props.queue.current.add(task.promise);
+
+      function commit(model: M["Model"], duration: null | number, end: boolean): void {
         props.model.current = model;
         props.update.rerender();
+
+        task.resolve();
+
+        if (end) {
+          props.queue.current.delete(task.promise);
+          props.logger.finalPass({ event: name, model, duration });
+        }
       }
 
       if (typeof ƒ !== "function") return;
 
       const io = new Set();
-      const optimistics = new Set();
 
       const analysePass = {
         duration: performance.now(),
@@ -28,7 +37,7 @@ export function useDispatchHandler<M extends Module>(props: UseDispatchHandlerPr
       };
 
       while (true) {
-        const result = analysePass.generator.next(universal);
+        const result = analysePass.generator.next(new Absent());
 
         if (result.done) {
           props.logger.analysePass({
@@ -39,45 +48,14 @@ export function useDispatchHandler<M extends Module>(props: UseDispatchHandlerPr
             mutations: result.value?.[1],
           });
 
-          if (io.size === 0) {
-            return void commit(result.value?.[0], false, null);
-          }
-
+          commit(result.value(model)[0], null, io.size === 0);
           break;
         }
 
-        const [ƒ, optimistic] = result.value;
-        io.add(ƒ());
-        optimistics.add(optimistic);
+        io.add(result.value());
       }
 
       if (io.size === 0) return;
-
-      const optimisticPass = {
-        duration: performance.now(),
-        generator: ƒ(...payload),
-      };
-      optimisticPass.generator.next();
-
-      optimistics.forEach((optimistic) => {
-        const result = optimisticPass.generator.next(optimistic ?? universal);
-
-        if (result.done && result.value != null && result.value?.[0] != null) {
-          props.logger.optimisticPass({
-            event: name,
-            payload,
-            io,
-            duration: optimisticPass.duration,
-            mutations: result.value,
-          });
-
-          const patches = result.value[1].filter(({ value }) => value !== universal);
-          props.model.current = applyPatches(props.model.current, patches);
-          return void props.update.rerender();
-
-          // return void commit(result.value?.[0], false, optimisticPass.duration);
-        }
-      });
 
       const finalPass = {
         duration: performance.now(),
@@ -89,13 +67,16 @@ export function useDispatchHandler<M extends Module>(props: UseDispatchHandlerPr
       const results = io.size > 0 ? await Promise.allSettled(io) : [];
       const result = finalPass.generator.next();
 
-      if (result.done) return void commit(result.value?.[0], true, finalPass.duration);
+      if (result.done) return void commit(result.value(model)[0], finalPass.duration, true);
 
       results.forEach((io) => {
-        const result = io.status === "fulfilled" ? finalPass.generator.next(io.value) : finalPass.generator.next(null);
+        const result =
+          io.status === "fulfilled"
+            ? finalPass.generator.next(new Present(io.value))
+            : finalPass.generator.next(new Absent());
 
-        if (result.done && result.value != null && result.value?.[0] != null) {
-          return void commit(result.value?.[0], true, finalPass.duration);
+        if (result.done && result.value != null) {
+          return void commit(result.value(model)[0], finalPass.duration, true);
         }
       });
     };

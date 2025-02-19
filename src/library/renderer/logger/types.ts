@@ -18,14 +18,6 @@ export type AnalysePassProps = {
   mutations: any;
 };
 
-export type OptimisticPassProps = {
-  event: string;
-  payload: any;
-  io: Set<any>;
-  duration: number;
-  mutations: any;
-};
-
 export type FinalPassProps = {
   event: string;
   model: any;

@@ -14,11 +14,11 @@ export default function useActions(props: Props) {
           return props.model.current;
         },
         actions: {
-          io(ƒ, optimistic) {
-            return [ƒ, optimistic];
+          io(ƒ) {
+            return ƒ;
           },
           produce(ƒ) {
-            return immer.produceWithPatches(props.model.current, ƒ);
+            return (model) => immer.produceWithPatches(model, ƒ);
           },
           dispatch([action, ...data]) {
             return props.dispatchers.dispatch(action, data);
