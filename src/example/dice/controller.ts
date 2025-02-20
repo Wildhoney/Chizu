@@ -1,3 +1,4 @@
+import { Maybe } from "../../library/functor/maybe/index.ts";
 import { Lifecycle, create } from "../../library/index.ts";
 import { DistributedEvents } from "../types.ts";
 import { Events, Module } from "./types.ts";
@@ -10,10 +11,8 @@ export default create.controller<Module>((self) => {
       });
     },
 
-    // @Signal.Unique()
-    // @Signal.Prioritise()
     *[Events.Roll]() {
-      const kite: number = yield self.actions.io<number>(async () => {
+      const kite: Maybe<number> = yield self.actions.io(async () => {
         return new Promise((resolve) => {
           setTimeout(() => {
             resolve(Math.floor(Math.random() * (6 - 1 + 1) + 1));
@@ -22,7 +21,7 @@ export default create.controller<Module>((self) => {
       });
 
       return self.actions.produce((draft) => {
-        draft.kite = kite;
+        draft.kite = kite.otherwise(self.model.kite);
       });
     },
 

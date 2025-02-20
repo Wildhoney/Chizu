@@ -23,7 +23,7 @@ export default function renderer<M extends Module>({ options }: Props<M>): React
   const model = useModel({ options });
   const logger = useLogger({ options, elements });
   const dispatchers = useDispatchers({ options, update, model, elements, logger, queue });
-  const actions = useActions({ model, dispatchers });
+  const actions = useActions<M>({ model, dispatchers });
 
   useController({ options, phase, dispatchers, actions });
   useLifecycles({ options, dispatchers, phase });

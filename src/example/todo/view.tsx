@@ -19,7 +19,7 @@ export default create.view<Module>((self) => {
         Add task
       </button>
 
-      {/* <Dice taskCount={String(self.model.tasks.length)} initialKite="6" /> */}
+      <Dice taskCount={String(self.model.tasks.length)} initialKite="6" />
 
       <GithubFollowers />
 

@@ -1,10 +1,10 @@
 import { Actions, Lifecycle, Module } from "../types/index.ts";
 
 export type ControllerActions<M extends Module> = {
-  io<T>(ƒ: () => T | Promise<T>): [() => T, undefined | Awaited<T>];
-  produce(ƒ: (draft: M["Model"]) => void): void;
+  io<T>(ƒ: () => T): T;
+  produce(ƒ: (draft: M["Model"]) => void): (model: M["Model"]) => M["Model"];
   dispatch(event: M["Actions"]): void;
-  navigate(route: M["Routes"]): void;
+  // navigate(route: M["Routes"]): void;
 };
 
 export type ControllerArgs<S extends Module> = {

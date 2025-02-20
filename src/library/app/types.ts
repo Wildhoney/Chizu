@@ -9,3 +9,8 @@ export type AppOptions<R extends Routes> = {
 export type AppContext = {
   appEmitter: EventEmitter;
 };
+
+export type TreeProps = {
+  options: AppContext;
+  children: React.ReactNode;
+};

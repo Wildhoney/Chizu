@@ -11,7 +11,7 @@ export const enum State {
   Optimistic = 8,
 }
 
-type ActionName = Lifecycle | string | number;
+export type ActionName = Lifecycle | string | number;
 
 type ActionPayload = [any, ...any[]];
 

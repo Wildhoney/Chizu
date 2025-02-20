@@ -1,4 +1,5 @@
-import { Props } from "./types.ts";
+import { Module } from "../../types/index.ts";
+import { Props, Return } from "./types.ts";
 import { Immer, enablePatches } from "immer";
 import * as React from "react";
 
@@ -6,7 +7,7 @@ const immer = new Immer();
 immer.setAutoFreeze(false);
 enablePatches();
 
-export default function useActions(props: Props) {
+export default function useActions<M extends Module>(props: Props): Return<M> {
   return React.useMemo(
     () => ({
       controller: {
@@ -14,8 +15,8 @@ export default function useActions(props: Props) {
           return props.model.current;
         },
         actions: {
-          io(ƒ) {
-            return ƒ;
+          io<T>(ƒ: () => T): T {
+            return ƒ as T;
           },
           produce(ƒ) {
             return (model) => immer.produceWithPatches(model, ƒ);
@@ -23,7 +24,6 @@ export default function useActions(props: Props) {
           dispatch([action, ...data]) {
             return props.dispatchers.dispatch(action, data);
           },
-          navigate() {},
         },
       },
       view: {
@@ -31,21 +31,15 @@ export default function useActions(props: Props) {
           return props.model.current;
         },
         actions: {
-          // validate<T>(ƒ: (model: Validation<S["Model"]>) => T): T {
+          // validate(ƒ) {
           //   return ƒ(
           //     validate<S["Model"]>(props.model.current, mutations.current),
           //   );
           // },
-          // pending(ƒ: (model: Validation<S["Model"]>) => State): boolean {
-          //   const state = ƒ(
-          //     validate<S["Model"]>(props.model.current, mutations.current),
-          //   );
-          //   return Boolean(state & State.Pending);
-          // },
           dispatch([action, ...data]) {
             return props.dispatchers.dispatch(action, data);
           },
-          navigate() {},
+          // navigate() {},
         },
       },
     }),

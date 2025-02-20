@@ -1,5 +1,5 @@
 import { Routes } from "../types/index.ts";
-import { AppContext, AppOptions } from "./types.ts";
+import { AppContext, AppOptions, TreeProps } from "./types.ts";
 import { closest } from "./utils.ts";
 import EventEmitter from "eventemitter3";
 import * as React from "react";
@@ -30,6 +30,6 @@ export default function app<R extends Routes>(options: AppOptions<R>): void {
     );
 }
 
-function Tree({ options, children }) {
+function Tree({ options, children }: TreeProps) {
   return <Context.Provider value={options}>{children}</Context.Provider>;
 }

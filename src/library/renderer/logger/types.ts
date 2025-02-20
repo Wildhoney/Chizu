@@ -1,4 +1,4 @@
-import { Module } from "../../types/index.ts";
+import { ActionName, Module } from "../../types/index.ts";
 import { UseElements } from "../elements/types.ts";
 import { UseOptions } from "../types.ts";
 import useLogger from "./index.ts";
@@ -11,7 +11,7 @@ export type Props<M extends Module> = {
 export type UseLogger = ReturnType<typeof useLogger>;
 
 export type AnalysePassProps = {
-  event: string;
+  event: ActionName;
   payload: any;
   io: Set<any>;
   duration: number;
@@ -19,7 +19,7 @@ export type AnalysePassProps = {
 };
 
 export type FinalPassProps = {
-  event: string;
+  event: ActionName;
   model: any;
-  duration: number;
+  duration: null | number;
 };
