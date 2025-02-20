@@ -10,7 +10,6 @@ Strongly typed web component library using generators and efficiently updated vi
 
 1. [Benefits](#benefits)
 1. [Controllers](#controllers)
-<!-- 1. [View Helpers](#view-helpers) -->
 1. [Distributed Actions](#distributed-actions)
 
 ## Benefits
@@ -50,32 +49,6 @@ export default create.controller<Model, Actions, Routes>((self) => {
 });
 ```
 
-<!-- ## Views
-
-Use the `validate` function to introspect your model:
-
-```tsx
-<img
-  src={model.avatar}
-  alt="avatar"
-  aria-busy={actions.validate((model) => modal.avatar === State.Pending)}
-/>
-```
-
-You can also use the same approach for optimistic data:
-
-```tsx
-<h1>Hello {actions.validate((model) => model.avatar === State.Optimistic)}</h1>
-``` -->
-
-<!-- ## Distributed Actions -->
-
-## State Merging
-
-Imagine a scenario where there are three events dispatched in order of: `A` → `B` → `C`.
-
-Each mutation updates a handful of properties, setting them to pending, optimistic, etc&hellip; However the async `io` requests are resolved in a different order: `B` → `C` → `A` but Marea cannot apply `B` or `C` because it's still awaiting the resolution of `A`. Once `A` is finally resolved the states are merged in the original dispatch order of `A` → `B` → `C` and the view is updated only once.
-
 ## Controller Passes
 
 Relevant controller actions are invoked twice when dispatching an event, so it's important your updates are idempotent &ndash; by wrapping your actions in `actions.io` the supplied function will only be invoked on the first invocation, upon second invocation the aforementioned line will be resolved with its return value.
@@ -93,31 +66,3 @@ For example, take a typical and simple example of a controller update:
 ```
 
 On the first invocation the model will remain unchanged, but the state context will be updated so in your view you know which properties are pending, optimistic, etc... however on second invocation the model will be updated accordingly.
-
-## Todo App
-
-Start with your types because in a way they are a high-level overview of how your component functions:
-
-```ts
-type Task = {
-  id: Id;
-  task: string;
-  date: Date;
-  completed: boolean;
-};
-
-export type Model = {
-  id: number;
-  task: null | string;
-  tasks: Task[];
-};
-
-export const enum Events {
-  Task,
-  Add,
-  Completed,
-  Remove,
-}
-
-export type Actions = [Events.Task, string] | [Events.Add] | [Events.Completed, Id] | [Events.Remove, Id];
-```
