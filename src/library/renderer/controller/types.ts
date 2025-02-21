@@ -7,7 +7,7 @@ import useController from "./index.ts";
 
 export type Props<M extends Module> = {
   phase: UsePhase;
-  actions: UseActions;
+  actions: UseActions<M>;
   options: UseOptions<M>;
   dispatchers: UseDispatchers;
 };

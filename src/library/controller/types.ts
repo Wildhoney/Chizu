@@ -1,4 +1,6 @@
-import { Actions, Lifecycle, Module } from "../types/index.ts";
+import { Maybe } from "../functor/maybe/index.ts";
+import { Head } from "../renderer/types.ts";
+import { Lifecycle, Module } from "../types/index.ts";
 
 export type ControllerActions<M extends Module> = {
   io<T>(ƒ: () => T): T;
@@ -14,15 +16,15 @@ export type ControllerArgs<S extends Module> = {
 
 export type ControllerDefinition<M extends Module> = (controller: ControllerArgs<M>) => ControllerInstance<M>;
 
-export type ControllerInstance<M extends Module> = {
-  [Lifecycle.Mount]?(parameters: M["Routes"]): Generator<never, void, unknown>;
-  [Lifecycle.Derive]?(attributes: M["Attributes"]): Generator<never, void, unknown>;
-  [Lifecycle.Tree]?(): Generator<never, void, unknown>;
-  [Lifecycle.Unmount]?(): Generator<never, void, unknown>;
-} & Partial<Handlers<M["Actions"]>>;
+export type ControllerInstance<M extends Module, T extends Maybe<never> = Maybe<never>> = {
+  [Lifecycle.Mount]?(parameters: M["Routes"]): Generator<never, (model: M["Model"]) => M["Model"], T>;
+  [Lifecycle.Derive]?(attributes: M["Attributes"]): Generator<never, (model: M["Model"]) => M["Model"], T>;
+  [Lifecycle.Tree]?(): Generator<never, (model: M["Model"]) => M["Model"], T>;
+  [Lifecycle.Unmount]?(): Generator<never, (model: M["Model"]) => M["Model"], T>;
+} & Partial<Handlers<M, T>>;
 
-type Handlers<A extends Actions> = {
-  [K in A[0]]: (payload: Payload<A, K>) => Generator<any, any, never>;
+type Handlers<M extends Module, T extends Maybe<never>> = {
+  [K in Head<M["Actions"]>]: (payload: Payload<M, K>) => Generator<any, (model: M["Model"]) => M["Model"], T>;
 };
 
-type Payload<A extends Actions, K> = A extends [K, infer P] ? P : never;
+type Payload<M extends Module, K> = M["Actions"] extends [K, infer P] ? P : never;

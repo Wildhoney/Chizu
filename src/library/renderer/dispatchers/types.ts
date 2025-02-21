@@ -21,3 +21,5 @@ export type UseDispatchers = ReturnType<typeof useDispatchers>;
 export type UseDispatchHandlerProps<M extends Module> = Props<M>;
 
 export type Fn = (...args: any[]) => void;
+
+export type GeneratorFn = (...args: any[]) => Generator<any, any, any>;

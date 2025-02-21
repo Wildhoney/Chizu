@@ -1,10 +1,10 @@
 import { Absent, Present } from "../../functor/maybe/index.ts";
 import { Module } from "../../types/index.ts";
 import { Head, Tail } from "../types.ts";
-import { UseDispatchHandlerProps } from "./types.ts";
+import { GeneratorFn, UseDispatchHandlerProps } from "./types.ts";
 
 export function useDispatchHandler<M extends Module>(props: UseDispatchHandlerProps<M>) {
-  return (name: Head<M["Actions"]>, ƒ) => {
+  return (name: Head<M["Actions"]>, ƒ: GeneratorFn) => {
     return async (payload: Tail<M["Actions"]>): Promise<void> => {
       if (props.queue.current.size > 0) {
         await Promise.allSettled([...props.queue.current].slice(1));

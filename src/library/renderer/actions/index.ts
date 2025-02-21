@@ -1,5 +1,5 @@
 import { Module } from "../../types/index.ts";
-import { Props, Return } from "./types.ts";
+import { Props, UseActions } from "./types.ts";
 import { Immer, enablePatches } from "immer";
 import * as React from "react";
 
@@ -7,7 +7,7 @@ const immer = new Immer();
 immer.setAutoFreeze(false);
 enablePatches();
 
-export default function useActions<M extends Module>(props: Props): Return<M> {
+export default function useActions<M extends Module>(props: Props): UseActions<M> {
   return React.useMemo(
     () => ({
       controller: {
