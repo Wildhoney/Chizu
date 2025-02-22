@@ -6,7 +6,7 @@ export type Validation<M extends Model> = {
 };
 
 export type ViewActions<M extends Module> = {
-  // validate<T>(ƒ: (model: Validation<M["Model"]>) => T): T;
+  validate<T>(ƒ: (model: Validation<M["Model"]>) => T): T;
   dispatch(event: M["Actions"]): void;
   // navigate(route: M["Routes"]): void;
 };

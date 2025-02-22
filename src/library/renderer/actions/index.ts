@@ -1,4 +1,5 @@
 import { Module } from "../../types/index.ts";
+import validate from "../../validate/index.ts";
 import { Props, UseActions } from "./types.ts";
 import { Immer, enablePatches } from "immer";
 import * as React from "react";
@@ -31,11 +32,10 @@ export default function useActions<M extends Module>(props: Props): UseActions<M
           return props.model.current;
         },
         actions: {
-          // validate(ƒ) {
-          //   return ƒ(
-          //     validate<S["Model"]>(props.model.current, mutations.current),
-          //   );
-          // },
+          validate(ƒ) {
+            const proxy = validate(props.model.current, props.mutations.current);
+            return ƒ(proxy);
+          },
           dispatch([action, ...data]) {
             return props.dispatchers.dispatch(action, data);
           },

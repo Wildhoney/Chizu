@@ -1,5 +1,5 @@
 import { Absent, Present } from "../../functor/maybe/index.ts";
-import { Module } from "../../types/index.ts";
+import { Module, State } from "../../types/index.ts";
 import { Head, Tail } from "../types.ts";
 import { GeneratorFn, UseDispatchHandlerProps } from "./types.ts";
 
@@ -22,6 +22,7 @@ export function useDispatchHandler<M extends Module>(props: UseDispatchHandlerPr
         task.resolve();
 
         if (end) {
+          props.mutations.current = [];
           props.queue.current.delete(task.promise);
           props.logger.finalPass({ event: name, model, duration });
         }
@@ -48,6 +49,8 @@ export function useDispatchHandler<M extends Module>(props: UseDispatchHandlerPr
             mutations: result.value?.[1],
           });
 
+          const paths = result.value(model)[1].map((mutation) => mutation.path);
+          props.mutations.current = paths.map((path) => ({ path, state: State.Pending }));
           commit(result.value(model)[0], null, io.size === 0);
           break;
         }

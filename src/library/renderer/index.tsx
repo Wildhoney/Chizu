@@ -6,6 +6,7 @@ import useElements from "./elements/index.ts";
 import useLifecycles from "./lifecycles/index.ts";
 import useLogger from "./logger/index.ts";
 import useModel from "./model/index.ts";
+import useMutations from "./mutations/index.ts";
 import usePhase from "./phase/index.ts";
 import useQueue from "./queue/index.ts";
 import { Props } from "./types.ts";
@@ -18,12 +19,13 @@ export default function renderer<M extends Module>({ options }: Props<M>): React
   const phase = usePhase();
   const update = useUpdate();
   const queue = useQueue();
+  const mutations = useMutations();
   const elements = useElements({ update });
 
   const model = useModel({ options });
   const logger = useLogger({ options, elements });
-  const dispatchers = useDispatchers({ options, update, model, elements, logger, queue });
-  const actions = useActions<M>({ model, dispatchers });
+  const dispatchers = useDispatchers({ options, update, model, elements, logger, queue, mutations });
+  const actions = useActions<M>({ model, dispatchers, mutations });
 
   useController({ options, phase, dispatchers, actions });
   useLifecycles({ options, dispatchers, phase });
