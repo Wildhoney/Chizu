@@ -1,5 +1,4 @@
-import { Maybe } from "../../library/functor/maybe/index.ts";
-import { Lifecycle, create } from "../../library/index.ts";
+import { Lifecycle, Maybe, create } from "../../library/index.ts";
 import { DistributedEvents } from "../types.ts";
 import { Events, Module } from "./types.ts";
 

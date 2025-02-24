@@ -1,5 +1,4 @@
-import { Fault, Maybe } from "../../library/functor/maybe/index.ts";
-import { Lifecycle, create } from "../../library/index.ts";
+import { Lifecycle, Maybe, create } from "../../library/index.ts";
 import { Events, Module, Task, TaskWithoutId } from "./types.ts";
 import { TodosDb } from "./utils.ts";
 
@@ -8,7 +7,9 @@ export default create.controller<Module>((self) => {
 
   return {
     *[Lifecycle.Mount]() {
-      const tasks: Maybe<Task[]> = yield self.actions.io(() => db.todos.toArray());
+      const tasks: Maybe<Task[]> = yield self.actions.io(async () => {
+        return db.todos.toArray();
+      });
 
       return self.actions.produce((draft) => {
         draft.tasks = tasks.otherwise([]);
@@ -44,7 +45,7 @@ export default create.controller<Module>((self) => {
         const task = await db.todos.get(id);
 
         if (!task) {
-          return new Fault(new Error("Task not found"));
+          return Maybe.Fault(new Error("Task not found"));
         }
 
         await db.todos.update(id, { completed: !task.completed });
@@ -52,13 +53,13 @@ export default create.controller<Module>((self) => {
       });
 
       return self.actions.produce((draft) => {
-        task.invoke((task) => {
-          const index = draft.tasks.findIndex(({ id }) => task.id === id);
+        const pk = task.map(({ id }) => id).otherwise(id);
+        const index = draft.tasks.findIndex(({ id }) => pk === id);
+        const model = draft.tasks[index];
 
-          if (index !== -1) {
-            draft.tasks[index] = { ...task, completed: !task.completed };
-          }
-        });
+        if (index !== -1) {
+          draft.tasks[index] = { ...model, completed: !model.completed };
+        }
       });
     },
 

@@ -1,4 +1,4 @@
-import { Absent, Present } from "../../functor/maybe/index.ts";
+import { Maybe } from "../../functor/maybe/index.ts";
 import { Module, State } from "../../types/index.ts";
 import { Head, Tail } from "../types.ts";
 import { GeneratorFn, UseDispatchHandlerProps } from "./types.ts";
@@ -38,7 +38,7 @@ export function useDispatchHandler<M extends Module>(props: UseDispatchHandlerPr
       };
 
       while (true) {
-        const result = analysePass.generator.next(new Absent());
+        const result = analysePass.generator.next(Maybe.Absent());
 
         if (result.done) {
           props.logger.analysePass({
@@ -75,8 +75,8 @@ export function useDispatchHandler<M extends Module>(props: UseDispatchHandlerPr
       results.forEach((io) => {
         const result =
           io.status === "fulfilled"
-            ? finalPass.generator.next(new Present(io.value))
-            : finalPass.generator.next(new Absent());
+            ? finalPass.generator.next(Maybe.Present(io.value))
+            : finalPass.generator.next(Maybe.Absent());
 
         if (result.done && result.value != null) {
           return void commit(result.value(model)[0], finalPass.duration, true);

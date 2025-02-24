@@ -1,5 +1,4 @@
-import { Maybe } from "../../library/functor/maybe/index.ts";
-import { create } from "../../library/index.ts";
+import { Maybe, create } from "../../library/index.ts";
 import { Events, Module } from "./types.ts";
 
 const usernames = ["Wildhoney", "LinuxJS", "XiaomingX", "nholuongut", "san-ghun"];

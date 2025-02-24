@@ -2,9 +2,21 @@ export abstract class Maybe<T> {
   abstract map<U>(fn: (val: T) => U): Maybe<U>;
   abstract otherwise(defaultValue: T): T;
   abstract invoke(fn: (val: T) => void): void;
+
+  static Present<T>(value: T): Maybe<T> {
+    return new Present(value);
+  }
+
+  static Absent<T>(): Maybe<T> {
+    return new Absent<T>();
+  }
+
+  static Fault<T>(error: Error): Maybe<T> {
+    return new Fault<T>(error);
+  }
 }
 
-export class Present<T> extends Maybe<T> {
+class Present<T> extends Maybe<T> {
   constructor(private value: T) {
     super();
   }
@@ -22,7 +34,7 @@ export class Present<T> extends Maybe<T> {
   }
 }
 
-export class Absent<T> extends Maybe<T> {
+class Absent<T> extends Maybe<T> {
   map<U>(_: (val: T) => U): Maybe<U> {
     return new Absent<U>();
   }
@@ -36,7 +48,7 @@ export class Absent<T> extends Maybe<T> {
   }
 }
 
-export class Fault<T> extends Maybe<T> {
+class Fault<T> extends Maybe<T> {
   constructor(private error: Error) {
     super();
   }

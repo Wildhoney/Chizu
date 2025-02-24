@@ -1,4 +1,4 @@
-import { ModuleOptions } from "../../library/types/index.ts";
+import { ModuleOptions } from "../../library/index.ts";
 import { DistributedActions, Route, Routes } from "../types.ts";
 
 type Id = number;
