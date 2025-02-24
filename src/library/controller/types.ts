@@ -17,10 +17,10 @@ export type ControllerArgs<S extends Module> = {
 export type ControllerDefinition<M extends Module> = (controller: ControllerArgs<M>) => ControllerInstance<M>;
 
 export type ControllerInstance<M extends Module, T extends Maybe<never> = Maybe<never>> = {
-  [Lifecycle.Mount]?(parameters: M["Routes"]): Generator<never, (model: M["Model"]) => M["Model"], T>;
-  [Lifecycle.Derive]?(attributes: M["Attributes"]): Generator<never, (model: M["Model"]) => M["Model"], T>;
-  [Lifecycle.Tree]?(): Generator<never, (model: M["Model"]) => M["Model"], T>;
-  [Lifecycle.Unmount]?(): Generator<never, (model: M["Model"]) => M["Model"], T>;
+  [Lifecycle.Mount]?(parameters: M["Routes"]): Generator<unknown, (model: M["Model"]) => M["Model"], T>;
+  [Lifecycle.Derive]?(attributes: M["Attributes"]): Generator<unknown, (model: M["Model"]) => M["Model"], T>;
+  [Lifecycle.Tree]?(): Generator<unknown, (model: M["Model"]) => M["Model"], T>;
+  [Lifecycle.Unmount]?(): Generator<unknown, (model: M["Model"]) => M["Model"], T>;
 } & Partial<Handlers<M, T>>;
 
 type Handlers<M extends Module, T extends Maybe<never>> = {

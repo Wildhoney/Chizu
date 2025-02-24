@@ -1,7 +1,4 @@
 import { create } from "../../library/index.ts";
-import Dice from "../dice/index.ts";
-import GithubFollowers from "../github-followers/index.ts";
-import { DistributedEvents } from "../types.ts";
 import { Events, Module } from "./types.ts";
 
 export default create.view<Module>((self) => {
@@ -19,19 +16,12 @@ export default create.view<Module>((self) => {
         Add task
       </button>
 
-      <Dice taskCount={String(self.model.tasks.length)} initialKite="6" />
-
-      <GithubFollowers />
-
-      <button onClick={(): void => self.actions.dispatch([DistributedEvents.Reset])}>Reset</button>
-
       {self.model.tasks.length === 0 ? (
         <p>You have no tasks yet.</p>
       ) : (
         <ol>
           {self.model.tasks.map((task) => (
             <li key={task.id}>
-              {task.id}{" "}
               <input
                 type="checkbox"
                 checked={task.completed}

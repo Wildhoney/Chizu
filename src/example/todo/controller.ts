@@ -1,9 +1,20 @@
-import { create } from "../../library/index.ts";
-import { DistributedEvents } from "../types.ts";
-import { Events, Module } from "./types.ts";
+import { Fault, Maybe } from "../../library/functor/maybe/index.ts";
+import { Lifecycle, create } from "../../library/index.ts";
+import { Events, Module, Task, TaskWithoutId } from "./types.ts";
+import { TodosDb } from "./utils.ts";
 
 export default create.controller<Module>((self) => {
+  const db = new TodosDb();
+
   return {
+    *[Lifecycle.Mount]() {
+      const tasks: Maybe<Task[]> = yield self.actions.io(() => db.todos.toArray());
+
+      return self.actions.produce((draft) => {
+        draft.tasks = tasks.otherwise([]);
+      });
+    },
+
     *[Events.Task](task) {
       return self.actions.produce((draft) => {
         draft.task = task;
@@ -11,40 +22,57 @@ export default create.controller<Module>((self) => {
     },
 
     *[Events.Add]() {
-      return self.actions.produce((draft) => {
-        if (self.model.task) {
-          draft.task = null;
+      const task: Maybe<Task> = yield self.actions.io(async () => {
+        const task: TaskWithoutId = {
+          task: self.model.task as string,
+          date: new Date(),
+          completed: false,
+        };
 
-          draft.tasks.push({
-            id: ++draft.id,
-            task: self.model.task,
-            date: new Date(),
-            completed: false,
-          });
-        }
+        await db.todos.put(task);
+        return task;
+      });
+
+      return self.actions.produce((draft) => {
+        draft.task = null;
+        task.invoke((task) => draft.tasks.push(task));
       });
     },
 
     *[Events.Completed](id) {
-      return self.actions.produce((draft) => {
-        const task = draft.tasks.find((task) => task.id === id);
+      const task: Maybe<Task> = yield self.actions.io(async () => {
+        const task = await db.todos.get(id);
 
-        if (task) {
-          task.completed = !task.completed;
+        if (!task) {
+          return new Fault(new Error("Task not found"));
         }
+
+        await db.todos.update(id, { completed: !task.completed });
+        return task;
+      });
+
+      return self.actions.produce((draft) => {
+        task.invoke((task) => {
+          const index = draft.tasks.findIndex(({ id }) => task.id === id);
+
+          if (index !== -1) {
+            draft.tasks[index] = { ...task, completed: !task.completed };
+          }
+        });
       });
     },
 
     *[Events.Remove](id) {
-      return self.actions.produce((draft) => {
-        draft.tasks = draft.tasks.filter((task) => task.id !== id);
+      const task: Maybe<Task> = yield self.actions.io(async () => {
+        const task = await db.todos.get(id);
+        await db.todos.delete(id);
+        return task;
       });
-    },
 
-    *[DistributedEvents.Reset]() {
       return self.actions.produce((draft) => {
-        draft.tasks = [];
-        draft.id = 0;
+        task.invoke((task) => {
+          draft.tasks = draft.tasks.filter(({ id }) => task.id !== id);
+        });
       });
     },
   };

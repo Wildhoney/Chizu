@@ -1,6 +1,7 @@
 export abstract class Maybe<T> {
   abstract map<U>(fn: (val: T) => U): Maybe<U>;
   abstract otherwise(defaultValue: T): T;
+  abstract invoke(fn: (val: T) => void): void;
 }
 
 export class Present<T> extends Maybe<T> {
@@ -15,6 +16,10 @@ export class Present<T> extends Maybe<T> {
   otherwise(_: T): T {
     return this.value;
   }
+
+  invoke(fn: (val: T) => void): void {
+    fn(this.value);
+  }
 }
 
 export class Absent<T> extends Maybe<T> {
@@ -24,6 +29,10 @@ export class Absent<T> extends Maybe<T> {
 
   otherwise(defaultValue: T): T {
     return defaultValue;
+  }
+
+  invoke(_: (val: T) => void): void {
+    return;
   }
 }
 
@@ -37,6 +46,10 @@ export class Fault<T> extends Maybe<T> {
   }
 
   otherwise(_: T): T {
+    throw this.error;
+  }
+
+  invoke(_: (val: T) => void): void {
     throw this.error;
   }
 }

@@ -3,12 +3,14 @@ import { DistributedActions, Route, Routes } from "../types.ts";
 
 type Id = number;
 
-type Task = {
+export type Task = {
   id: Id;
   task: string;
   date: Date;
   completed: boolean;
 };
+
+export type TaskWithoutId = Omit<Task, "id">;
 
 export type Model = {
   id: number;
