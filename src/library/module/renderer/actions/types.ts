@@ -1,6 +1,6 @@
-import { ControllerArgs } from "../../controller/types.ts";
-import { Module } from "../../types/index.ts";
-import { ViewArgs } from "../../view/types.ts";
+import { ControllerArgs } from "../../../controller/types.ts";
+import { ModuleDefinition } from "../../../types/index.ts";
+import { ViewArgs } from "../../../view/types.ts";
 import { UseDispatchers } from "../dispatchers/types.ts";
 import { UseModel } from "../model/types.ts";
 import { UseMutations } from "../mutations/types.ts";
@@ -11,7 +11,7 @@ export type Props = {
   mutations: UseMutations;
 };
 
-export type UseActions<M extends Module> = {
+export type UseActions<M extends ModuleDefinition> = {
   view: ViewArgs<M>;
   controller: ControllerArgs<M>;
 };

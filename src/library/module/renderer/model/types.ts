@@ -1,8 +1,8 @@
 import useModel from ".";
-import { Module } from "../../types/index.ts";
+import { ModuleDefinition } from "../../../types/index.ts";
 import { UseOptions } from "../types.ts";
 
-export type Props<M extends Module> = {
+export type Props<M extends ModuleDefinition> = {
   options: UseOptions<M>;
 };
 

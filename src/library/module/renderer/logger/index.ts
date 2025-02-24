@@ -1,9 +1,9 @@
-import { Module } from "../../types/index.ts";
+import { ModuleDefinition } from "../../../types/index.ts";
 import { AnalysePassProps, FinalPassProps, Props } from "./types.ts";
 import { getColour } from "./utils.ts";
 import * as React from "react";
 
-export default function useLogger<M extends Module>(props: Props<M>) {
+export default function useLogger<M extends ModuleDefinition>(props: Props<M>) {
   return React.useMemo(
     () => ({
       renderPass(): void {

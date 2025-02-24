@@ -48,7 +48,7 @@ export type ModuleOptions<
   Routes: D;
 };
 
-export type Module = {
+export type ModuleDefinition = {
   Model: Model;
   Actions: Actions;
   Attributes: Attributes;

@@ -1,8 +1,11 @@
-import { Mutations } from "../renderer/mutations/types.ts";
-import { Module, State } from "../types/index.ts";
-import { Validation } from "../view/types.ts";
+import { Mutations } from "../../module/renderer/mutations/types.ts";
+import { ModuleDefinition, State } from "../../types/index.ts";
+import { Validation } from "../../view/types.ts";
 
-export default function validate<M extends Module>(model: M["Model"], mutations: Mutations): Validation<M["Model"]> {
+export default function validate<M extends ModuleDefinition>(
+  model: M["Model"],
+  mutations: Mutations,
+): Validation<M["Model"]> {
   const paths = new Set<string>();
 
   const handler = {

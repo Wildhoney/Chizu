@@ -1,13 +1,13 @@
-import { Options } from "../module/types";
-import { Module } from "../types";
+import { ModuleDefinition } from "../../types/index.ts";
+import { Options } from "../types.ts";
 
 export type ElementName = string;
 
-export type Props<M extends Module> = {
+export type Props<M extends ModuleDefinition> = {
   options: UseOptions<M>;
 };
 
-export type UseOptions<M extends Module> = Options<M> & {
+export type UseOptions<M extends ModuleDefinition> = Options<M> & {
   name: ElementName;
   attributes: M["Attributes"];
 };

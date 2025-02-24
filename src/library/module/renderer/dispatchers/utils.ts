@@ -1,9 +1,9 @@
-import { Maybe } from "../../functor/maybe/index.ts";
-import { Module, State } from "../../types/index.ts";
+import { Maybe } from "../../../index.ts";
+import { ModuleDefinition, State } from "../../../types/index.ts";
 import { Head, Tail } from "../types.ts";
 import { GeneratorFn, UseDispatchHandlerProps } from "./types.ts";
 
-export function useDispatchHandler<M extends Module>(props: UseDispatchHandlerProps<M>) {
+export function useDispatchHandler<M extends ModuleDefinition>(props: UseDispatchHandlerProps<M>) {
   return (name: Head<M["Actions"]>, ƒ: GeneratorFn) => {
     return async (payload: Tail<M["Actions"]>): Promise<void> => {
       if (props.queue.current.size > 0) {

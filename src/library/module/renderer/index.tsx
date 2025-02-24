@@ -1,4 +1,4 @@
-import { Module } from "../types";
+import { ModuleDefinition } from "../../types/index.ts";
 import useActions from "./actions/index.ts";
 import useController from "./controller/index.ts";
 import useDispatchers from "./dispatchers/index.ts";
@@ -15,7 +15,7 @@ import { ReactElement } from "react";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 
-export default function renderer<M extends Module>({ options }: Props<M>): ReactElement {
+export default function renderer<M extends ModuleDefinition>({ options }: Props<M>): ReactElement {
   const phase = usePhase();
   const update = useUpdate();
   const queue = useQueue();

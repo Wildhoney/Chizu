@@ -1,4 +1,4 @@
-export abstract class Maybe<T> {
+export default abstract class Maybe<T> {
   abstract map<U>(fn: (val: T) => U): Maybe<U>;
   abstract otherwise(defaultValue: T): T;
   abstract invoke(fn: (val: T) => void): void;

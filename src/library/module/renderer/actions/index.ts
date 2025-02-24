@@ -1,5 +1,5 @@
-import { Module } from "../../types/index.ts";
-import validate from "../../validate/index.ts";
+import { ModuleDefinition } from "../../../types/index.ts";
+import * as utils from "../../../utils/index.ts";
 import { Props, UseActions } from "./types.ts";
 import { Immer, enablePatches } from "immer";
 import * as React from "react";
@@ -8,7 +8,7 @@ const immer = new Immer();
 immer.setAutoFreeze(false);
 enablePatches();
 
-export default function useActions<M extends Module>(props: Props): UseActions<M> {
+export default function useActions<M extends ModuleDefinition>(props: Props): UseActions<M> {
   return React.useMemo(
     () => ({
       controller: {
@@ -33,7 +33,7 @@ export default function useActions<M extends Module>(props: Props): UseActions<M
         },
         actions: {
           validate(ƒ) {
-            const proxy = validate(props.model.current, props.mutations.current);
+            const proxy = utils.validate(props.model.current, props.mutations.current);
             return ƒ(proxy);
           },
           dispatch([action, ...data]) {
