@@ -1,4 +1,4 @@
-import { create } from "../../library/index.ts";
+import { State, create } from "../../library/index.ts";
 import { Events, Module } from "./types.ts";
 
 export default create.view<Module>((self) => {
@@ -17,7 +17,13 @@ export default create.view<Module>((self) => {
       </button>
 
       {self.model.tasks.length === 0 ? (
-        <p>You have no tasks yet.</p>
+        <p>
+          {self.actions.validate((model) => model.tasks, State.Pending) ? (
+            <>Please wait&hellip;</>
+          ) : (
+            "You have no tasks yet."
+          )}
+        </p>
       ) : (
         <ol>
           {self.model.tasks.map((task) => (

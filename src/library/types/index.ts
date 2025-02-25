@@ -5,7 +5,7 @@
 // }
 
 export const enum State {
-  Value = 1,
+  Actual = 1,
   Pending = 2,
   Failed = 4,
   Optimistic = 8,

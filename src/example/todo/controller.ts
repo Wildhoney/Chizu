@@ -7,6 +7,7 @@ export default create.controller<Module>((self) => {
 
   return {
     *[Lifecycle.Mount]() {
+      
       const tasks: Maybe<Task[]> = yield self.actions.io(async () => {
         return db.todos.toArray();
       });
@@ -24,6 +25,8 @@ export default create.controller<Module>((self) => {
 
     *[Events.Add]() {
       const task: Maybe<Task> = yield self.actions.io(async () => {
+        
+        
         const task: TaskWithoutId = {
           task: self.model.task as string,
           date: new Date(),

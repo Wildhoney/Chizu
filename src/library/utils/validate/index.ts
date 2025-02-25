@@ -1,15 +1,15 @@
 import { Mutations } from "../../module/renderer/mutations/types.ts";
 import { ModuleDefinition, State } from "../../types/index.ts";
-import { Validation } from "../../view/types.ts";
 
 export default function validate<M extends ModuleDefinition>(
   model: M["Model"],
   mutations: Mutations,
-): Validation<M["Model"]> {
+): M["Model"] {
   const paths = new Set<string>();
 
   const handler = {
     get(record: M["Model"], key: symbol | string) {
+
       const value = Reflect.get(record, key);
 
       if (typeof key === "symbol") {
@@ -18,7 +18,7 @@ export default function validate<M extends ModuleDefinition>(
 
       paths.add(key);
 
-      if (typeof value === "object" && value !== null) {
+      if (typeof value === "object" && value !== null && !Array.isArray(value)) {
         return new Proxy(value, handler);
       }
 
@@ -28,7 +28,7 @@ export default function validate<M extends ModuleDefinition>(
         .filter((state) => path.startsWith(state.path.join(".")));
       const states = new Set(relevant.map(({ state }) => state));
 
-      return [...states].reduce((current, state) => current ^ state, State.Value);
+      return [...states].reduce((current, state) => current ^ state, State.Actual);
     },
   };
 

@@ -32,9 +32,9 @@ export default function useActions<M extends ModuleDefinition>(props: Props): Us
           return props.model.current;
         },
         actions: {
-          validate(ƒ) {
-            const proxy = utils.validate(props.model.current, props.mutations.current);
-            return ƒ(proxy);
+          validate(ƒ, state) {
+            const value = utils.validate(props.model.current, props.mutations.current);
+            return Boolean((ƒ(value) as number) & state);
           },
           dispatch([action, ...data]) {
             return props.dispatchers.dispatch(action, data);
