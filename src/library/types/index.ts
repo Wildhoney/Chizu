@@ -36,7 +36,7 @@ export type Name<A extends Actions> = A[0];
 
 export type Attributes = Record<string, string>;
 
-export type ModuleOptions<
+export type Module<
   A extends Model,
   B extends Actions,
   C extends Attributes,

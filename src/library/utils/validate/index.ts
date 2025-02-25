@@ -1,15 +1,11 @@
 import { Mutations } from "../../module/renderer/mutations/types.ts";
 import { ModuleDefinition, State } from "../../types/index.ts";
 
-export default function validate<M extends ModuleDefinition>(
-  model: M["Model"],
-  mutations: Mutations,
-): M["Model"] {
+export default function validate<M extends ModuleDefinition>(model: M["Model"], mutations: Mutations): M["Model"] {
   const paths = new Set<string>();
 
   const handler = {
     get(record: M["Model"], key: symbol | string) {
-
       const value = Reflect.get(record, key);
 
       if (typeof key === "symbol") {

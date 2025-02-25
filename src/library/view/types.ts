@@ -2,7 +2,7 @@ import { ModuleDefinition, State } from "../types/index.ts";
 import * as React from "react";
 
 export type ViewActions<M extends ModuleDefinition> = {
-  validate<T>(ƒ: (model: M["Model"]) => T,state: State): boolean;
+  validate<T>(ƒ: (model: M["Model"]) => T, state: State): boolean;
   dispatch(event: M["Actions"]): void;
   // navigate(route: M["Routes"]): void;
 };

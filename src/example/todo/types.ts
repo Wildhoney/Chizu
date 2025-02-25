@@ -1,4 +1,4 @@
-import { ModuleOptions } from "../../library/index.ts";
+import { Create } from "../../library/index.ts";
 import { DistributedActions, Route, Routes } from "../types.ts";
 
 type Id = number;
@@ -32,4 +32,4 @@ export type Actions =
   | [Events.Completed, Id]
   | [Events.Remove, Id];
 
-export type Module = ModuleOptions<Model, Actions, {}, [Routes, Route.Dashboard]>;
+export type Module = Create.Module<Model, Actions, {}, [Routes, Route.Dashboard]>;
