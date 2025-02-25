@@ -36,7 +36,7 @@ export default create.controller<Module>((self) => {
 
       return self.actions.produce((draft) => {
         draft.task = null;
-        task.invoke((task) => draft.tasks.push(task));
+        draft.tasks = task.map((task) => [...draft.tasks, task]).otherwise(draft.tasks);
       });
     },
 
@@ -71,9 +71,7 @@ export default create.controller<Module>((self) => {
       });
 
       return self.actions.produce((draft) => {
-        task.invoke((task) => {
-          draft.tasks = draft.tasks.filter(({ id }) => task.id !== id);
-        });
+        draft.tasks = draft.tasks.filter(({ id }) => task.map(({ id }) => id).otherwise(id) !== id);
       });
     },
   };

@@ -1,7 +1,6 @@
 export default abstract class Maybe<T> {
   abstract map<U>(fn: (val: T) => U): Maybe<U>;
   abstract otherwise(defaultValue: T): T;
-  abstract invoke(fn: (val: T) => void): void;
 
   static Present<T>(value: T): Maybe<T> {
     return new Present(value);
@@ -28,10 +27,6 @@ class Present<T> extends Maybe<T> {
   otherwise(_: T): T {
     return this.value;
   }
-
-  invoke(fn: (val: T) => void): void {
-    fn(this.value);
-  }
 }
 
 class Absent<T> extends Maybe<T> {
@@ -41,10 +36,6 @@ class Absent<T> extends Maybe<T> {
 
   otherwise(defaultValue: T): T {
     return defaultValue;
-  }
-
-  invoke(_: (val: T) => void): void {
-    return;
   }
 }
 
@@ -58,10 +49,6 @@ class Fault<T> extends Maybe<T> {
   }
 
   otherwise(_: T): T {
-    throw this.error;
-  }
-
-  invoke(_: (val: T) => void): void {
     throw this.error;
   }
 }
