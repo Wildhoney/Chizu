@@ -16,4 +16,4 @@ export type Props = {
   taskCount: string;
 };
 
-export type Module = Create.ModuleOptions<Model, Actions, Props, [Routes, Route.Dashboard]>;
+export type Module = Create.Module<Model, Actions, Props, [Routes, Route.Dashboard]>;

@@ -31,7 +31,7 @@ export default function renderer<M extends ModuleDefinition>({ options }: Props<
   useLifecycles({ options, dispatchers, phase });
 
   return React.useMemo(() => {
-    logger.renderPass();
+    logger.output({});
 
     return React.createElement(options.name, {
       ref: elements.customElement,

@@ -4,7 +4,7 @@ import { Head, Tail } from "../types.ts";
 import { GeneratorFn, UseDispatchHandlerProps } from "./types.ts";
 
 export function useDispatchHandler<M extends ModuleDefinition>(props: UseDispatchHandlerProps<M>) {
-  return (name: Head<M["Actions"]>, ƒ: GeneratorFn) => {
+  return (_name: Head<M["Actions"]>, ƒ: GeneratorFn) => {
     return async (payload: Tail<M["Actions"]>): Promise<void> => {
       if (props.queue.current.size > 0) {
         await Promise.allSettled([...props.queue.current].slice(1));
@@ -15,7 +15,7 @@ export function useDispatchHandler<M extends ModuleDefinition>(props: UseDispatc
       const task = Promise.withResolvers<void>();
       props.queue.current.add(task.promise);
 
-      function commit(model: M["Model"], duration: null | number, end: boolean): void {
+      function commit(model: M["Model"], _duration: null | number, end: boolean): void {
         props.model.current = model;
         props.update.rerender();
 
@@ -24,7 +24,6 @@ export function useDispatchHandler<M extends ModuleDefinition>(props: UseDispatc
         if (end) {
           props.mutations.current = [];
           props.queue.current.delete(task.promise);
-          props.logger.finalPass({ event: name, model, duration });
         }
       }
 
@@ -41,14 +40,6 @@ export function useDispatchHandler<M extends ModuleDefinition>(props: UseDispatc
         const result = analysePass.generator.next(Maybe.Absent());
 
         if (result.done) {
-          props.logger.analysePass({
-            event: name,
-            payload,
-            io,
-            duration: analysePass.duration,
-            mutations: result.value?.[1],
-          });
-
           const paths = result.value(model)[1].map((mutation) => mutation.path);
           props.mutations.current = paths.map((path) => ({ path, state: State.Pending }));
           commit(result.value(model)[0], null, io.size === 0);

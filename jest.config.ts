@@ -1,5 +1,7 @@
 import type { Config } from "jest";
 
-export default <Config>{
+const config: Config = {
   testEnvironment: "jsdom",
 };
+
+export default config;
