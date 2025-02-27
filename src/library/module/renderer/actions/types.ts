@@ -12,6 +12,6 @@ export type Props = {
 };
 
 export type UseActions<M extends ModuleDefinition> = {
-  view: ViewArgs<M>;
   controller: ControllerArgs<M>;
+  view: ViewArgs<M>;
 };

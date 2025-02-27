@@ -1,4 +1,4 @@
-import { Lifecycle, Maybe, create } from "../../library/index.ts";
+import { Lifecycle, Maybe, create, utils } from "../../library/index.ts";
 import { Events, Module, Task, TaskWithoutId } from "./types.ts";
 import { Db } from "./utils.ts";
 
@@ -24,11 +24,17 @@ export default create.controller<Module>((self) => {
 
     *[Events.Add]() {
       const task: Maybe<Task> = yield self.actions.io(async () => {
+        if (!self.model.task) {
+          return;
+        }
+
         const task: TaskWithoutId = {
-          task: self.model.task as string,
+          task: self.model.task,
           date: new Date(),
           completed: false,
         };
+
+        await utils.sleep(5_000);
 
         await db.todos.put(task);
         return task;
@@ -36,7 +42,17 @@ export default create.controller<Module>((self) => {
 
       return self.actions.produce((draft) => {
         draft.task = null;
-        draft.tasks = task.map((task) => [...draft.tasks, task]).otherwise(draft.tasks);
+        draft.tasks = task
+          .map((task) => [...draft.tasks, task])
+          .otherwise([
+            ...draft.tasks,
+            {
+              id: 500,
+              task: `${self.model.task} (saving)` as string,
+              date: new Date(),
+              completed: false,
+            },
+          ]);
       });
     },
 

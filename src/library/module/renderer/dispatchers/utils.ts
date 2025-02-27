@@ -6,24 +6,23 @@ import { GeneratorFn, UseDispatchHandlerProps } from "./types.ts";
 export function useDispatchHandler<M extends ModuleDefinition>(props: UseDispatchHandlerProps<M>) {
   return (_name: Head<M["Actions"]>, ƒ: GeneratorFn) => {
     return async (payload: Tail<M["Actions"]>): Promise<void> => {
-      if (props.queue.current.size > 0) {
-        await Promise.allSettled([...props.queue.current].slice(1));
+      const task = Promise.withResolvers<void>();
+      props.queue.current.add(task.promise);
+
+      if (props.queue.current.size > 1) {
+        await Promise.allSettled([...props.queue.current].slice(0, -1));
       }
 
       const model = props.model.current;
-
-      const task = Promise.withResolvers<void>();
-      props.queue.current.add(task.promise);
 
       function commit(model: M["Model"], _duration: null | number, end: boolean): void {
         props.model.current = model;
         props.update.rerender();
 
-        task.resolve();
-
         if (end) {
           props.mutations.current = [];
           props.queue.current.delete(task.promise);
+          task.resolve();
         }
       }
 
