@@ -1,5 +1,6 @@
 import { ModuleDefinition } from "../../../types/index.ts";
 import * as utils from "../../../utils/index.ts";
+import { Validator } from "../../../view/types.ts";
 import { Props, UseActions } from "./types.ts";
 import { Immer, enablePatches } from "immer";
 import * as React from "react";
@@ -32,9 +33,9 @@ export default function useActions<M extends ModuleDefinition>(props: Props): Us
           return props.model.current;
         },
         actions: {
-          validate(ƒ, state) {
-            const value = utils.validate(props.model.current, props.mutations.current);
-            return Boolean((ƒ(value) as number) & state);
+          validate(ƒ) {
+            const validator: Validator<M["Model"]> = utils.validate(props.model.current, props.mutations.current);
+            return ƒ(validator);
           },
           dispatch([action, ...data]) {
             return props.dispatchers.dispatch(action, data);
