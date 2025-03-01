@@ -6,10 +6,31 @@ import { GeneratorFn, UseDispatchHandlerProps } from "./types.ts";
 export function useDispatchHandler<M extends ModuleDefinition>(props: UseDispatchHandlerProps<M>) {
   return (_name: Head<M["Actions"]>, ƒ: GeneratorFn) => {
     return async (payload: Tail<M["Actions"]>): Promise<void> => {
+      const process = Symbol("process");
       const task = Promise.withResolvers<void>();
       props.queue.current.add(task.promise);
 
       if (props.queue.current.size > 1) {
+        const pendingPass = {
+          duration: performance.now(),
+          generator: ƒ(...payload),
+        };
+
+        while (true) {
+          const result = pendingPass.generator.next(Maybe.Absent());
+
+          if (result.done) {
+            const model = props.model.current;
+            const paths = result.value(model)[1].map((mutation) => mutation.path);
+            props.mutations.current = [
+              ...props.mutations.current,
+              ...paths.map((path) => ({ path, state: State.Pending, process })),
+            ];
+            props.update.rerender();
+            break;
+          }
+        }
+
         await Promise.allSettled([...props.queue.current].slice(0, -1));
       }
 
@@ -20,7 +41,7 @@ export function useDispatchHandler<M extends ModuleDefinition>(props: UseDispatc
         props.update.rerender();
 
         if (end) {
-          props.mutations.current = [];
+          props.mutations.current = props.mutations.current.filter((mutation) => mutation.process !== process);
           props.queue.current.delete(task.promise);
           task.resolve();
         }
@@ -40,7 +61,10 @@ export function useDispatchHandler<M extends ModuleDefinition>(props: UseDispatc
 
         if (result.done) {
           const paths = result.value(model)[1].map((mutation) => mutation.path);
-          props.mutations.current = paths.map((path) => ({ path, state: State.Pending }));
+          props.mutations.current = [
+            ...props.mutations.current,
+            ...paths.map((path) => ({ path, state: State.Pending, process })),
+          ];
           commit(result.value(model)[0], null, io.size === 0);
           break;
         }

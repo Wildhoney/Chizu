@@ -26,15 +26,25 @@ export default create.view<Module>((self) => {
         </p>
       ) : (
         <ol>
-          {self.model.tasks.map((task) => (
+          {self.model.tasks.map((task, index) => (
             <li key={task.id}>
               <input
+                disabled={self.actions.validate((model) => model.tasks[index].pending())}
                 type="checkbox"
                 checked={task.completed}
                 onChange={() => self.actions.dispatch([Events.Completed, task.id])}
               />
-              {task.task} {task.completed ? "✅" : ""}
-              <button onClick={() => self.actions.dispatch([Events.Remove, task.id])}>Remove</button>
+
+              <span>
+                {task.task} {task.completed ? "✅" : ""}
+              </span>
+
+              <button
+                disabled={self.actions.validate((model) => model.tasks[index].pending())}
+                onClick={() => self.actions.dispatch([Events.Remove, task.id])}
+              >
+                Remove
+              </button>
             </li>
           ))}
         </ol>
