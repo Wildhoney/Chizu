@@ -48,7 +48,7 @@ export default create.controller<Module>((self) => {
             ...draft.tasks,
             {
               id: 500,
-              task: `${self.model.task} (saving)` as string,
+              task: `${self.model.task} (saving)`,
               date: new Date(),
               completed: false,
             },
@@ -56,21 +56,22 @@ export default create.controller<Module>((self) => {
       });
     },
 
-    *[Events.Completed](id) {
+    *[Events.Completed](taskId) {
       const task: Maybe<Task> = yield self.actions.io(async () => {
-        const task = await db.todos.get(id);
+        const task = await db.todos.get(taskId);
 
         if (!task) {
           return Maybe.Fault(new Error("Task not found"));
         }
 
-        await db.todos.update(id, { completed: !task.completed });
+        await utils.sleep(5_000);
+        await db.todos.update(taskId, { completed: !task.completed });
         return task;
       });
 
       return self.actions.produce((draft) => {
-        const pk = task.map(({ id }) => id).otherwise(id);
-        const index = draft.tasks.findIndex(({ id }) => pk === id);
+        const id = task.map(({ id }) => id).otherwise(taskId);
+        const index = draft.tasks.findIndex((task) => task.id === id);
         const model = draft.tasks[index];
 
         if (index !== -1) {
@@ -79,15 +80,17 @@ export default create.controller<Module>((self) => {
       });
     },
 
-    *[Events.Remove](id) {
+    *[Events.Remove](taskId) {
       const task: Maybe<Task> = yield self.actions.io(async () => {
-        const task = await db.todos.get(id);
-        await db.todos.delete(id);
+        const task = await db.todos.get(taskId);
+        await db.todos.delete(taskId);
+        await utils.sleep(5_000);
         return task;
       });
 
       return self.actions.produce((draft) => {
-        draft.tasks = draft.tasks.filter(({ id }) => task.map(({ id }) => id).otherwise(id) !== id);
+        const id = task.map(({ id }) => id).otherwise(taskId);
+        draft.tasks = draft.tasks.filter((task) => task.id !== id);
       });
     },
   };

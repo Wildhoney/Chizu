@@ -1,10 +1,8 @@
-import { Model, ModuleDefinition } from "../types/index.ts";
+import { Model, ModuleDefinition, Operation, State, Target } from "../types/index.ts";
 import * as React from "react";
 
 type Helpers = {
-  pending(): boolean;
-  optimistic(): boolean;
-  failed(): boolean;
+  is(state: State | Operation | Target): boolean;
 };
 
 export type Validator<M extends Model> = M extends object

@@ -3,13 +3,26 @@
 //   Multicast = "multicast",
 //   Broadcast = "broadcast",
 // }
-
 export const enum State {
-  Actual = 1,
-  Pending = 2,
-  Failed = 4,
-  Optimistic = 8,
+  Actual = 0,
+  Pending = 1,
 }
+
+export const enum Operation {
+  Adding = 512,
+  Removing = 4,
+  Updating = 8,
+  Moving = 16,
+}
+
+export const enum Target {
+  Direct = 32,
+  Indirect = 64,
+}
+
+// 73 = 1 | 64 | 8
+// 512 & 73 = 0
+// 576 = 64 | 512
 
 export type ActionName = Lifecycle | string | number;
 

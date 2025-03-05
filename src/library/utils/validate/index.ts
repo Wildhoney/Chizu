@@ -1,8 +1,8 @@
 import { Mutations } from "../../module/renderer/mutations/types.ts";
-import { ModuleDefinition, State } from "../../types/index.ts";
+import { ModuleDefinition, Operation, State, Target } from "../../types/index.ts";
 import { Validator } from "../../view/types.ts";
 
-const helpers = ["pending", "optimistic", "failed"] as const;
+const helpers = ["is"] as const;
 
 export default function validate<M extends ModuleDefinition>(
   model: M["Model"],
@@ -27,23 +27,42 @@ export default function validate<M extends ModuleDefinition>(
         }
 
         const path = Array.from(paths).join(".");
-        const relevant = Object.values(mutations)
-          .flat()
-          .filter((state) => path === state.path.join("."));
 
-        const state = [...new Set(relevant.map(({ state }) => state))].reduce((current, state) => current ^ state, 0);
+        const directs = Object.values(mutations)
+          .flat()
+          .filter((state) => path === state.path);
+
+        const indirects = Object.values(mutations)
+          .flat()
+          .filter((state) => state.path.startsWith(path) && state.path !== path);
+
+        const directStates = [...new Set(directs.map(({ state }) => state))].reduce(
+          (current, state) => current | state | Target.Direct,
+          State.Actual,
+        );
+
+        const indirectStates = [...new Set(indirects.map(({ state }) => state))].reduce(
+          (current, state) => current | state | Target.Indirect,
+          State.Actual,
+        );
 
         paths.clear();
 
         switch (key as (typeof helpers)[number]) {
-          case "pending":
-            return () => Boolean(state & State.Pending);
+          case "is":
+            return (state: State | Operation | Target) => {
+              if (!(state & (Target.Indirect | Target.Direct))) {
+                state |= Target.Direct;
+              }
 
-          case "optimistic":
-            return () => Boolean(state & State.Optimistic);
+              if (state & Target.Direct) {
+                return (state & directStates) === state;
+              }
 
-          case "failed":
-            return () => Boolean(state & State.Failed);
+              if (state & Target.Indirect) {
+                return (state & indirectStates) === state;
+              }
+            };
         }
       }
 

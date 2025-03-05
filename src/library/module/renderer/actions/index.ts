@@ -2,12 +2,11 @@ import { ModuleDefinition } from "../../../types/index.ts";
 import * as utils from "../../../utils/index.ts";
 import { Validator } from "../../../view/types.ts";
 import { Props, UseActions } from "./types.ts";
-import { Immer, enablePatches } from "immer";
+import { Immer } from "immer";
 import * as React from "react";
 
 const immer = new Immer();
 immer.setAutoFreeze(false);
-enablePatches();
 
 export default function useActions<M extends ModuleDefinition>(props: Props): UseActions<M> {
   return React.useMemo(
@@ -21,7 +20,7 @@ export default function useActions<M extends ModuleDefinition>(props: Props): Us
             return ƒ as T;
           },
           produce(ƒ) {
-            return (model) => immer.produceWithPatches(model, ƒ);
+            return (model) => immer.produce(model, ƒ);
           },
           dispatch([action, ...data]) {
             return props.dispatchers.dispatch(action, data);
