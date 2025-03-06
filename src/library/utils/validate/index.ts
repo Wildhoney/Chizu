@@ -2,7 +2,7 @@ import { Mutations } from "../../module/renderer/mutations/types.ts";
 import { ModuleDefinition, Operation, State, Target } from "../../types/index.ts";
 import { Validator } from "../../view/types.ts";
 
-const helpers = ["is"] as const;
+const helpers = ["is", "any"] as const;
 
 export default function validate<M extends ModuleDefinition>(
   model: M["Model"],
@@ -62,6 +62,11 @@ export default function validate<M extends ModuleDefinition>(
               if (state & Target.Indirect) {
                 return (state & indirectStates) === state;
               }
+            };
+
+          case "any":
+            return (state: State | Operation | Target) => {
+              return Boolean(state & directStates || state & indirectStates);
             };
         }
       }

@@ -10,7 +10,7 @@ export default create.view<Module>((self) => {
         Hey {self.model.username} you have {self.model.followers} followers!
       </p>
 
-      {self.actions.validate((model) => model.username.is(State.Pending)) ? "Loading..." : null}
+      {self.validate.username.is(State.Pending) ? "Loading..." : null}
     </section>
   );
 });

@@ -34,7 +34,7 @@ export default create.controller<Module>((self) => {
           completed: false,
         };
 
-        await utils.sleep(5_000);
+        await utils.sleep(1_000);
 
         await db.todos.put(task);
         return task;
@@ -64,7 +64,7 @@ export default create.controller<Module>((self) => {
           return Maybe.Fault(new Error("Task not found"));
         }
 
-        await utils.sleep(5_000);
+        await utils.sleep(1_000);
         await db.todos.update(taskId, { completed: !task.completed });
         return task;
       });
@@ -84,7 +84,7 @@ export default create.controller<Module>((self) => {
       const task: Maybe<Task> = yield self.actions.io(async () => {
         const task = await db.todos.get(taskId);
         await db.todos.delete(taskId);
-        await utils.sleep(5_000);
+        await utils.sleep(1_000);
         return task;
       });
 

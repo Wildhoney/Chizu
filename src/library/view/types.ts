@@ -3,6 +3,7 @@ import * as React from "react";
 
 type Helpers = {
   is(state: State | Operation | Target): boolean;
+  any(state: State | Operation | Target): boolean;
 };
 
 export type Validator<M extends Model> = M extends object
@@ -12,13 +13,12 @@ export type Validator<M extends Model> = M extends object
   : Helpers;
 
 export type ViewActions<M extends ModuleDefinition> = {
-  validate(ƒ: (model: Validator<M["Model"]>) => boolean): boolean;
   dispatch(event: M["Actions"]): void;
-  // navigate(route: M["Routes"]): void;
 };
 
 export type ViewArgs<M extends ModuleDefinition> = {
   model: M["Model"];
+  validate: Validator<M["Model"]>;
   actions: ViewActions<M>;
 };
 

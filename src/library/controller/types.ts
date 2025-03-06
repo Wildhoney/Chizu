@@ -6,7 +6,6 @@ export type ControllerActions<M extends ModuleDefinition> = {
   io<T>(ƒ: () => T): T;
   produce(ƒ: (draft: M["Model"]) => void): (model: M["Model"]) => M["Model"];
   dispatch(event: M["Actions"]): void;
-  // navigate(route: M["Routes"]): void;
 };
 
 export type ControllerArgs<S extends ModuleDefinition> = {

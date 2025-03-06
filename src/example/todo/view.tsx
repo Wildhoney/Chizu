@@ -1,13 +1,10 @@
 import { Operation, State, Target, create } from "../../library/index.ts";
-import GithubFollowers from "../github-followers/index.ts";
 import { Events, Module } from "./types.ts";
 
 export default create.view<Module>((self) => {
   return (
     <section>
       <h1>Todo app</h1>
-
-      <GithubFollowers />
 
       <input
         type="text"
@@ -16,32 +13,20 @@ export default create.view<Module>((self) => {
       />
 
       <button
-        disabled={
-          !self.model.task || self.actions.validate((model) => model.tasks.is(Operation.Adding | Target.Indirect))
-        }
+        disabled={!self.model.task || self.validate.tasks.is(Operation.Adding | Target.Indirect)}
         onClick={() => self.actions.dispatch([Events.Add])}
       >
-        {self.actions.validate((model) => model.tasks.is(Operation.Adding | Target.Indirect)) ? (
-          <>Adding task&hellip;</>
-        ) : (
-          "Add task"
-        )}
+        {self.validate.tasks.is(Operation.Adding | Target.Indirect) ? <>Adding task&hellip;</> : "Add task"}
       </button>
 
       {self.model.tasks.length === 0 ? (
-        <p>
-          {self.actions.validate((model) => model.tasks.is(State.Pending)) ? (
-            <>Please wait&hellip;</>
-          ) : (
-            "You have no tasks yet."
-          )}
-        </p>
+        <p>{self.validate.tasks.is(State.Pending) ? <>Please wait&hellip;</> : "You have no tasks yet."}</p>
       ) : (
         <ol>
           {self.model.tasks.map((task, index) => (
             <li key={task.id}>
               <input
-                disabled={self.actions.validate((model) => model.tasks[index].is(State.Pending | Target.Indirect))}
+                disabled={self.validate.tasks[index].is(State.Pending | Target.Indirect)}
                 type="checkbox"
                 checked={task.completed}
                 onChange={() => self.actions.dispatch([Events.Completed, task.id])}
@@ -52,14 +37,10 @@ export default create.view<Module>((self) => {
               </span>
 
               <button
-                disabled={self.actions.validate((model) => model.tasks[index].is(State.Pending | Target.Indirect))}
+                disabled={self.validate.tasks[index].any(State.Pending)}
                 onClick={() => self.actions.dispatch([Events.Remove, task.id])}
               >
-                {self.actions.validate((model) => model.tasks[index].is(Operation.Removing)) ? (
-                  <>Removing&hellip;</>
-                ) : (
-                  "Remove"
-                )}
+                {self.validate.tasks[index].is(Operation.Removing) ? <>Removing&hellip;</> : "Remove"}
               </button>
             </li>
           ))}

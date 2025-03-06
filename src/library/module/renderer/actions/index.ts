@@ -34,15 +34,13 @@ export default function useActions<M extends ModuleDefinition>(props: Props<M>):
         get model() {
           return props.model.current;
         },
+        get validate() {
+          return utils.validate(props.model.current, props.mutations.current) as Validator<M["Model"]>;
+        },
         actions: {
-          validate(ƒ) {
-            const validator: Validator<M["Model"]> = utils.validate(props.model.current, props.mutations.current);
-            return ƒ(validator);
-          },
           dispatch([action, ...data]) {
             return props.dispatchers.dispatch(action, data);
           },
-          // navigate() {},
         },
       },
     }),
