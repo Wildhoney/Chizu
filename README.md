@@ -9,8 +9,8 @@ Strongly typed web component library using generators and efficiently updated vi
 ## Contents
 
 1. [Benefits](#benefits)
-1. [Controllers](#controllers)
-1. [Distributed Actions](#distributed-actions)
+1. [Getting started](#getting-started)
+<!-- 1. [Distributed Actions](#distributed-actions) -->
 
 ## Benefits
 
@@ -25,22 +25,16 @@ Strongly typed web component library using generators and efficiently updated vi
 - State is mutated sequentially ([FIFO](<https://en.wikipedia.org/wiki/FIFO_(computing_and_electronics)>)) and [deeply merged](#state-merging) for queued mutations.
 <!-- - Ablility to transpile to self-contained web components. -->
 
-## Controllers
+## Getting started
 
-Each controller can `yield` as many actions as they desire, during the first pass of the action all of the associated promises will be collated and resolved asynchronously, once all of the promises have resolved the controller action is invoked a second time, passing in the result of the tasks and finally updating the model and re-rendering the associated view.
+Controllers are responsible for mutating the state of the view. In the below example the `name` is dispatched from the view to the controller, the state is updated and the view is rendered once with the updated value.
 
-It's important to note that controllers are instantiated once when its associated view is mounted to the DOM, that makes them predictable for doing tasks without resorting to memoization &mdash; such as `setInterval`.
-
-Furthermore you should not destructure `self` because otherwse the `self.model` and `self.element` variables will not be updated between action invocations.
-
-During the first pass the model isn't updated, but the view is re-rendered and mutations updated which allows for displaying a pending state between passes. Once the controller action has completed its second pass, the model is updated and the view is re-rendered a second time with the updated model.
+<kbd>Controller</kbd>
 
 ```tsx
-export default create.controller<Model, Actions, Routes>((self) => {
+export default create.controller<Module>((self) => {
   return {
-    *[Events.ChangeProfile]() {
-      const name: string = yield self.actions.io<string>(() => "Maria");
-
+    *[Events.Name](name) {
       return self.actions.produce((draft) => {
         draft.name = name;
       });
@@ -49,20 +43,52 @@ export default create.controller<Model, Actions, Routes>((self) => {
 });
 ```
 
-## Controller Passes
-
-Relevant controller actions are invoked twice when dispatching an event, so it's important your updates are idempotent &ndash; by wrapping your actions in `actions.io` the supplied function will only be invoked on the first invocation, upon second invocation the aforementioned line will be resolved with its return value.
-
-For example, take a typical and simple example of a controller update:
+<kbd>View</kbd>
 
 ```tsx
-*[Actions.UpdateName]() {
-    const name = yield actions.io(() => "Adam");
+export default create.view<Module>((self) => {
+  return (
+    <>
+      <p>Hey {self.model.name}</p>
 
-    return actions.produce((draft) => {
-        draft.name = name;
-    });
-}
+      <button onClick={() => self.actions.dispatch([Events.Name, randomName()])}>Switch profile</button>
+    </>
+  );
+});
 ```
 
-On the first invocation the model will remain unchanged, but the state context will be updated so in your view you know which properties are pending, optimistic, etc... however on second invocation the model will be updated accordingly.
+Fetching the name from an external source using an `actions.io` causes the controller event (`Events.Name`) and associated view to be invoked twice &ndash; once with a record of mutations to display a pending state, and then again with the model once it's been mutated.
+
+<kbd>Controller</kbd>
+
+```tsx
+export default create.controller<Module>((self) => {
+  return {
+    *[Events.Name]() {
+      const name: Maybe<string> = self.actions.io(() => fetch(/* ... */));
+
+      return self.actions.produce((draft) => {
+        draft.name = name.map((name) => name, "-");
+      });
+    },
+  };
+});
+```
+
+<kbd>View</kbd>
+
+```tsx
+export default create.view<Module>((self) => {
+  return (
+    <>
+      <p>Hey {self.model.name}</p>
+
+      {self.validate.name.is(State.Pending) && <p>Switching profiles&hellip;</p>}
+
+      <button onClick={() => self.actions.dispatch([Events.Name])}>Switch profile</button>
+    </>
+  );
+});
+```
+
+As the event is invoked twice, it's important they are idempotent &ndash; by encapsulating your side effects in `actions.io` the promises are resolved before invoking the event again with those resolved values.
