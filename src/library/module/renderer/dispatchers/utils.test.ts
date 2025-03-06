@@ -15,7 +15,12 @@ describe("determineState()", () => {
       });
 
       expect(determineState(process, patcher.diff(x, y))).toEqual([
-        { path: "age", state: State.Pending | Operation.Adding, value: 32, process },
+        {
+          path: "age",
+          state: State.Pending | Operation.Adding,
+          value: 32,
+          process,
+        },
       ]);
     });
 
@@ -30,7 +35,14 @@ describe("determineState()", () => {
 
       const b = determineState(process, patcher.diff(x, y));
 
-      expect(b).toEqual([{ path: "name", state: State.Pending | Operation.Updating, value: "Maria", process }]);
+      expect(b).toEqual([
+        {
+          path: "name",
+          state: State.Pending | Operation.Updating,
+          value: "Maria",
+          process,
+        },
+      ]);
     });
 
     it("handles removing", () => {
@@ -43,7 +55,12 @@ describe("determineState()", () => {
       });
 
       expect(determineState(process, patcher.diff(x, y))).toEqual([
-        { path: "age", state: State.Pending | Operation.Removing, value: 0, process },
+        {
+          path: "age",
+          state: State.Pending | Operation.Removing,
+          value: 0,
+          process,
+        },
       ]);
     });
 
@@ -59,9 +76,24 @@ describe("determineState()", () => {
       });
 
       expect(determineState(process, patcher.diff(x, y))).toEqual([
-        { path: "name", state: State.Pending | Operation.Updating, value: "Maria", process },
-        { path: "age", state: State.Pending | Operation.Removing, value: 0, process },
-        { path: "location", state: State.Pending | Operation.Adding, value: "Horsham", process },
+        {
+          path: "name",
+          state: State.Pending | Operation.Updating,
+          value: "Maria",
+          process,
+        },
+        {
+          path: "age",
+          state: State.Pending | Operation.Removing,
+          value: 0,
+          process,
+        },
+        {
+          path: "location",
+          state: State.Pending | Operation.Adding,
+          value: "Horsham",
+          process,
+        },
       ]);
     });
   });
@@ -77,7 +109,12 @@ describe("determineState()", () => {
       });
 
       expect(determineState(process, patcher.diff(x, y))).toEqual([
-        { path: "count.3", state: State.Pending | Operation.Adding, value: 4, process },
+        {
+          path: "count.3",
+          state: State.Pending | Operation.Adding,
+          value: 4,
+          process,
+        },
       ]);
     });
 
@@ -91,7 +128,12 @@ describe("determineState()", () => {
       });
 
       expect(determineState(process, patcher.diff(x, y))).toEqual([
-        { path: "count.1", state: State.Pending | Operation.Removing, value: undefined, process },
+        {
+          path: "count.1",
+          state: State.Pending | Operation.Removing,
+          value: undefined,
+          process,
+        },
       ]);
     });
 
@@ -106,8 +148,18 @@ describe("determineState()", () => {
       });
 
       expect(determineState(process, patcher.diff(x, y))).toEqual([
-        { path: "count.0", state: State.Pending | Operation.Updating, value: 5, process },
-        { path: "count.1", state: State.Pending | Operation.Updating, value: 10, process },
+        {
+          path: "count.0",
+          state: State.Pending | Operation.Updating,
+          value: 5,
+          process,
+        },
+        {
+          path: "count.1",
+          state: State.Pending | Operation.Updating,
+          value: 10,
+          process,
+        },
       ]);
     });
 
@@ -123,8 +175,18 @@ describe("determineState()", () => {
       });
 
       expect(determineState(process, patcher.diff(x, y))).toEqual([
-        { path: "count.3", state: State.Pending | Operation.Adding, value: 4, process },
-        { path: "count.0", state: State.Pending | Operation.Updating, value: 5, process },
+        {
+          path: "count.3",
+          state: State.Pending | Operation.Adding,
+          value: 4,
+          process,
+        },
+        {
+          path: "count.0",
+          state: State.Pending | Operation.Updating,
+          value: 5,
+          process,
+        },
         { path: "count.1", state: State.Pending | Operation.Removing, process },
       ]);
     });

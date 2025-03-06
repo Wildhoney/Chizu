@@ -6,7 +6,9 @@ import { useDispatchHandler } from "./utils.ts";
 import EventEmitter from "eventemitter3";
 import * as React from "react";
 
-export default function useDispatchers<M extends ModuleDefinition>(props: Props<M>) {
+export default function useDispatchers<M extends ModuleDefinition>(
+  props: Props<M>,
+) {
   const app = useApp();
   const dispatchHandler = useDispatchHandler(props);
 

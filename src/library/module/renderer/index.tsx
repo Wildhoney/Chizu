@@ -15,7 +15,9 @@ import { ReactElement } from "react";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 
-export default function renderer<M extends ModuleDefinition>({ options }: Props<M>): ReactElement {
+export default function renderer<M extends ModuleDefinition>({
+  options,
+}: Props<M>): ReactElement {
   const phase = usePhase();
   const update = useUpdate();
   const queue = useQueue();
@@ -24,7 +26,15 @@ export default function renderer<M extends ModuleDefinition>({ options }: Props<
 
   const model = useModel({ options });
   const logger = useLogger({ options, elements });
-  const dispatchers = useDispatchers({ options, update, model, elements, logger, queue, mutations });
+  const dispatchers = useDispatchers({
+    options,
+    update,
+    model,
+    elements,
+    logger,
+    queue,
+    mutations,
+  });
   const actions = useActions<M>({ options, model, dispatchers, mutations });
 
   useController({ options, phase, dispatchers, actions });
@@ -37,7 +47,10 @@ export default function renderer<M extends ModuleDefinition>({ options }: Props<
       ref: elements.customElement,
       children:
         elements.shadowBoundary.current &&
-        ReactDOM.createPortal(options.view(actions.view), elements.shadowBoundary.current),
+        ReactDOM.createPortal(
+          options.view(actions.view),
+          elements.shadowBoundary.current,
+        ),
     });
   }, [update.hash]);
 }

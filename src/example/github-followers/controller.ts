@@ -1,7 +1,13 @@
 import { Maybe, create } from "../../library/index.ts";
 import { Events, Module } from "./types.ts";
 
-const usernames = ["Wildhoney", "LinuxJS", "XiaomingX", "nholuongut", "san-ghun"];
+const usernames = [
+  "Wildhoney",
+  "LinuxJS",
+  "XiaomingX",
+  "nholuongut",
+  "san-ghun",
+];
 
 type Profile = { username: string; followers: number };
 
@@ -22,7 +28,10 @@ export default create.controller<Module>((self) => {
     *[Events.Profile]() {
       const profile: Maybe<Profile> = yield self.actions.io(fetch);
 
-      const { username, followers } = profile.otherwise({ username: "Unknown", followers: 0 });
+      const { username, followers } = profile.otherwise({
+        username: "Unknown",
+        followers: 0,
+      });
 
       return self.actions.produce((draft) => {
         draft.username = username;

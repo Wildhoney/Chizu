@@ -1,5 +1,10 @@
 import { Mutations } from "../../module/renderer/mutations/types.ts";
-import { ModuleDefinition, Operation, State, Target } from "../../types/index.ts";
+import {
+  ModuleDefinition,
+  Operation,
+  State,
+  Target,
+} from "../../types/index.ts";
 import { Validator } from "../../view/types.ts";
 
 const helpers = ["is", "any"] as const;
@@ -18,7 +23,8 @@ export default function validate<M extends ModuleDefinition>(
         return value;
       }
 
-      const isPrimitive = typeof value !== "object" || value === null || Array.isArray(value);
+      const isPrimitive =
+        typeof value !== "object" || value === null || Array.isArray(value);
       const object = isPrimitive ? { value } : value;
 
       if (helpers.includes(key as (typeof helpers)[number])) {
@@ -34,14 +40,20 @@ export default function validate<M extends ModuleDefinition>(
 
         const indirects = Object.values(mutations)
           .flat()
-          .filter((state) => state.path.startsWith(path) && state.path !== path);
+          .filter(
+            (state) => state.path.startsWith(path) && state.path !== path,
+          );
 
-        const directStates = [...new Set(directs.map(({ state }) => state))].reduce(
+        const directStates = [
+          ...new Set(directs.map(({ state }) => state)),
+        ].reduce(
           (current, state) => current | state | Target.Direct,
           State.Actual,
         );
 
-        const indirectStates = [...new Set(indirects.map(({ state }) => state))].reduce(
+        const indirectStates = [
+          ...new Set(indirects.map(({ state }) => state)),
+        ].reduce(
           (current, state) => current | state | Target.Indirect,
           State.Actual,
         );

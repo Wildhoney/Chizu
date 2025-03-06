@@ -9,27 +9,46 @@ export default create.view<Module>((self) => {
       <input
         type="text"
         value={self.model.task ?? ""}
-        onChange={(event) => self.actions.dispatch([Events.Task, event.currentTarget.value])}
+        onChange={(event) =>
+          self.actions.dispatch([Events.Task, event.currentTarget.value])
+        }
       />
 
       <button
-        disabled={!self.model.task || self.validate.tasks.is(Operation.Adding | Target.Indirect)}
+        disabled={
+          !self.model.task ||
+          self.validate.tasks.is(Operation.Adding | Target.Indirect)
+        }
         onClick={() => self.actions.dispatch([Events.Add])}
       >
-        {self.validate.tasks.is(Operation.Adding | Target.Indirect) ? <>Adding task&hellip;</> : "Add task"}
+        {self.validate.tasks.is(Operation.Adding | Target.Indirect) ? (
+          <>Adding task&hellip;</>
+        ) : (
+          "Add task"
+        )}
       </button>
 
       {self.model.tasks.length === 0 ? (
-        <p>{self.validate.tasks.is(State.Pending) ? <>Please wait&hellip;</> : "You have no tasks yet."}</p>
+        <p>
+          {self.validate.tasks.is(State.Pending) ? (
+            <>Please wait&hellip;</>
+          ) : (
+            "You have no tasks yet."
+          )}
+        </p>
       ) : (
         <ol>
           {self.model.tasks.map((task, index) => (
             <li key={task.id}>
               <input
-                disabled={self.validate.tasks[index].is(State.Pending | Target.Indirect)}
+                disabled={self.validate.tasks[index].is(
+                  State.Pending | Target.Indirect,
+                )}
                 type="checkbox"
                 checked={task.completed}
-                onChange={() => self.actions.dispatch([Events.Completed, task.id])}
+                onChange={() =>
+                  self.actions.dispatch([Events.Completed, task.id])
+                }
               />
 
               <span>
@@ -40,7 +59,11 @@ export default create.view<Module>((self) => {
                 disabled={self.validate.tasks[index].any(State.Pending)}
                 onClick={() => self.actions.dispatch([Events.Remove, task.id])}
               >
-                {self.validate.tasks[index].is(Operation.Removing) ? <>Removing&hellip;</> : "Remove"}
+                {self.validate.tasks[index].is(Operation.Removing) ? (
+                  <>Removing&hellip;</>
+                ) : (
+                  "Remove"
+                )}
               </button>
             </li>
           ))}

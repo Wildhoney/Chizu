@@ -1,5 +1,10 @@
 import { Maybe } from "../../../index.ts";
-import { ModuleDefinition, Operation, State, Target } from "../../../types/index.ts";
+import {
+  ModuleDefinition,
+  Operation,
+  State,
+  Target,
+} from "../../../types/index.ts";
 import { Mutations } from "../mutations/types.ts";
 import { Head, Tail } from "../types.ts";
 import { GeneratorFn, UseDispatchHandlerProps } from "./types.ts";
@@ -63,7 +68,11 @@ export function determineState(process: Symbol, x: any): Mutations {
 
       const path0 = path.join(".");
       const mutation = mutations.get(path0) ?? State.Pending;
-      const operation = isAdding ? Operation.Adding : isRemoving ? Operation.Removing : Operation.Updating;
+      const operation = isAdding
+        ? Operation.Adding
+        : isRemoving
+          ? Operation.Removing
+          : Operation.Updating;
 
       mutations.set(path0, mutation | operation);
       optimistics.set(path.join("."), isAdding ? obj[0] : obj[1]);
@@ -77,7 +86,12 @@ export function determineState(process: Symbol, x: any): Mutations {
 
   traverse(x);
 
-  return [...mutations.entries()].map(([path, state]) => ({ path, state, value: optimistics.get(path), process }));
+  return [...mutations.entries()].map(([path, state]) => ({
+    path,
+    state,
+    value: optimistics.get(path),
+    process,
+  }));
 }
 
 export function tag<T>(model: T): T {
@@ -99,7 +113,9 @@ export function tag<T>(model: T): T {
   return model;
 }
 
-export function useDispatchHandler<M extends ModuleDefinition>(props: UseDispatchHandlerProps<M>) {
+export function useDispatchHandler<M extends ModuleDefinition>(
+  props: UseDispatchHandlerProps<M>,
+) {
   return (_name: Head<M["Actions"]>, ƒ: GeneratorFn) => {
     return async (payload: Tail<M["Actions"]>): Promise<void> => {
       const process = Symbol("process");
@@ -145,7 +161,10 @@ export function useDispatchHandler<M extends ModuleDefinition>(props: UseDispatc
           if (x) {
             props.mutations.current = [
               ...props.mutations.current,
-              ...determineState(process, patcher.diff(model, result.value(model))),
+              ...determineState(
+                process,
+                patcher.diff(model, result.value(model)),
+              ),
             ];
           }
           // const differences: Record<string, unknown> = flatten(diff(model, result.value(model)));
@@ -176,10 +195,15 @@ export function useDispatchHandler<M extends ModuleDefinition>(props: UseDispatc
       update.next();
 
       ios.forEach((io) => {
-        const result = io.status === "fulfilled" ? update.next(Maybe.Present(io.value)) : update.next(Maybe.Absent());
+        const result =
+          io.status === "fulfilled"
+            ? update.next(Maybe.Present(io.value))
+            : update.next(Maybe.Absent());
 
         if (result.done) {
-          props.mutations.current = props.mutations.current.filter((mutation) => mutation.process !== process);
+          props.mutations.current = props.mutations.current.filter(
+            (mutation) => mutation.process !== process,
+          );
           props.model.current = tag(result.value(model));
           props.queue.current.delete(task.promise);
           props.update.rerender();

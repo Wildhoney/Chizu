@@ -8,7 +8,9 @@ import * as React from "react";
 const immer = new Immer();
 immer.setAutoFreeze(false);
 
-export default function useActions<M extends ModuleDefinition>(props: Props<M>): UseActions<M> {
+export default function useActions<M extends ModuleDefinition>(
+  props: Props<M>,
+): UseActions<M> {
   return React.useMemo(
     () => ({
       controller: {
@@ -17,7 +19,10 @@ export default function useActions<M extends ModuleDefinition>(props: Props<M>):
         },
         events: Object.entries(props.options.attributes)
           .filter(([_, value]) => typeof value === "function")
-          .reduce((acc, [key, value]) => ({ ...acc, [key]: value }), {} as Events<M["Attributes"]>),
+          .reduce(
+            (acc, [key, value]) => ({ ...acc, [key]: value }),
+            {} as Events<M["Attributes"]>,
+          ),
         actions: {
           io<T>(ƒ: () => T): T {
             return ƒ as T;
@@ -35,7 +40,10 @@ export default function useActions<M extends ModuleDefinition>(props: Props<M>):
           return props.model.current;
         },
         get validate() {
-          return utils.validate(props.model.current, props.mutations.current) as Validator<M["Model"]>;
+          return utils.validate(
+            props.model.current,
+            props.mutations.current,
+          ) as Validator<M["Model"]>;
         },
         actions: {
           dispatch([action, ...data]) {

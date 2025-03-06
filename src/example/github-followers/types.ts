@@ -14,4 +14,9 @@ export type Actions = DistributedActions | [Events.Profile];
 
 type Props = {};
 
-export type Module = Create.Module<Model, Actions, Props, [Routes, Route.Dashboard]>;
+export type Module = Create.Module<
+  Model,
+  Actions,
+  Props,
+  [Routes, Route.Dashboard]
+>;

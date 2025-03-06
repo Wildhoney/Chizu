@@ -3,7 +3,9 @@ import { Phase } from "../phase/types.ts";
 import { Props } from "./types.ts";
 import * as React from "react";
 
-export default function useController<M extends ModuleDefinition>(props: Props<M>) {
+export default function useController<M extends ModuleDefinition>(
+  props: Props<M>,
+) {
   return React.useMemo(() => {
     props.phase.current = props.phase.current ^ Phase.InvokedController;
 

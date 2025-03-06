@@ -1,4 +1,10 @@
-import { Model, ModuleDefinition, Operation, State, Target } from "../types/index.ts";
+import {
+  Model,
+  ModuleDefinition,
+  Operation,
+  State,
+  Target,
+} from "../types/index.ts";
 import * as React from "react";
 
 type Helpers = {
@@ -22,4 +28,6 @@ export type ViewArgs<M extends ModuleDefinition> = {
   actions: ViewActions<M>;
 };
 
-export type ViewDefinition<M extends ModuleDefinition> = (actions: ViewArgs<M>) => React.ReactNode;
+export type ViewDefinition<M extends ModuleDefinition> = (
+  actions: ViewArgs<M>,
+) => React.ReactNode;

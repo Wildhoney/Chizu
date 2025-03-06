@@ -51,7 +51,11 @@ export default create.view<Module>((self) => {
     <>
       <p>Hey {self.model.name}</p>
 
-      <button onClick={() => self.actions.dispatch([Events.Name, randomName()])}>Switch profile</button>
+      <button
+        onClick={() => self.actions.dispatch([Events.Name, randomName()])}
+      >
+        Switch profile
+      </button>
     </>
   );
 });
@@ -83,9 +87,13 @@ export default create.view<Module>((self) => {
     <>
       <p>Hey {self.model.name}</p>
 
-      {self.validate.name.is(State.Pending) && <p>Switching profiles&hellip;</p>}
+      {self.validate.name.is(State.Pending) && (
+        <p>Switching profiles&hellip;</p>
+      )}
 
-      <button onClick={() => self.actions.dispatch([Events.Name])}>Switch profile</button>
+      <button onClick={() => self.actions.dispatch([Events.Name])}>
+        Switch profile
+      </button>
     </>
   );
 });
