@@ -19,7 +19,7 @@ Strongly typed web component library using generators and efficiently updated vi
 - Mostly standard JavaScript without quirky rules and exceptions.
 - Clear separation of concerns between business logic and markup.
 - First-class support for skeleton loading using generators with [Immer](https://immerjs.github.io/immer/).
-- Strongly throughout &ndash; routes, styles, controllers and views.
+- Strongly typed throughout &ndash; styles, controllers and views.
 - Avoid vendor lock-in with framework agnostic libraries such as [Shoelace](https://shoelace.style/).
 - Easily communicate between controllers using distributed actions.
 - State is mutated sequentially ([FIFO](<https://en.wikipedia.org/wiki/FIFO_(computing_and_electronics)>)) and [deeply merged](#state-merging) for queued mutations.
