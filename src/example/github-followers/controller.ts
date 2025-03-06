@@ -10,7 +10,7 @@ async function fetch(): Promise<Profile> {
 
   const response: { followers: number } = await new Promise((resolve) => {
     setTimeout(() => {
-      resolve({ followers: 100 });
+      resolve({ followers: Math.round(100 * Math.random()) });
     }, 2_000);
   });
 

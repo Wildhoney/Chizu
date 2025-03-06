@@ -1,4 +1,4 @@
-import { ModuleDefinition } from "../../../types/index.ts";
+import { Events, ModuleDefinition } from "../../../types/index.ts";
 import * as utils from "../../../utils/index.ts";
 import { Validator } from "../../../view/types.ts";
 import { Props, UseActions } from "./types.ts";
@@ -8,13 +8,16 @@ import * as React from "react";
 const immer = new Immer();
 immer.setAutoFreeze(false);
 
-export default function useActions<M extends ModuleDefinition>(props: Props): UseActions<M> {
+export default function useActions<M extends ModuleDefinition>(props: Props<M>): UseActions<M> {
   return React.useMemo(
     () => ({
       controller: {
         get model() {
           return props.model.current;
         },
+        events: Object.entries(props.options.attributes)
+          .filter(([_, value]) => typeof value === "function")
+          .reduce((acc, [key, value]) => ({ ...acc, [key]: value }), {} as Events<M["Attributes"]>),
         actions: {
           io<T>(ƒ: () => T): T {
             return ƒ as T;

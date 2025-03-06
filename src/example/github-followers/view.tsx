@@ -1,4 +1,4 @@
-import { create } from "../../library/index.ts";
+import { State, create } from "../../library/index.ts";
 import { Events, Module } from "./types.ts";
 
 export default create.view<Module>((self) => {
@@ -10,7 +10,7 @@ export default create.view<Module>((self) => {
         Hey {self.model.username} you have {self.model.followers} followers!
       </p>
 
-      {self.actions.validate((model) => model.username.pending()) ? "Loading..." : null}
+      {self.actions.validate((model) => model.username.is(State.Pending)) ? "Loading..." : null}
     </section>
   );
 });

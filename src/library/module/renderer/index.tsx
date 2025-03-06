@@ -25,7 +25,7 @@ export default function renderer<M extends ModuleDefinition>({ options }: Props<
   const model = useModel({ options });
   const logger = useLogger({ options, elements });
   const dispatchers = useDispatchers({ options, update, model, elements, logger, queue, mutations });
-  const actions = useActions<M>({ model, dispatchers, mutations });
+  const actions = useActions<M>({ options, model, dispatchers, mutations });
 
   useController({ options, phase, dispatchers, actions });
   useLifecycles({ options, dispatchers, phase });

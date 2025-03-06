@@ -1,10 +1,13 @@
 import { Operation, State, Target, create } from "../../library/index.ts";
+import GithubFollowers from "../github-followers/index.ts";
 import { Events, Module } from "./types.ts";
 
 export default create.view<Module>((self) => {
   return (
     <section>
       <h1>Todo app</h1>
+
+      <GithubFollowers />
 
       <input
         type="text"

@@ -47,7 +47,7 @@ export const enum Lifecycle {
 
 export type Name<A extends Actions> = A[0];
 
-export type Attributes = Record<string, string>;
+export type Attributes = Record<string, unknown>;
 
 export type Module<
   A extends Model,
@@ -67,3 +67,14 @@ export type ModuleDefinition = {
   Attributes: Attributes;
   Routes: Routes | [Routes, Parameters];
 };
+
+type Fns<A extends Attributes> = {
+  [K in keyof A]: A[K] extends (...args: any[]) => any ? A[K] : never;
+};
+
+export type Events<A extends Attributes> = Pick<
+  Fns<A>,
+  {
+    [K in keyof Fns<A>]: Fns<A>[K] extends never ? never : K;
+  }[keyof Fns<A>]
+>;

@@ -1,5 +1,5 @@
 import { Head } from "../module/renderer/types.ts";
-import { Actions, Lifecycle, ModuleDefinition } from "../types/index.ts";
+import { Actions, Events, Lifecycle, ModuleDefinition } from "../types/index.ts";
 import Maybe from "../utils/maybe/index.ts";
 
 export type ControllerActions<M extends ModuleDefinition> = {
@@ -11,6 +11,7 @@ export type ControllerActions<M extends ModuleDefinition> = {
 
 export type ControllerArgs<S extends ModuleDefinition> = {
   model: S["Model"];
+  events: Events<S["Attributes"]>;
   actions: ControllerActions<S>;
 };
 
