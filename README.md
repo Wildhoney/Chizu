@@ -16,7 +16,6 @@ Strongly typed web component library using generators and efficiently updated vi
 
 - Thoughtful event-driven architecture superset of [React](https://react.dev/).
 - Super efficient with views only re-rendering when absolutely necessary.
-- Ablility to transpile to self-contained web components.
 - Mostly standard JavaScript without quirky rules and exceptions.
 - Clear separation of concerns between business logic and markup.
 - First-class support for skeleton loading using generators with [Immer](https://immerjs.github.io/immer/).
@@ -24,6 +23,7 @@ Strongly typed web component library using generators and efficiently updated vi
 - Avoid vendor lock-in with framework agnostic libraries such as [Shoelace](https://shoelace.style/).
 - Easily communicate between controllers using distributed actions.
 - State is mutated sequentially ([FIFO](<https://en.wikipedia.org/wiki/FIFO_(computing_and_electronics)>)) and [deeply merged](#state-merging) for queued mutations.
+<!-- - Ablility to transpile to self-contained web components. -->
 
 ## Controllers
 
