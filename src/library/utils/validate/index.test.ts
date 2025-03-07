@@ -5,6 +5,8 @@ import { describe, expect, it } from "@jest/globals";
 
 describe("validate", () => {
   it("should return a new model with the state of the mutations", () => {
+    const process = Symbol("process");
+
     const model = {
       name: "John",
       otherNames: { middleName: "James", lastName: "Smith" },
@@ -12,19 +14,19 @@ describe("validate", () => {
     } satisfies Model;
 
     const mutations: Mutations = [
-      { path: ["name"], state: State.Pending },
-      { path: ["otherNames", "middleName"], state: State.Pending },
-      { path: ["friends", "0", "name"], state: State.Pending },
+      { path: "name", state: State.Pending, process },
+      { path: "otherNames.middleName", state: State.Pending, process },
+      { path: "friends.0.name", state: State.Pending, process },
     ];
 
     const validator = validate(model, mutations);
 
-    expect(validator.name.pending()).toEqual(true);
+    expect(validator.name.is(State.Pending)).toEqual(true);
 
-    expect(validator.otherNames.middleName.pending()).toEqual(true);
-    expect(validator.otherNames.lastName.pending()).toEqual(false);
+    expect(validator.otherNames.middleName.is(State.Pending)).toEqual(true);
+    expect(validator.otherNames.lastName.is(State.Pending)).toEqual(false);
 
-    expect(validator.friends[0].name.pending()).toEqual(true);
-    expect(validator.friends[1].name.pending()).toEqual(false);
+    expect(validator.friends[0].name.is(State.Pending)).toEqual(true);
+    expect(validator.friends[1].name.is(State.Pending)).toEqual(false);
   });
 });

@@ -4,7 +4,7 @@ import { UseLogger } from "../logger/types.ts";
 import { UseModel } from "../model/types.ts";
 import { UseMutations } from "../mutations/types.ts";
 import { UseQueue } from "../queue/types.ts";
-import { UseOptions } from "../types.ts";
+import { Tail, UseOptions } from "../types.ts";
 import { UseUpdate } from "../update/types.ts";
 import useDispatchers from "./index.ts";
 
@@ -25,3 +25,11 @@ export type UseDispatchHandlerProps<M extends ModuleDefinition> = Props<M>;
 export type Fn = (...args: any[]) => void;
 
 export type GeneratorFn = (...args: any[]) => Generator<any, any, any>;
+
+export type Context<M extends ModuleDefinition> = {
+  task: PromiseWithResolvers<void>;
+  process: Symbol;
+  ƒ: GeneratorFn;
+  payload: Tail<M["Actions"]>;
+  props: UseDispatchHandlerProps<M>;
+};

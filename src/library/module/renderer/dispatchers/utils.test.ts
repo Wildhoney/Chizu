@@ -1,9 +1,9 @@
 import { Operation, State } from "../../../types/index.ts";
-import { determineState, patcher, tag } from "./utils.ts";
+import { mutations, patcher, tag } from "./utils.ts";
 import { describe, expect, it } from "@jest/globals";
 import { produce } from "immer";
 
-describe("determineState()", () => {
+describe("mutations()", () => {
   describe("objects", () => {
     it("handles adding", () => {
       type Model = { name: string; age?: number };
@@ -14,7 +14,7 @@ describe("determineState()", () => {
         draft.age = 32;
       });
 
-      expect(determineState(process, patcher.diff(x, y))).toEqual([
+      expect(mutations(process, patcher.diff(x, y))).toEqual([
         {
           path: "age",
           state: State.Pending | Operation.Adding,
@@ -33,7 +33,7 @@ describe("determineState()", () => {
         draft.name = "Maria";
       });
 
-      const b = determineState(process, patcher.diff(x, y));
+      const b = mutations(process, patcher.diff(x, y));
 
       expect(b).toEqual([
         {
@@ -54,7 +54,7 @@ describe("determineState()", () => {
         delete draft.age;
       });
 
-      expect(determineState(process, patcher.diff(x, y))).toEqual([
+      expect(mutations(process, patcher.diff(x, y))).toEqual([
         {
           path: "age",
           state: State.Pending | Operation.Removing,
@@ -75,7 +75,7 @@ describe("determineState()", () => {
         delete draft.age;
       });
 
-      expect(determineState(process, patcher.diff(x, y))).toEqual([
+      expect(mutations(process, patcher.diff(x, y))).toEqual([
         {
           path: "name",
           state: State.Pending | Operation.Updating,
@@ -108,7 +108,7 @@ describe("determineState()", () => {
         draft.count.push(4);
       });
 
-      expect(determineState(process, patcher.diff(x, y))).toEqual([
+      expect(mutations(process, patcher.diff(x, y))).toEqual([
         {
           path: "count.3",
           state: State.Pending | Operation.Adding,
@@ -127,7 +127,7 @@ describe("determineState()", () => {
         delete draft.count[1];
       });
 
-      expect(determineState(process, patcher.diff(x, y))).toEqual([
+      expect(mutations(process, patcher.diff(x, y))).toEqual([
         {
           path: "count.1",
           state: State.Pending | Operation.Removing,
@@ -147,7 +147,7 @@ describe("determineState()", () => {
         draft.count[1] = 10;
       });
 
-      expect(determineState(process, patcher.diff(x, y))).toEqual([
+      expect(mutations(process, patcher.diff(x, y))).toEqual([
         {
           path: "count.0",
           state: State.Pending | Operation.Updating,
@@ -174,7 +174,7 @@ describe("determineState()", () => {
         delete draft.count[1];
       });
 
-      expect(determineState(process, patcher.diff(x, y))).toEqual([
+      expect(mutations(process, patcher.diff(x, y))).toEqual([
         {
           path: "count.3",
           state: State.Pending | Operation.Adding,

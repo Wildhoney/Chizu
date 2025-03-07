@@ -7,10 +7,36 @@ import {
 } from "../../../types/index.ts";
 import { Mutations } from "../mutations/types.ts";
 import { Head, Tail } from "../types.ts";
-import { GeneratorFn, UseDispatchHandlerProps } from "./types.ts";
+import { Context, GeneratorFn, UseDispatchHandlerProps } from "./types.ts";
 import { create } from "jsondiffpatch";
 
 export const idAttribute = "#id";
+
+export function useDispatchHandler<M extends ModuleDefinition>(
+  props: UseDispatchHandlerProps<M>,
+) {
+  return (_name: Head<M["Actions"]>, ƒ: GeneratorFn) => {
+    return async (payload: Tail<M["Actions"]>): Promise<void> => {
+      if (typeof ƒ !== "function") return;
+
+      const process = Symbol("process");
+      const task = Promise.withResolvers<void>();
+      props.queue.current.add(task.promise);
+
+      const context: Context<M> = { task, process, ƒ, payload, props };
+
+      if (props.queue.current.size > 1) {
+        collate<M>(context, props.model.current, true);
+        await Promise.allSettled([...props.queue.current].slice(0, -1));
+      }
+
+      const model = props.model.current;
+      const io = collate<M>(context, model, false);
+      if (io.size === 0) return;
+      await apply<M>(context, model, io);
+    };
+  };
+}
 
 export const patcher = create({
   objectHash(obj): undefined | string {
@@ -18,7 +44,7 @@ export const patcher = create({
   },
 });
 
-export function determineState(process: Symbol, x: any): Mutations {
+export function mutations(process: Symbol, differences: any): Mutations {
   const mutations = new Map<string, State | Operation | Target>();
   const optimistics = new Map<string, unknown>();
 
@@ -84,7 +110,7 @@ export function determineState(process: Symbol, x: any): Mutations {
     }
   }
 
-  traverse(x);
+  traverse(differences);
 
   return [...mutations.entries()].map(([path, state]) => ({
     path,
@@ -113,103 +139,68 @@ export function tag<T>(model: T): T {
   return model;
 }
 
-export function useDispatchHandler<M extends ModuleDefinition>(
-  props: UseDispatchHandlerProps<M>,
+function collate<M extends ModuleDefinition>(
+  context: Context<M>,
+  model: M["Model"],
+  pending: boolean,
 ) {
-  return (_name: Head<M["Actions"]>, ƒ: GeneratorFn) => {
-    return async (payload: Tail<M["Actions"]>): Promise<void> => {
-      const process = Symbol("process");
-      const task = Promise.withResolvers<void>();
-      props.queue.current.add(task.promise);
+  const io = new Set();
+  const discovery = context.ƒ(...context.payload);
 
-      if (props.queue.current.size > 1) {
-        const pendingPass = {
-          duration: performance.now(),
-          generator: ƒ(...payload),
-        };
+  while (true) {
+    const result = discovery.next(Maybe.Absent());
 
-        while (true) {
-          const result = pendingPass.generator.next(Maybe.Absent());
+    if (result.done) {
+      const differences = patcher.diff(model, result.value(model));
 
-          if (result.done) {
-            const model = props.model.current;
-            // const paths = result.value(model)[1].map((mutation) => mutation.path);
-            // props.mutations.current = [
-            //   ...props.mutations.current,
-            //   ...paths.map((path) => ({ path, state: State.Pending, process })),
-            // ];
-            props.update.rerender();
-            break;
-          }
-        }
-
-        await Promise.allSettled([...props.queue.current].slice(0, -1));
+      if (differences) {
+        context.props.mutations.current = [
+          ...context.props.mutations.current,
+          ...mutations(
+            context.process,
+            patcher.diff(model, result.value(model)),
+          ),
+        ];
       }
 
-      if (typeof ƒ !== "function") return;
-
-      const io = new Set();
-      const model = props.model.current;
-      const discovery = ƒ(...payload);
-
-      while (true) {
-        const result = discovery.next(Maybe.Absent());
-
-        if (result.done) {
-          const x = patcher.diff(model, result.value(model));
-
-          if (x) {
-            props.mutations.current = [
-              ...props.mutations.current,
-              ...determineState(
-                process,
-                patcher.diff(model, result.value(model)),
-              ),
-            ];
-          }
-          // const differences: Record<string, unknown> = flatten(diff(model, result.value(model)));
-
-          // props.mutations.current = [
-          //   ...props.mutations.current,
-          //   ...Object.entries(differences).map(([path, value]) => ({ path, state: State.Pending, process })),
-          // ];
-
-          if (io.size === 0) {
-            props.model.current = tag(result.value(model));
-            props.queue.current.delete(task.promise);
-            task.resolve();
-          }
-
-          props.update.rerender();
-
-          break;
-        }
-
-        io.add(result.value());
+      if (io.size === 0 && !pending) {
+        context.props.model.current = tag(result.value(model));
+        context.props.queue.current.delete(context.task.promise);
+        context.task.resolve();
       }
 
-      if (io.size === 0) return;
+      context.props.update.rerender();
 
-      const ios = await Promise.allSettled(io);
-      const update = ƒ(...payload);
-      update.next();
+      return io;
+    }
 
-      ios.forEach((io) => {
-        const result =
-          io.status === "fulfilled"
-            ? update.next(Maybe.Present(io.value))
-            : update.next(Maybe.Absent());
+    if (!pending) io.add(result.value());
+  }
+}
 
-        if (result.done) {
-          props.mutations.current = props.mutations.current.filter(
-            (mutation) => mutation.process !== process,
-          );
-          props.model.current = tag(result.value(model));
-          props.queue.current.delete(task.promise);
-          props.update.rerender();
-          return void task.resolve();
-        }
-      });
-    };
-  };
+async function apply<M extends ModuleDefinition>(
+  context: Context<M>,
+  model: M["Model"],
+  io: Set<unknown>,
+) {
+  const ios = await Promise.allSettled(io);
+  const update = context.ƒ(...context.payload);
+  update.next();
+
+  ios.forEach((io) => {
+    const result =
+      io.status === "fulfilled"
+        ? update.next(Maybe.Present(io.value))
+        : update.next(Maybe.Absent());
+
+    if (result.done) {
+      context.props.mutations.current = context.props.mutations.current.filter(
+        (mutation) => mutation.process !== context.process,
+      );
+      context.props.model.current = tag(result.value(model));
+      context.props.queue.current.delete(context.task.promise);
+      context.props.update.rerender();
+      return void context.task.resolve();
+    }
+  });
 }
