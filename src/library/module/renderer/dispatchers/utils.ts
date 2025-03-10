@@ -2,6 +2,7 @@ import { Maybe } from "../../../index.ts";
 import {
   ModuleDefinition,
   Operation,
+  Phase,
   State,
   Target,
 } from "../../../types/index.ts";
@@ -24,21 +25,14 @@ export function dispatcher<M extends ModuleDefinition>(
       props.queue.current.add(task.promise);
 
       const context: Context<M> = { task, process, ƒ, payload, props };
-
-      // if (props.queue.current.size > 1) {
-      //   collate<M>(context, props.model.current, true);
-      //   await Promise.allSettled([...props.queue.current].slice(0, -1));
-      // }
-
-      const model = props.model.current;
-      const io = collate<M>(context, model, false);
+      const io = collate<M>(context, false);
 
       if (props.queue.current.size > 1) {
         await Promise.allSettled([...props.queue.current].slice(0, -1));
       }
 
       if (io.size === 0) return;
-      await apply<M>(context, model, io);
+      await apply<M>(context, io);
     };
   };
 }
@@ -150,47 +144,44 @@ export function tag<T>(model: T): T {
 
 function collate<M extends ModuleDefinition>(
   context: Context<M>,
-  model: M["Model"],
   pending: boolean,
 ) {
-  const io = new Set();
+  const ios = new Set();
   const discovery = context.ƒ(...context.payload);
 
   while (true) {
     const result = discovery.next(Maybe.Absent());
 
     if (result.done) {
-      const differences = patcher.diff(model, result.value(model));
+      const phase = ios.size === 0 ? Phase.Persist : Phase.Discovery;
+      const updated = result.value(context.props.model.current, phase);
+      const differences = patcher.diff(context.props.model.current, updated);
 
       if (differences) {
         context.props.mutations.current = [
           ...context.props.mutations.current,
-          ...mutations(
-            context.process,
-            patcher.diff(model, result.value(model)),
-          ),
+          ...mutations(context.process, differences),
         ];
       }
 
-      context.props.model.current = tag(result.value(model));
+      context.props.model.current = tag(updated);
 
-      if (io.size === 0 && !pending) {
+      if (ios.size === 0 && !pending) {
         context.props.queue.current.delete(context.task.promise);
         context.task.resolve();
       }
 
       context.props.update.rerender();
 
-      return io;
+      return ios;
     }
 
-    if (!pending) io.add(result.value());
+    if (!pending) ios.add(result.value());
   }
 }
 
 async function apply<M extends ModuleDefinition>(
   context: Context<M>,
-  model: M["Model"],
   io: Set<unknown>,
 ) {
   const ios = await Promise.allSettled(io);
@@ -201,13 +192,15 @@ async function apply<M extends ModuleDefinition>(
     const result =
       io.status === "fulfilled"
         ? update.next(Maybe.Present(io.value))
-        : update.next(Maybe.Absent());
+        : update.next(Maybe.Fault("Nothing"));
 
     if (result.done) {
       context.props.mutations.current = context.props.mutations.current.filter(
         (mutation) => mutation.process !== context.process,
       );
-      context.props.model.current = tag(result.value(model));
+      context.props.model.current = tag(
+        result.value(context.props.model.current, Phase.Persist),
+      );
       context.props.queue.current.delete(context.task.promise);
       context.props.update.rerender();
       return void context.task.resolve();

@@ -15,10 +15,7 @@ export default create.view<Module>((self) => {
       />
 
       <button
-        disabled={
-          !self.model.task ||
-          self.validate.tasks.is(Operation.Adding | Target.Indirect)
-        }
+        disabled={!self.model.task}
         onClick={() => self.actions.dispatch([Events.Add])}
       >
         {self.validate.tasks.is(Operation.Adding | Target.Indirect) ? (
@@ -41,23 +38,35 @@ export default create.view<Module>((self) => {
           {self.model.tasks.map((task, index) => (
             <li key={task.id}>
               <input
-                disabled={self.validate.tasks[index].is(
-                  State.Pending | Target.Indirect,
-                )}
+                disabled={
+                  self.validate.tasks[index].is(
+                    State.Pending | Target.Indirect,
+                  ) || !task.id
+                }
                 type="checkbox"
                 checked={task.completed}
                 onChange={() =>
-                  self.actions.dispatch([Events.Completed, task.id])
+                  task.id && self.actions.dispatch([Events.Completed, task.id])
                 }
               />
 
-              <span>
+              <span
+                style={{
+                  fontStyle: self.validate.tasks[index].is(Operation.Adding)
+                    ? "italic"
+                    : "",
+                }}
+              >
                 {task.task} {task.completed ? "✅" : ""}
               </span>
 
               <button
-                disabled={self.validate.tasks[index].any(State.Pending)}
-                onClick={() => self.actions.dispatch([Events.Remove, task.id])}
+                disabled={
+                  self.validate.tasks[index].any(State.Pending) || !task.id
+                }
+                onClick={() =>
+                  task.id && self.actions.dispatch([Events.Remove, task.id])
+                }
               >
                 {self.validate.tasks[index].is(Operation.Removing) ? (
                   <>Removing&hellip;</>

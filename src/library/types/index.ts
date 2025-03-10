@@ -9,7 +9,7 @@ export const enum State {
 }
 
 export const enum Operation {
-  Adding = 512,
+  Adding = 2,
   Removing = 4,
   Updating = 8,
   Moving = 16,
@@ -18,6 +18,11 @@ export const enum Operation {
 export const enum Target {
   Direct = 32,
   Indirect = 64,
+}
+
+export const enum Phase {
+  Discovery,
+  Persist,
 }
 
 // 73 = 1 | 64 | 8

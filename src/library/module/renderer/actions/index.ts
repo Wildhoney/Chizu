@@ -1,4 +1,4 @@
-import { Events, ModuleDefinition } from "../../../types/index.ts";
+import { Events, ModuleDefinition, Phase } from "../../../types/index.ts";
 import * as utils from "../../../utils/index.ts";
 import { Validator } from "../../../view/types.ts";
 import { Props, UseActions } from "./types.ts";
@@ -28,7 +28,8 @@ export default function useActions<M extends ModuleDefinition>(
             return ƒ as T;
           },
           produce(ƒ) {
-            return (model) => immer.produce(model, ƒ);
+            return (model, phase) =>
+              immer.produce(model, (draft) => ƒ(draft, phase));
           },
           dispatch([action, ...data]) {
             return props.dispatchers.dispatch(action, data);
