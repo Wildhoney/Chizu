@@ -10,9 +10,9 @@ import { Head, Tail } from "../types.ts";
 import { Context, GeneratorFn, UseDispatchHandlerProps } from "./types.ts";
 import { create } from "jsondiffpatch";
 
-export const idAttribute = "#id";
+export const tagProperty = "#id";
 
-export function useDispatchHandler<M extends ModuleDefinition>(
+export function dispatcher<M extends ModuleDefinition>(
   props: UseDispatchHandlerProps<M>,
 ) {
   return (_name: Head<M["Actions"]>, ƒ: GeneratorFn) => {
@@ -25,13 +25,18 @@ export function useDispatchHandler<M extends ModuleDefinition>(
 
       const context: Context<M> = { task, process, ƒ, payload, props };
 
-      if (props.queue.current.size > 1) {
-        collate<M>(context, props.model.current, true);
-        await Promise.allSettled([...props.queue.current].slice(0, -1));
-      }
+      // if (props.queue.current.size > 1) {
+      //   collate<M>(context, props.model.current, true);
+      //   await Promise.allSettled([...props.queue.current].slice(0, -1));
+      // }
 
       const model = props.model.current;
       const io = collate<M>(context, model, false);
+
+      if (props.queue.current.size > 1) {
+        await Promise.allSettled([...props.queue.current].slice(0, -1));
+      }
+
       if (io.size === 0) return;
       await apply<M>(context, model, io);
     };
@@ -40,7 +45,7 @@ export function useDispatchHandler<M extends ModuleDefinition>(
 
 export const patcher = create({
   objectHash(obj): undefined | string {
-    return idAttribute in obj ? (obj[idAttribute] as string) : undefined;
+    return tagProperty in obj ? (obj[tagProperty] as string) : undefined;
   },
 });
 
@@ -72,7 +77,11 @@ export function mutations(process: Symbol, differences: any): Mutations {
             mutations.set(path0, mutation | Operation.Updating);
             optimistics.set(path0, obj[key0][0]);
           } else {
-            mutations.set(path0, mutation | Operation.Removing);
+            const isRemoving = obj[key][1] === 0 && obj[key][2] === 0;
+            mutations.set(
+              path0,
+              mutation | (isRemoving ? Operation.Removing : Operation.Moving),
+            );
           }
         } else if (!key.startsWith("_")) {
           if (obj[`_${key}`]) {
@@ -127,8 +136,8 @@ export function tag<T>(model: T): T {
 
   if (model && typeof model === "object") {
     const result = { ...model };
-    if (!(idAttribute in result)) {
-      result[idAttribute] = Symbol();
+    if (!(tagProperty in result)) {
+      result[tagProperty] = Symbol();
     }
     for (const key in model) {
       result[key] = tag(model[key]);
@@ -163,8 +172,9 @@ function collate<M extends ModuleDefinition>(
         ];
       }
 
+      context.props.model.current = tag(result.value(model));
+
       if (io.size === 0 && !pending) {
-        context.props.model.current = tag(result.value(model));
         context.props.queue.current.delete(context.task.promise);
         context.task.resolve();
       }

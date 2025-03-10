@@ -1,5 +1,5 @@
 import { Operation, State } from "../../../types/index.ts";
-import { mutations, patcher, tag } from "./utils.ts";
+import { mutations, patcher, tag, tagProperty } from "./utils.ts";
 import { describe, expect, it } from "@jest/globals";
 import { produce } from "immer";
 
@@ -163,6 +163,31 @@ describe("mutations()", () => {
       ]);
     });
 
+    it("handles sorting", () => {
+      type Model = { count: number[] };
+      const process = Symbol("process");
+
+      const x = tag<Model>({ count: [3, 2, 1] });
+      const y = produce(x, (draft) => {
+        draft.count.sort();
+      });
+
+      expect(mutations(process, patcher.diff(x, y))).toEqual([
+        {
+          path: "count.1",
+          state: 17,
+          value: undefined,
+          process,
+        },
+        {
+          path: "count.2",
+          state: 17,
+          value: undefined,
+          process,
+        },
+      ]);
+    });
+
     it("handles combinations of all", () => {
       type Model = { count: number[] };
       const process = Symbol("process");
@@ -190,5 +215,25 @@ describe("mutations()", () => {
         { path: "count.1", state: State.Pending | Operation.Removing, process },
       ]);
     });
+  });
+});
+
+describe("tag", () => {
+  it("tags objects", () => {
+    const model = { name: "Adam", age: 32 };
+    const tagged = tag(model);
+    expect(tagged).toEqual({
+      name: "Adam",
+      age: 32,
+      [tagProperty]: expect.any(Symbol),
+    });
+  });
+
+  it("tags arrays", () => {
+    const model = [{ name: "Adam", age: 32 }];
+    const tagged = tag(model);
+    expect(tagged).toEqual([
+      { name: "Adam", age: 32, [tagProperty]: expect.any(Symbol) },
+    ]);
   });
 });
