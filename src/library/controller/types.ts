@@ -4,15 +4,11 @@ import {
   Events,
   Lifecycle,
   ModuleDefinition,
-  Phase,
 } from "../types/index.ts";
-import Maybe from "../utils/maybe/index.ts";
 
 export type ControllerActions<M extends ModuleDefinition> = {
   io<T>(ƒ: () => T): T;
-  produce(
-    ƒ: (draft: M["Model"], phase: Phase) => void,
-  ): (model: M["Model"]) => M["Model"];
+  produce(ƒ: (draft: M["Model"]) => void): (model: M["Model"]) => M["Model"];
   dispatch(event: M["Actions"]): void;
 };
 
@@ -25,7 +21,7 @@ export type ControllerArgs<S extends ModuleDefinition> = {
 export type ActionGenerator<M extends ModuleDefinition> = Generator<
   unknown,
   (model: M["Model"]) => M["Model"],
-  Maybe<never>
+  void
 >;
 
 export type ControllerDefinition<M extends ModuleDefinition> = (

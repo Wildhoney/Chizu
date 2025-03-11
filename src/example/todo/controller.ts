@@ -1,5 +1,4 @@
-import { Lifecycle, Maybe, create, utils } from "../../library/index.ts";
-import { Phase } from "../../library/types/index.ts";
+import { Lifecycle, create, utils } from "../../library/index.ts";
 import { Events, Module, Task } from "./types.ts";
 import { Db } from "./utils.ts";
 
@@ -8,13 +7,16 @@ export default create.controller<Module>((self) => {
 
   return {
     *[Lifecycle.Mount]() {
-      const tasks: Maybe<Task[]> = yield self.actions.io(async () => {
-        // await utils.sleep(1_000);
-        return db.todos.toArray();
+      yield self.actions.io(async () => {
+        const tasks = await db.todos.toArray();
+
+        return self.actions.produce((draft) => {
+          draft.tasks = tasks;
+        });
       });
 
       return self.actions.produce((draft) => {
-        draft.tasks = tasks.otherwise([]);
+        draft.tasks = [];
       });
     },
 
@@ -25,76 +27,64 @@ export default create.controller<Module>((self) => {
     },
 
     *[Events.Add]() {
-      const optimistic: Task = {
+      const draft: Task = {
         id: undefined,
         task: String(self.model.task),
         date: new Date(),
         completed: false,
       };
 
-      const persisted: Maybe<Task> = yield self.actions.io(async () => {
-        if (!self.model.task) return;
+      yield self.actions.io(async () => {
         await utils.sleep(4_000);
-        await db.todos.put(optimistic);
-        return optimistic;
+
+        const final = await db.todos.put(draft);
+
+        return self.actions.produce((model) => {
+          const index = self.model.tasks.findIndex(
+            (task) => task.task === draft.task,
+          );
+          model.tasks[index].id = final;
+        });
       });
 
-      return self.actions.produce((draft, phase) => {
-        switch (phase) {
-          case Phase.Discovery:
-            draft.task = null;
-            draft.tasks = [...draft.tasks, optimistic];
-            break;
-
-          case Phase.Persist:
-            const task = self.model.tasks.findIndex(
-              (task) =>
-                persisted.map(({ task }) => task).otherwise("") === task.task,
-            );
-            if (task !== -1)
-              draft.tasks[task] = persisted.otherwise(optimistic);
-            break;
-        }
+      return self.actions.produce((model) => {
+        model.task = null;
+        model.tasks = [...model.tasks, draft];
       });
     },
 
     *[Events.Completed](taskId) {
-      const task: Maybe<Task> = yield self.actions.io(async () => {
-        const task = await db.todos.get(taskId);
-
-        if (!task) {
-          return Maybe.Fault(new Error("Task not found"));
-        }
-
+      yield self.actions.io(async () => {
         await utils.sleep(1_000);
+
+        const task = await db.todos.get(taskId);
         await db.todos.update(taskId, { completed: !task.completed });
-        return task;
+        const final = await db.todos.get(taskId);
+
+        return self.actions.produce((draft) => {
+          const index = draft.tasks.findIndex((task) => task.id === taskId);
+          draft.tasks[index] = final;
+        });
       });
 
-      return self.actions.produce((draft, phase) => {
-        switch (phase) {
-          case Phase.Discovery:
-            const id = task.map(({ id }) => id).otherwise(taskId);
-            const index = draft.tasks.findIndex((task) => task.id === id);
-            const model = draft.tasks[index];
+      return self.actions.produce((draft) => {
+        const index = draft.tasks.findIndex((task) => task.id === taskId);
 
-            if (index !== -1)
-              draft.tasks[index] = { ...model, completed: !model.completed };
+        if (~index) {
+          const model = draft.tasks[index];
+          draft.tasks[index] = { ...model, completed: !model.completed };
         }
       });
     },
 
     *[Events.Remove](taskId) {
-      const task: Maybe<Task> = yield self.actions.io(async () => {
-        const task = await db.todos.get(taskId);
+      yield self.actions.io(async () => {
+        await utils.sleep(2_000);
         await db.todos.delete(taskId);
-        // await utils.sleep(1_000);
-        return task;
       });
 
       return self.actions.produce((draft) => {
-        const id = task.map(({ id }) => id).otherwise(taskId);
-        draft.tasks = draft.tasks.filter((task) => task.id !== id);
+        draft.tasks = draft.tasks.filter((task) => task.id !== taskId);
       });
     },
   };

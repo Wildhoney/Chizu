@@ -20,11 +20,6 @@ export const enum Target {
   Indirect = 64,
 }
 
-export const enum Phase {
-  Discovery,
-  Persist,
-}
-
 // 73 = 1 | 64 | 8
 // 512 & 73 = 0
 // 576 = 64 | 512

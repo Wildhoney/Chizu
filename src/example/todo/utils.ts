@@ -1,8 +1,8 @@
-import { TaskWithoutId } from "./types.ts";
+import { Task } from "./types.ts";
 import { Dexie, Table } from "dexie";
 
 export class Db extends Dexie {
-  todos!: Table<TaskWithoutId>;
+  todos!: Table<Task>;
 
   constructor() {
     super("todos");
