@@ -4,10 +4,12 @@ import {
   Events,
   Lifecycle,
   ModuleDefinition,
+  State,
 } from "../types/index.ts";
 
 export type ControllerActions<M extends ModuleDefinition> = {
   io<T>(ƒ: () => T): T;
+  mark<T>(value: T, state: State): T;
   produce(ƒ: (draft: M["Model"]) => void): (model: M["Model"]) => M["Model"];
   dispatch(event: M["Actions"]): void;
 };

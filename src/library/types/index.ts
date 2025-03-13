@@ -2,27 +2,16 @@
 //   Unicast = "unicast",
 //   Multicast = "multicast",
 //   Broadcast = "broadcast",
+import { immerable } from "immer";
+
 // }
 export const enum State {
-  Actual = 0,
-  Pending = 1,
+  Idle = 0,
+  Adding = 1,
+  Removing = 2,
+  Updating = 4,
+  Moving = 8,
 }
-
-export const enum Operation {
-  Adding = 2,
-  Removing = 4,
-  Updating = 8,
-  Moving = 16,
-}
-
-export const enum Target {
-  Direct = 32,
-  Indirect = 64,
-}
-
-// 73 = 1 | 64 | 8
-// 512 & 73 = 0
-// 576 = 64 | 512
 
 export type ActionName = Lifecycle | string | number;
 

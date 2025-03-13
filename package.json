@@ -6,7 +6,6 @@
     "eventemitter3": "^5.0.1",
     "flat": "^6.0.1",
     "immer": "^10.1.1",
-    "jsondiffpatch": "^0.6.0",
     "pubsub-js": "^1.9.5",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"

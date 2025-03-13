@@ -1,22 +1,5 @@
-import {
-  Model,
-  ModuleDefinition,
-  Operation,
-  State,
-  Target,
-} from "../types/index.ts";
+import { ModuleDefinition } from "../types/index.ts";
 import * as React from "react";
-
-type Helpers = {
-  is(state: State | Operation | Target): boolean;
-  any(state: State | Operation | Target): boolean;
-};
-
-export type Validator<M extends Model> = M extends object
-  ? {
-      [K in keyof M]: M[K] extends object ? Validator<M[K]> & Helpers : Helpers;
-    }
-  : Helpers;
 
 export type ViewActions<M extends ModuleDefinition> = {
   dispatch(event: M["Actions"]): void;
@@ -24,7 +7,6 @@ export type ViewActions<M extends ModuleDefinition> = {
 
 export type ViewArgs<M extends ModuleDefinition> = {
   model: M["Model"];
-  validate: Validator<M["Model"]>;
   actions: ViewActions<M>;
 };
 

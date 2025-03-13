@@ -1,7 +1,9 @@
-import { Operation, State, Target, create } from "../../library/index.ts";
+import { State, create } from "../../library/index.ts";
 import { Events, Module } from "./types.ts";
 
 export default create.view<Module>((self) => {
+  console.log("tasks", self.model.tasks);
+
   return (
     <section>
       <h1>Todo app</h1>
@@ -18,31 +20,34 @@ export default create.view<Module>((self) => {
         disabled={!self.model.task}
         onClick={() => self.actions.dispatch([Events.Add])}
       >
-        {self.validate.tasks.is(Operation.Adding | Target.Indirect) ? (
+        Add task
+        {/* {self.validate.tasks.is(Operation.Adding | Target.Indirect) ? (
           <>Adding task&hellip;</>
         ) : (
           "Add task"
-        )}
+        )} */}
       </button>
 
       {self.model.tasks.length === 0 ? (
-        <p>
-          {self.validate.tasks.is(State.Pending) ? (
-            <>Please wait&hellip;</>
-          ) : (
-            "You have no tasks yet."
-          )}
-        </p>
+        <p>One moment&hellip;</p>
       ) : (
+        // <p>
+        //   {self.validate.tasks.is(State.Pending) ? (
+        //     <>Please wait&hellip;</>
+        //   ) : (
+        //     "You have no tasks yet."
+        //   )}
+        // </p>
         <ol>
           {self.model.tasks.map((task, index) => (
             <li key={task.id}>
               <input
-                disabled={
-                  self.validate.tasks[index].is(
-                    State.Pending | Target.Indirect,
-                  ) || !task.id
-                }
+                // disabled={
+                //   self.validate.tasks[index].is(
+                //     State.Pending | Target.Indirect,
+                //   ) || !task.id
+                // }
+                disabled={!task.id}
                 type="checkbox"
                 checked={task.completed}
                 onChange={() =>
@@ -51,28 +56,27 @@ export default create.view<Module>((self) => {
               />
 
               <span
-                style={{
-                  fontStyle: self.validate.tasks[index].is(Operation.Adding)
-                    ? "italic"
-                    : "",
-                }}
+              // style={{
+              //   fontStyle: state & State.Updating ? "italic" : "",
+              // }}
               >
-                {task.task} {task.completed ? "✅" : ""}
+                {task.id} {task.summary} {task.completed ? "✅" : ""}
               </span>
 
               <button
-                disabled={
-                  self.validate.tasks[index].any(State.Pending) || !task.id
-                }
+                // disabled={
+                //   self.validate.tasks[index].any(State.Pending) || !task.id
+                // }
                 onClick={() =>
                   task.id && self.actions.dispatch([Events.Remove, task.id])
                 }
               >
-                {self.validate.tasks[index].is(Operation.Removing) ? (
-                  <>Removing&hellip;</>
-                ) : (
-                  "Remove"
-                )}
+                Remove
+                {/* {self.validate.tasks[index].is(Operation.Removing) ? (
+                    <>Removing&hellip;</>
+                  ) : (
+                    "Remove"
+                  )} */}
               </button>
             </li>
           ))}

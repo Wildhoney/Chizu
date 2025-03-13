@@ -1,6 +1,5 @@
-import { Events, ModuleDefinition, Phase } from "../../../types/index.ts";
-import * as utils from "../../../utils/index.ts";
-import { Validator } from "../../../view/types.ts";
+import { Events, ModuleDefinition, State } from "../../../types/index.ts";
+import { mark } from "../../../utils/mark/index.ts";
 import { Props, UseActions } from "./types.ts";
 import { Immer } from "immer";
 import * as React from "react";
@@ -27,6 +26,9 @@ export default function useActions<M extends ModuleDefinition>(
           io<T>(ƒ: () => T): T {
             return ƒ as T;
           },
+          mark<T>(value: T, state: State): T {
+            return mark(value, state);
+          },
           produce(ƒ) {
             return (model) => immer.produce(model, (draft) => ƒ(draft));
           },
@@ -38,12 +40,6 @@ export default function useActions<M extends ModuleDefinition>(
       view: {
         get model() {
           return props.model.current;
-        },
-        get validate() {
-          return utils.validate(
-            props.model.current,
-            props.mutations.current,
-          ) as Validator<M["Model"]>;
         },
         actions: {
           dispatch([action, ...data]) {

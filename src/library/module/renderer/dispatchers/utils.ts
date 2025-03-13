@@ -1,11 +1,5 @@
-import { Maybe } from "../../../index.ts";
-import {
-  ModuleDefinition,
-  Operation,
-  State,
-  Target,
-} from "../../../types/index.ts";
-import { Mutations } from "../mutations/types.ts";
+import { ModuleDefinition } from "../../../types/index.ts";
+import { inspect } from "../../../utils/mark/index.ts";
 import { Head, Tail } from "../types.ts";
 import { Context, GeneratorFn, UseDispatchHandlerProps } from "./types.ts";
 import { create } from "jsondiffpatch";
@@ -48,105 +42,6 @@ export const patcher = create({
   },
 });
 
-export function mutations(process: Symbol, differences: any): Mutations {
-  const mutations = new Map<string, State | Operation | Target>();
-  const optimistics = new Map<string, unknown>();
-
-  function traverse(obj: any, path: string[] = []) {
-    if (!obj || typeof obj !== "object") return;
-
-    if (obj._t === "a") {
-      for (const key in obj) {
-        if (key === "_t") continue;
-
-        const key0 = key.match(/^_(\d+)/)?.[1];
-
-        if (!Array.isArray(obj[key])) {
-          for (const _ in obj[key]) {
-            traverse(obj[key], [...path, key]);
-          }
-          continue;
-        }
-
-        if (key0) {
-          const path0 = [...path, key0].join(".");
-          const mutation = mutations.get(path0) ?? State.Pending;
-
-          if (obj[key0] && obj[key0][0]) {
-            mutations.set(path0, mutation | Operation.Updating);
-            optimistics.set(path0, obj[key0][0]);
-          } else {
-            const isRemoving = obj[key][1] === 0 && obj[key][2] === 0;
-            mutations.set(
-              path0,
-              mutation | (isRemoving ? Operation.Removing : Operation.Moving),
-            );
-          }
-        } else if (!key.startsWith("_")) {
-          if (obj[`_${key}`]) {
-            continue;
-          }
-
-          const path0 = [...path, key].join(".");
-          const mutation = mutations.get(path0) ?? State.Pending;
-          mutations.set(path0, mutation | Operation.Adding);
-          optimistics.set(path0, obj[key][0]);
-        }
-      }
-      return;
-    }
-
-    if (Array.isArray(obj)) {
-      const isAdding = obj.length === 1;
-      const isRemoving = obj.length === 3;
-
-      const path0 = path.join(".");
-      const mutation = mutations.get(path0) ?? State.Pending;
-      const operation = isAdding
-        ? Operation.Adding
-        : isRemoving
-          ? Operation.Removing
-          : Operation.Updating;
-
-      mutations.set(path0, mutation | operation);
-      optimistics.set(path.join("."), isAdding ? obj[0] : obj[1]);
-      return;
-    }
-
-    for (const key in obj) {
-      traverse(obj[key], [...path, key]);
-    }
-  }
-
-  traverse(differences);
-
-  return [...mutations.entries()].map(([path, state]) => ({
-    path,
-    state,
-    value: optimistics.get(path),
-    process,
-  }));
-}
-
-export function tag<T>(model: T): T {
-  if (Array.isArray(model)) {
-    return model.map((item) => tag(item)) as T;
-  }
-
-  if (model && typeof model === "object") {
-    const result = { ...model };
-    if (!(tagProperty in result)) {
-      result[tagProperty] = Symbol();
-    }
-    for (const key in model) {
-      result[key] = tag(model[key]);
-    }
-    return result;
-  }
-
-  return model;
-}
-
 function sync<M extends ModuleDefinition>(
   context: Context<M>,
   pending: boolean,
@@ -158,17 +53,20 @@ function sync<M extends ModuleDefinition>(
     const result = discovery.next();
 
     if (result.done) {
-      const updated = result.value(context.props.model.current);
-      const differences = patcher.diff(context.props.model.current, updated);
+      // if (differences && ios.size > 0) {
+      // context.props.mutations.current = [
+      //   ...context.props.mutations.current,
+      //   ...mutations(context.process, differences),
+      // ];
+      // }
 
-      if (differences && ios.size > 0) {
-        context.props.mutations.current = [
-          ...context.props.mutations.current,
-          ...mutations(context.process, differences),
-        ];
-      }
-
-      context.props.model.current = tag(updated);
+      const mutations = new Set<string>();
+      context.props.model.current = inspect(
+        result.value(context.props.model.current),
+        "",
+        mutations,
+      );
+      console.log(mutations);
       context.props.update.rerender();
       return ios;
     }
@@ -188,12 +86,12 @@ async function async<M extends ModuleDefinition>(
         : null;
 
     if (model) {
-      context.props.model.current = tag(model);
+      context.props.model.current = inspect(model);
       context.props.update.rerender();
     }
   });
 
-  context.props.mutations.current = context.props.mutations.current.filter(
-    (mutation) => mutation.process !== context.process,
-  );
+  // context.props.mutations.current = context.props.mutations.current.filter(
+  //   (mutation) => mutation.process !== context.process,
+  // );
 }

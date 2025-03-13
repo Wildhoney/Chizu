@@ -1,4 +1,4 @@
-import { Lifecycle, create, utils } from "../../library/index.ts";
+import { Lifecycle, State, create, utils } from "../../library/index.ts";
 import { Events, Module, Task } from "./types.ts";
 import { Db } from "./utils.ts";
 
@@ -7,16 +7,16 @@ export default create.controller<Module>((self) => {
 
   return {
     *[Lifecycle.Mount]() {
-      yield self.actions.io(async () => {
-        const tasks = await db.todos.toArray();
+      // yield self.actions.io(async () => {
+      //   const tasks = await db.todos.toArray();
 
-        return self.actions.produce((draft) => {
-          draft.tasks = tasks;
-        });
-      });
+      //   return self.actions.produce((draft) => {
+      //     draft.tasks = tasks;
+      //   });
+      // });
 
       return self.actions.produce((draft) => {
-        draft.tasks = [];
+        draft.tasks = self.actions.mark([], State.Adding);
       });
     },
 
@@ -29,19 +29,19 @@ export default create.controller<Module>((self) => {
     *[Events.Add]() {
       const draft: Task = {
         id: undefined,
-        task: String(self.model.task),
+        summary: String(self.model.task),
         date: new Date(),
         completed: false,
       };
 
       yield self.actions.io(async () => {
-        await utils.sleep(4_000);
+        await utils.sleep(5_000);
 
-        const final = await db.todos.put(draft);
+        const final = await db.todos.put({ ...draft });
 
         return self.actions.produce((model) => {
-          const index = self.model.tasks.findIndex(
-            (task) => task.task === draft.task,
+          const index = model.tasks.findIndex(
+            (task) => task.summary === draft.summary,
           );
           model.tasks[index].id = final;
         });
@@ -49,21 +49,24 @@ export default create.controller<Module>((self) => {
 
       return self.actions.produce((model) => {
         model.task = null;
-        model.tasks = [...model.tasks, draft];
+        model.tasks = [...model.tasks, self.actions.mark(draft, State.Adding)];
       });
     },
 
     *[Events.Completed](taskId) {
       yield self.actions.io(async () => {
-        await utils.sleep(1_000);
+        await utils.sleep(4_000);
 
         const task = await db.todos.get(taskId);
-        await db.todos.update(taskId, { completed: !task.completed });
+        await db.todos.update(taskId, { completed: !task?.completed });
         const final = await db.todos.get(taskId);
 
         return self.actions.produce((draft) => {
           const index = draft.tasks.findIndex((task) => task.id === taskId);
-          draft.tasks[index] = final;
+
+          if (~index && final) {
+            draft.tasks[index] = final;
+          }
         });
       });
 
@@ -81,10 +84,16 @@ export default create.controller<Module>((self) => {
       yield self.actions.io(async () => {
         await utils.sleep(2_000);
         await db.todos.delete(taskId);
+
+        return self.actions.produce((draft) => {
+          draft.tasks = draft.tasks.filter((task) => task.id !== taskId);
+        });
       });
 
       return self.actions.produce((draft) => {
-        draft.tasks = draft.tasks.filter((task) => task.id !== taskId);
+        draft.tasks = draft.tasks.map((task) =>
+          task.id === taskId ? self.actions.mark(task, State.Removing) : task,
+        );
       });
     },
   };

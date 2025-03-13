@@ -5,7 +5,7 @@ type Id = number;
 
 export type Task = {
   id: undefined | Id;
-  task: string;
+  summary: string;
   date: Date;
   completed: boolean;
 };
