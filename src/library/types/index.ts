@@ -1,17 +1,19 @@
-// export const enum Transmit {
-//   Unicast = "unicast",
-//   Multicast = "multicast",
-//   Broadcast = "broadcast",
-import { immerable } from "immer";
+export const enum Transmit {
+  Unicast = "unicast",
+  Multicast = "multicast",
+  Broadcast = "broadcast",
+}
 
-// }
 export const enum State {
   Idle = 0,
-  Adding = 1,
-  Removing = 2,
-  Updating = 4,
-  Moving = 8,
+  Pending = 1,
+  Adding = 2,
+  Removing = 4,
+  Updating = 8,
+  Moving = 16,
 }
+
+export const reference = Symbol("marea-reference");
 
 export type ActionName = Lifecycle | string | number;
 

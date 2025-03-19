@@ -1,4 +1,5 @@
 import { Lifecycle, State, create, utils } from "../../library/index.ts";
+import { Mode } from "../../library/module/renderer/actions/index.ts";
 import { Events, Module, Task } from "./types.ts";
 import { Db } from "./utils.ts";
 
@@ -7,16 +8,17 @@ export default create.controller<Module>((self) => {
 
   return {
     *[Lifecycle.Mount]() {
-      // yield self.actions.io(async () => {
-      //   const tasks = await db.todos.toArray();
+      yield self.actions.io(async () => {
+        // await utils.sleep(2_000);
+        const tasks = await db.todos.toArray();
 
-      //   return self.actions.produce((draft) => {
-      //     draft.tasks = tasks;
-      //   });
-      // });
+        return self.actions.produce((draft) => {
+          draft.tasks = tasks;
+        });
+      });
 
       return self.actions.produce((draft) => {
-        draft.tasks = self.actions.mark([], State.Adding);
+        draft.tasks = self.actions.placeholder([], State.Adding);
       });
     },
 
@@ -27,7 +29,7 @@ export default create.controller<Module>((self) => {
     },
 
     *[Events.Add]() {
-      const draft: Task = {
+      const optimistic: Task = {
         id: undefined,
         summary: String(self.model.task),
         date: new Date(),
@@ -36,20 +38,22 @@ export default create.controller<Module>((self) => {
 
       yield self.actions.io(async () => {
         await utils.sleep(5_000);
-
-        const final = await db.todos.put({ ...draft });
-
+        const id = await db.todos.put({ ...optimistic });
         return self.actions.produce((model) => {
-          const index = model.tasks.findIndex(
-            (task) => task.summary === draft.summary,
+          const index = self.model.tasks.findIndex(
+            (task) => task.summary === optimistic.summary,
           );
-          model.tasks[index].id = final;
+
+          if (~index) model.tasks[index].id = id;
         });
       });
 
-      return self.actions.produce((model) => {
-        model.task = null;
-        model.tasks = [...model.tasks, self.actions.mark(draft, State.Adding)];
+      return self.actions.produce((draft) => {
+        draft.task = null;
+        draft.tasks = [
+          ...self.model.tasks,
+          self.actions.placeholder(optimistic, State.Adding),
+        ];
       });
     },
 
@@ -62,7 +66,9 @@ export default create.controller<Module>((self) => {
         const final = await db.todos.get(taskId);
 
         return self.actions.produce((draft) => {
-          const index = draft.tasks.findIndex((task) => task.id === taskId);
+          const index = self.model.tasks.findIndex(
+            (task) => task.id === taskId,
+          );
 
           if (~index && final) {
             draft.tasks[index] = final;
@@ -71,29 +77,43 @@ export default create.controller<Module>((self) => {
       });
 
       return self.actions.produce((draft) => {
-        const index = draft.tasks.findIndex((task) => task.id === taskId);
+        const index = self.model.tasks.findIndex((task) => task.id === taskId);
 
         if (~index) {
-          const model = draft.tasks[index];
-          draft.tasks[index] = { ...model, completed: !model.completed };
+          const model = self.model.tasks[index];
+          draft.tasks[index] = self.actions.placeholder(
+            { ...model, completed: !model.completed },
+            State.Updating,
+          );
         }
       });
     },
 
     *[Events.Remove](taskId) {
       yield self.actions.io(async () => {
-        await utils.sleep(2_000);
+        await utils.sleep(6_000);
         await db.todos.delete(taskId);
 
         return self.actions.produce((draft) => {
-          draft.tasks = draft.tasks.filter((task) => task.id !== taskId);
+          const index = self.model.tasks.findIndex(
+            (task) => task.id === taskId,
+          );
+          draft.tasks = [
+            ...self.model.tasks.slice(0, index),
+            ...self.model.tasks.slice(index + 1),
+          ];
         });
       });
 
       return self.actions.produce((draft) => {
-        draft.tasks = draft.tasks.map((task) =>
-          task.id === taskId ? self.actions.mark(task, State.Removing) : task,
-        );
+        const index = self.model.tasks.findIndex((task) => task.id === taskId);
+
+        if (~index) {
+          draft.tasks[index] = self.actions.placeholder(
+            self.model.tasks[index],
+            State.Removing,
+          );
+        }
       });
     },
   };

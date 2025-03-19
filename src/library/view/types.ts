@@ -1,17 +1,13 @@
 import { Model, ModuleDefinition, State } from "../types/index.ts";
 import * as React from "react";
 
-
-type Helpers = {
-  is(state: State): boolean;
+export type Validator<M extends Model> = {
+  [P in keyof M]: M[P] extends object
+    ? Validator<M[P]> & {
+        is(state: State): boolean;
+      }
+    : Validator<M[P]>;
 };
-
-export type Validator<M extends Model> = M extends object
-  ? {
-      [K in keyof M]: M[K] extends object ? Validator<M[K]> & Helpers : Helpers;
-    }
-  : Helpers;
-
 
 export type ViewActions<M extends ModuleDefinition> = {
   dispatch(event: M["Actions"]): void;

@@ -7,7 +7,7 @@ import useLifecycles from "./lifecycles/index.ts";
 import useLogger from "./logger/index.ts";
 import useModel from "./model/index.ts";
 import useMutations from "./mutations/index.ts";
-import usePhase from "./phase/index.ts";
+import useProcess from "./process/index.ts";
 import useQueue from "./queue/index.ts";
 import { Props } from "./types.ts";
 import useUpdate from "./update/index.ts";
@@ -18,11 +18,11 @@ import * as ReactDOM from "react-dom";
 export default function renderer<M extends ModuleDefinition>({
   options,
 }: Props<M>): ReactElement {
-  const phase = usePhase();
   const update = useUpdate();
   const queue = useQueue();
   const mutations = useMutations();
   const elements = useElements({ update });
+  const process = useProcess();
 
   const model = useModel({ options });
   const logger = useLogger({ options, elements });
@@ -34,11 +34,18 @@ export default function renderer<M extends ModuleDefinition>({
     logger,
     queue,
     mutations,
+    process,
   });
-  const actions = useActions<M>({ options, model, dispatchers, mutations });
+  const actions = useActions<M>({
+    options,
+    model,
+    dispatchers,
+    mutations,
+    process,
+  });
 
-  useController({ options, phase, dispatchers, actions });
-  useLifecycles({ options, dispatchers, phase });
+  useController({ options, dispatchers, actions });
+  useLifecycles({ options, dispatchers });
 
   return React.useMemo(() => {
     logger.output({});

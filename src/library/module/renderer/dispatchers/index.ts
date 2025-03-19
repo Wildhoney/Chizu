@@ -17,7 +17,7 @@ export default function useDispatchers<M extends ModuleDefinition>(
     const broadcast = app.appEmitter;
 
     return {
-      attach<F extends GeneratorFn>(action: Head<M["Actions"]>, ƒ: F) {
+      attach<F extends GeneratorFn<M>>(action: Head<M["Actions"]>, ƒ: F) {
         const name = String(action);
         unicast.on(name, dispatch(action, ƒ));
         broadcast.on(name, dispatch(action, ƒ));

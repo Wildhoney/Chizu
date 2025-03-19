@@ -7,17 +7,21 @@ import {
   State,
 } from "../types/index.ts";
 
+export type Produce<M extends ModuleDefinition> =
+  | void
+  | ((model: M["Model"]) => M["Model"]);
+
 export type ControllerActions<M extends ModuleDefinition> = {
   io<T>(ƒ: () => T): T;
-  mark<T>(value: T, state: State): T;
-  produce(ƒ: (draft: M["Model"]) => void): (model: M["Model"]) => M["Model"];
+  placeholder<T>(value: T, state: State): T;
+  produce(ƒ: (draft: M["Model"]) => void): void;
   dispatch(event: M["Actions"]): void;
 };
 
-export type ControllerArgs<S extends ModuleDefinition> = {
-  model: S["Model"];
-  events: Events<S["Attributes"]>;
-  actions: ControllerActions<S>;
+export type ControllerArgs<M extends ModuleDefinition> = {
+  model: M["Model"];
+  events: Events<M["Attributes"]>;
+  actions: ControllerActions<M>;
 };
 
 export type ActionGenerator<M extends ModuleDefinition> = Generator<

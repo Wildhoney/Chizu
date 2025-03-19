@@ -1,8 +1,12 @@
-import { State, create } from "../../library/index.ts";
+import { create } from "../../library/index.ts";
+import {
+  ArrayPlaceholder,
+  ObjectPlaceholder,
+} from "../../library/utils/placeholder/utils.ts";
 import { Events, Module } from "./types.ts";
 
 export default create.view<Module>((self) => {
-  console.log("tasks", self.model.tasks);
+  console.log(self.model, "raw");
 
   return (
     <section>
@@ -16,12 +20,14 @@ export default create.view<Module>((self) => {
         }
       />
 
+      {self.model.tasks instanceof ArrayPlaceholder && "Loading tasks&hellip;"}
+
       <button
         disabled={!self.model.task}
         onClick={() => self.actions.dispatch([Events.Add])}
       >
         Add task
-        {/* {self.validate.tasks.is(Operation.Adding | Target.Indirect) ? (
+        {/* {self.validate.tasks.is(State.Adding) ? (
           <>Adding task&hellip;</>
         ) : (
           "Add task"
@@ -29,54 +35,51 @@ export default create.view<Module>((self) => {
       </button>
 
       {self.model.tasks.length === 0 ? (
-        <p>One moment&hellip;</p>
+        <p>
+          No tasks
+          {/* {self.validate.tasks.is(State.Pending) ? (
+            <>Please wait&hellip;</>
+          ) : (
+            "You have no tasks yet."
+          )} */}
+        </p>
       ) : (
-        // <p>
-        //   {self.validate.tasks.is(State.Pending) ? (
-        //     <>Please wait&hellip;</>
-        //   ) : (
-        //     "You have no tasks yet."
-        //   )}
-        // </p>
         <ol>
           {self.model.tasks.map((task, index) => (
             <li key={task.id}>
               <input
-                // disabled={
-                //   self.validate.tasks[index].is(
-                //     State.Pending | Target.Indirect,
-                //   ) || !task.id
-                // }
-                disabled={!task.id}
+                // disabled={self.validate.task.is(State.Pending) || !task.id}
                 type="checkbox"
                 checked={task.completed}
                 onChange={() =>
                   task.id && self.actions.dispatch([Events.Completed, task.id])
                 }
               />
-
+              {task instanceof ObjectPlaceholder ? "Yes" : "No"} -
               <span
               // style={{
-              //   fontStyle: state & State.Updating ? "italic" : "",
+              //   fontStyle: self.validate.tasks[index].is(State.Adding)
+              //     ? "italic"
+              //     : "",
               // }}
               >
                 {task.id} {task.summary} {task.completed ? "✅" : ""}
+                {/* {self.validate.tasks[index].is(State.Updating) && <>&hellip;</>} */}
               </span>
-
               <button
                 // disabled={
-                //   self.validate.tasks[index].any(State.Pending) || !task.id
+                //   self.validate.tasks[index].is(State.Removing) || !task.id
                 // }
                 onClick={() =>
                   task.id && self.actions.dispatch([Events.Remove, task.id])
                 }
               >
                 Remove
-                {/* {self.validate.tasks[index].is(Operation.Removing) ? (
-                    <>Removing&hellip;</>
-                  ) : (
-                    "Remove"
-                  )} */}
+                {/* {self.validate.tasks[index].is(State.Removing) ? (
+                  <>Removing&hellip;</>
+                ) : (
+                  "Remove"
+                )} */}
               </button>
             </li>
           ))}
