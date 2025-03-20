@@ -4,16 +4,10 @@
   "type": "module",
   "dependencies": {
     "eventemitter3": "^5.0.1",
-    "fast-array-diff": "^1.1.0",
-    "flat": "^6.0.1",
-    "jsondiffpatch": "^0.6.0",
-    "lodash": "^4.17.21",
     "pubsub-js": "^1.9.5",
     "ramda": "^0.30.1",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0",
-    "react-traverse": "^1.0.0",
-    "react-tree-walker": "^4.3.0"
+    "react-dom": "^19.0.0"
   },
   "devDependencies": {
     "@babel/preset-env": "^7.26.0",
@@ -24,9 +18,7 @@
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.2.0",
     "@trivago/prettier-plugin-sort-imports": "^5.2.2",
-    "@types/lodash": "^4.17.16",
     "@types/pubsub-js": "^1.8.6",
-    "@types/ramda": "^0.30.2",
     "@types/react": "^19.0.8",
     "@types/react-dom": "^19.0.3",
     "dexie": "^4.0.11",

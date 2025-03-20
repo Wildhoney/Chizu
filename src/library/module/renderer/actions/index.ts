@@ -1,14 +1,12 @@
 import { Events, ModuleDefinition, State } from "../../../types/index.ts";
-import { placeholder, proxify } from "../../../utils/placeholder/index.ts";
+import {
+  observe,
+  placeholder,
+  validate,
+} from "../../../utils/placeholder/index.ts";
 import { Validator } from "../../../view/types.ts";
 import { Props, UseActions } from "./types.ts";
-import { cloneDeep } from "lodash";
 import * as React from "react";
-
-export const enum Mode {
-  Stateless,
-  Stateful,
-}
 
 export default function useActions<M extends ModuleDefinition>(
   props: Props<M>,
@@ -17,7 +15,7 @@ export default function useActions<M extends ModuleDefinition>(
     () => ({
       controller: {
         get model() {
-          return proxify(props.model.current);
+          return props.model.current;
         },
         events: Object.entries(props.options.attributes)
           .filter(([_, value]) => typeof value === "function")
@@ -30,13 +28,12 @@ export default function useActions<M extends ModuleDefinition>(
             return ƒ as T;
           },
           placeholder<T>(value: T, state: State) {
-            return placeholder(value, props.process.current, state) as T;
+            return placeholder(value, state, props.process.current) as T;
           },
           produce<M extends ModuleDefinition>(ƒ: (model: M["Model"]) => void) {
             return (model: M["Model"]) => {
-              const cloned = cloneDeep(model);
-              ƒ(proxify(cloned));
-              return cloned;
+              ƒ(observe(model, props.mutations.current));
+              return model;
             };
           },
           dispatch([action, ...data]) {
@@ -45,14 +42,11 @@ export default function useActions<M extends ModuleDefinition>(
         },
       },
       view: {
-        get raw() {
-          return props.model.current;
-        },
         get model() {
           return props.model.current;
         },
         get validate() {
-          // return proxy.validate(props.model.current) as Validator<M["Model"]>;
+          return validate(props.model.current, props.mutations.current);
         },
         actions: {
           is<T>(value: T, state: State): boolean {

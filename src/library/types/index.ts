@@ -69,3 +69,5 @@ export type Events<A extends Attributes> = Pick<
     [K in keyof Fns<A>]: Fns<A>[K] extends never ? never : K;
   }[keyof Fns<A>]
 >;
+
+export type Pk<T> = undefined | Symbol | T;

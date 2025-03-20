@@ -28,7 +28,7 @@ export function dispatcher<M extends ModuleDefinition>(
         console.error("Error in dispatcher", error);
       } finally {
         props.queue.current.delete(task.promise);
-        setTimeout(() => task.resolve(), 1_000);
+        task.resolve();
       }
     };
   };
@@ -78,6 +78,11 @@ async function async<M extends ModuleDefinition>(
 
     context.props.model.current = model;
     props.process.current = null;
+    props.mutations.current = new Set(
+      [...props.mutations.current].filter(
+        (mutation) => mutation.process !== context.process,
+      ),
+    );
     context.props.update.rerender();
   });
 }

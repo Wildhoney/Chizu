@@ -2,11 +2,9 @@ import { Model, ModuleDefinition, State } from "../types/index.ts";
 import * as React from "react";
 
 export type Validator<M extends Model> = {
-  [P in keyof M]: M[P] extends object
-    ? Validator<M[P]> & {
-        is(state: State): boolean;
-      }
-    : Validator<M[P]>;
+  [P in keyof M]: Validator<M[P]> & {
+    is(state: State): boolean;
+  };
 };
 
 export type ViewActions<M extends ModuleDefinition> = {

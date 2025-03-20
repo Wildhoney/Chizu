@@ -1,52 +1,125 @@
+import { Mutations } from "../../module/renderer/mutations/types.ts";
 import { Process } from "../../module/renderer/process/types.ts";
-import { State } from "../../types/index.ts";
-import {
-  ArrayPlaceholder,
-  BooleanPlaceholder,
-  NumberPlaceholder,
-  ObjectPlaceholder,
-  PrimitivePlaceholder,
-  StringPlaceholder,
-} from "./utils.ts";
+import { ModuleDefinition, State } from "../../types/index.ts";
+import { Validator } from "../../view/types.ts";
+
+class Placeholder<T> {
+  #primitive: T;
+  #state: State;
+  #process: null | Process;
+
+  constructor(primitive: T, state: State, process: null | Process) {
+    this.#primitive = primitive;
+    this.#state = state;
+    this.#process = process;
+  }
+
+  value(): T {
+    return this.#primitive;
+  }
+
+  state(): State {
+    return this.#state;
+  }
+
+  process(): null | Process {
+    return this.#process;
+  }
+}
 
 export function placeholder<T>(
   value: T,
-  process: null | Process,
   state: State,
+  process: null | Process,
 ): T {
-  if (Array.isArray(value))
-    return new ArrayPlaceholder(process, state, ...value) as T;
-  if (typeof value === "object" && value != null)
-    return new ObjectPlaceholder(process, state, value) as T;
-  if (typeof value === "string")
-    return new StringPlaceholder(process, state, value) as T;
-  if (typeof value === "number")
-    return new NumberPlaceholder(process, state, value) as T;
-  if (typeof value === "boolean")
-    return new BooleanPlaceholder(process, state, value) as T;
-  return value;
+  return new Placeholder(value, state, process) as T;
 }
 
-export function proxify<T extends object>(model: T): T {
+export function observe<M extends ModuleDefinition["Model"]>(
+  model: M,
+  mutations: Mutations,
+): M {
   return new Proxy(model, {
-    get(target: T, prop: string | symbol, receiver: any) {
-      const value = Reflect.get(target, prop, receiver);
-      const isObject = typeof value === "object" && value != null;
-      return isObject ? proxify(value) : value;
-    },
-    set(target: T, prop: string | symbol, value: unknown): boolean {
-      const current = target[prop as keyof T];
+    get(target, key) {
+      const value = Reflect.get(target, key) as M | Placeholder<M>;
+      const placeholder = value instanceof Placeholder;
+      const unwrapped = placeholder ? value.value() : value;
+      const process = placeholder ? value.process() : null;
 
-      if (
-        current instanceof PrimitivePlaceholder ||
-        current instanceof ArrayPlaceholder ||
-        current instanceof ObjectPlaceholder
-      ) {
-        target[prop as keyof T] = current.clone(value);
-      } else {
-        target[prop as keyof T] = value as T[keyof T];
+      if (placeholder && process) {
+        mutations.add({
+          key,
+          value: target,
+          type: Array.isArray(target) ? "array" : "object",
+          process,
+          state: value.state(),
+        });
       }
-      return true;
+
+      return typeof unwrapped === "object"
+        ? observe(unwrapped as object, mutations)
+        : unwrapped;
+    },
+    set(target, key, value) {
+      const placeholder = value instanceof Placeholder;
+      const process = placeholder ? value.process() : null;
+      const unwrapped = placeholder ? value.value() : value;
+
+      if (placeholder && process) {
+        mutations.add({
+          key,
+          value: Array.isArray(target) ? unwrapped : target,
+          type: Array.isArray(target) ? "array" : "object",
+          process,
+          state: value.state(),
+        });
+      }
+
+      return Reflect.set(target, key, placeholder ? value.value() : value);
     },
   });
+}
+
+export function validate<M extends ModuleDefinition["Model"]>(
+  model: M,
+  mutations: Mutations,
+): Validator<M> {
+  function validator(target: M, key: string) {
+    return new Proxy(target, {
+      get(target, prop) {
+        const value = Reflect.get(target, prop);
+
+        if (typeof prop === "symbol") return value;
+
+        if (prop === "is") {
+          const applicableMutations = [...mutations].filter(
+            (mutation) =>
+              mutation.value === target &&
+              (mutation.type === "object" ? mutation.key === key : true),
+          );
+
+          return (state: State) => {
+            if (applicableMutations.length === 0) return false;
+
+            const states = new Set(
+              applicableMutations.map((mutation) => mutation.state),
+            );
+            const current = [...states].reduce(
+              (current, state) => current | state,
+              State.Pending,
+            );
+
+            return Boolean(current & state);
+          };
+        }
+
+        if (typeof value === "object" && value !== null)
+          return validator(value, prop);
+
+        return validator(target, prop);
+      },
+    });
+  }
+
+  return validator(model);
 }

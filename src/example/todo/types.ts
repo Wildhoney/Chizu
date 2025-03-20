@@ -1,10 +1,11 @@
 import { Create } from "../../library/index.ts";
+import { Pk } from "../../library/types/index.ts";
 import { DistributedActions, Route, Routes } from "../types.ts";
 
 type Id = number;
 
 export type Task = {
-  id: undefined | Id;
+  id: Pk<Id>;
   summary: string;
   date: Date;
   completed: boolean;
@@ -27,8 +28,8 @@ export type Actions =
   | DistributedActions
   | [Events.Task, string]
   | [Events.Add]
-  | [Events.Completed, Id]
-  | [Events.Remove, Id];
+  | [Events.Completed, Pk<Id>]
+  | [Events.Remove, Pk<Id>];
 
 export type Module = Create.Module<
   Model,
