@@ -4,7 +4,6 @@ import {
   placeholder,
   validate,
 } from "../../../utils/placeholder/index.ts";
-import { Validator } from "../../../view/types.ts";
 import { Props, UseActions } from "./types.ts";
 import * as React from "react";
 

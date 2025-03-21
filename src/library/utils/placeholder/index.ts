@@ -3,6 +3,8 @@ import { Process } from "../../module/renderer/process/types.ts";
 import { ModuleDefinition, State } from "../../types/index.ts";
 import { Validator } from "../../view/types.ts";
 
+const unwrap = Symbol("unwrap");
+
 class Placeholder<T> {
   #primitive: T;
   #state: State;
@@ -45,12 +47,15 @@ export function observe<M extends ModuleDefinition["Model"]>(
       const placeholder = value instanceof Placeholder;
       const unwrapped = placeholder ? value.value() : value;
       const process = placeholder ? value.process() : null;
+      const type = Array.isArray(target) ? "array" : "object";
+
+      if (key === unwrap) return target;
 
       if (placeholder && process) {
         mutations.add({
-          key,
+          key: type === "array" ? null : key,
           value: target,
-          type: Array.isArray(target) ? "array" : "object",
+          type,
           process,
           state: value.state(),
         });
@@ -61,21 +66,23 @@ export function observe<M extends ModuleDefinition["Model"]>(
         : unwrapped;
     },
     set(target, key, value) {
-      const placeholder = value instanceof Placeholder;
-      const process = placeholder ? value.process() : null;
-      const unwrapped = placeholder ? value.value() : value;
+      const isPlaceholder = value instanceof Placeholder;
+      const placeholder = value;
+      const process = isPlaceholder ? placeholder.process() : null;
+      const resolved = isPlaceholder ? placeholder.value() : value;
+      const unwrapped =  resolved == null ? null :  resolved[unwrap] ?? resolved;
+      const type = Array.isArray(target) ? "array" : "object";
 
-      if (placeholder && process) {
+      if (isPlaceholder && process) {
         mutations.add({
-          key,
+          key: type === "array" ? null : key,
           value: Array.isArray(target) ? unwrapped : target,
-          type: Array.isArray(target) ? "array" : "object",
+          type,
           process,
-          state: value.state(),
+          state: placeholder.state(),
         });
       }
-
-      return Reflect.set(target, key, placeholder ? value.value() : value);
+      return Reflect.set(target, key, unwrapped);
     },
   });
 }
@@ -84,7 +91,7 @@ export function validate<M extends ModuleDefinition["Model"]>(
   model: M,
   mutations: Mutations,
 ): Validator<M> {
-  function validator(target: M, key: string) {
+  function validator(target: M, key: string = ""): M {
     return new Proxy(target, {
       get(target, prop) {
         const value = Reflect.get(target, prop);
@@ -92,11 +99,12 @@ export function validate<M extends ModuleDefinition["Model"]>(
         if (typeof prop === "symbol") return value;
 
         if (prop === "is") {
-          const applicableMutations = [...mutations].filter(
-            (mutation) =>
-              mutation.value === target &&
-              (mutation.type === "object" ? mutation.key === key : true),
-          );
+          const applicableMutations = [...mutations].filter((mutation) => {
+            return (
+              mutation.value === target ||
+              mutation.value === Reflect.get(target, unwrap)
+            );
+          });
 
           return (state: State) => {
             if (applicableMutations.length === 0) return false;

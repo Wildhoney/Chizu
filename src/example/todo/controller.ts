@@ -94,14 +94,16 @@ export default create.controller<Module>((self) => {
 
     *[Events.Remove](taskId) {
       yield self.actions.io(async () => {
-        await utils.sleep(1_000);
+        await utils.sleep(3_000);
 
-        await db.todos.delete(taskId);
+        // await db.todos.delete(taskId);
 
         return self.actions.produce((draft) => {
           const index = self.model.tasks.findIndex(
             (task) => task.id === taskId,
           );
+
+          // debugger;
           draft.tasks.splice(index, 1);
         });
       });
