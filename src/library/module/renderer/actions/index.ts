@@ -48,16 +48,6 @@ export default function useActions<M extends ModuleDefinition>(
           return validate(props.model.current, props.mutations.current);
         },
         actions: {
-          is<T>(value: T, state: State): boolean {
-            return true;
-            // if (!isPlaceholder(value)) return false;
-
-            // const currentState = [
-            //   ...new Set([...value.states].map((state) => state.state)),
-            // ].reduce((current, state) => current | state, State.Pending);
-
-            // return isPlaceholder(value) ? Boolean(currentState & state) : false;
-          },
           dispatch([action, ...data]) {
             return props.dispatchers.dispatch(action, data);
           },

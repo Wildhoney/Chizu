@@ -84,8 +84,8 @@ export default create.controller<Module>((self) => {
 
         if (~index) {
           const model = self.model.tasks[index];
-          draft.tasks[index] = self.actions.placeholder(
-            { ...model, completed: !model.completed },
+          draft.tasks[index].completed = self.actions.placeholder(
+            !model.completed,
             State.Updating,
           );
         }

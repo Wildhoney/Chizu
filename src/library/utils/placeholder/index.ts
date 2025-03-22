@@ -2,33 +2,16 @@ import { Mutations } from "../../module/renderer/mutations/types.ts";
 import { Process } from "../../module/renderer/process/types.ts";
 import { ModuleDefinition, State } from "../../types/index.ts";
 import { Validator } from "../../view/types.ts";
+import { Placeholder, unwrap } from "./utils.ts";
 
-const unwrap = Symbol("unwrap");
-
-class Placeholder<T> {
-  #primitive: T;
-  #state: State;
-  #process: null | Process;
-
-  constructor(primitive: T, state: State, process: null | Process) {
-    this.#primitive = primitive;
-    this.#state = state;
-    this.#process = process;
-  }
-
-  value(): T {
-    return this.#primitive;
-  }
-
-  state(): State {
-    return this.#state;
-  }
-
-  process(): null | Process {
-    return this.#process;
-  }
-}
-
+/**
+ * Create a placeholder for a value that is being processed.
+ *
+ * @param value {T}
+ * @param state {State}
+ * @param process {null | Process}
+ * @returns {T}
+ */
 export function placeholder<T>(
   value: T,
   state: State,
@@ -37,6 +20,13 @@ export function placeholder<T>(
   return new Placeholder(value, state, process) as T;
 }
 
+/**
+ * Observe a model for changes and track mutations to determine the state of a mutation.
+ *
+ * @param model {M}
+ * @param mutations {Mutations}
+ * @returns {M}
+ */
 export function observe<M extends ModuleDefinition["Model"]>(
   model: M,
   mutations: Mutations,
@@ -70,8 +60,9 @@ export function observe<M extends ModuleDefinition["Model"]>(
       const placeholder = value;
       const process = isPlaceholder ? placeholder.process() : null;
       const resolved = isPlaceholder ? placeholder.value() : value;
-      const unwrapped =  resolved == null ? null :  resolved[unwrap] ?? resolved;
-      const type = Array.isArray(target) ? "array" : "object";
+      const unwrapped =
+        resolved == null ? null : (resolved[unwrap] ?? resolved);
+      const type = Array.isArray(unwrapped) ? "array" : "object";
 
       if (isPlaceholder && process) {
         mutations.add({
@@ -87,6 +78,14 @@ export function observe<M extends ModuleDefinition["Model"]>(
   });
 }
 
+/**
+ * Validate a model against mutations to determine the state of a mutation and provide
+ * immediate feedback in the form of optimistic updates.
+ *
+ * @param model {M}
+ * @param mutations {Mutations}
+ * @returns {Validator<M>}
+ */
 export function validate<M extends ModuleDefinition["Model"]>(
   model: M,
   mutations: Mutations,
@@ -101,8 +100,12 @@ export function validate<M extends ModuleDefinition["Model"]>(
         if (prop === "is") {
           const applicableMutations = [...mutations].filter((mutation) => {
             return (
-              mutation.value === target ||
-              mutation.value === Reflect.get(target, unwrap)
+              mutation.value === target &&
+              (mutation.type === "array"
+                ? true
+                : /^\d+$/.test(String(mutation.key))
+                  ? true
+                  : mutation.key === key)
             );
           });
 

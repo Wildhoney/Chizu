@@ -1,7 +1,24 @@
 import { observe, placeholder, validate } from ".";
 import { Mutations } from "../../module/renderer/mutations/types.ts";
 import { State } from "../../types/index.ts";
+import { Placeholder } from "./utils.ts";
 import { describe, expect, it } from "@jest/globals";
+
+describe("placeholder", () => {
+  it("should create a placeholder for a value that is being processed", () => {
+    const process = Symbol("process");
+    const result = placeholder(
+      "Adam",
+      State.Removing,
+      process,
+    ) as unknown as Placeholder<string>;
+
+    expect(result).toBeInstanceOf(Placeholder);
+    expect(result.value()).toEqual("Adam");
+    expect(result.state()).toEqual(State.Removing);
+    expect(result.process()).toEqual(process);
+  });
+});
 
 describe("observe()", () => {
   const model = {
@@ -71,9 +88,7 @@ describe("observe()", () => {
       Symbol("process"),
     );
     expect(mutations).toEqual(
-      new Set([
-        expect.objectContaining({ key: "people", state: State.Updating }),
-      ]),
+      new Set([expect.objectContaining({ key: null, state: State.Updating })]),
     );
   });
 
@@ -154,6 +169,51 @@ describe("observe()", () => {
     expect(segment.people).toEqual([{ name: "Adam" }]);
     expect(mutations).toEqual(
       new Set([expect.objectContaining({ key: "0", state: State.Removing })]),
+    );
+  });
+
+  it("should know the type of the object being mutated", () => {
+    const model = {
+      person: {
+        name: "Adam",
+      },
+      favouriteCountries: [
+        { name: "Japan" },
+        { name: "Ukraine" },
+        { name: "Spain" },
+      ],
+    };
+
+    const mutations: Mutations = new Set();
+    const segment = observe(model, mutations);
+    segment.person.name = placeholder("Eve", State.Updating, Symbol("process"));
+    expect(mutations).toEqual(
+      new Set([expect.objectContaining({ key: "name", type: "object" })]),
+    );
+
+    segment.favouriteCountries[0].name = placeholder(
+      "China",
+      State.Updating,
+      Symbol("process"),
+    );
+    expect(mutations).toEqual(
+      new Set([
+        expect.objectContaining({ key: "name", type: "object" }),
+        expect.objectContaining({ key: "name", type: "object" }),
+      ]),
+    );
+
+    segment.favouriteCountries = placeholder(
+      segment.favouriteCountries,
+      State.Removing,
+      Symbol("process"),
+    );
+    expect(mutations).toEqual(
+      new Set([
+        expect.objectContaining({ key: "name", type: "object" }),
+        expect.objectContaining({ key: "name", type: "object" }),
+        expect.objectContaining({ key: null, type: "array" }),
+      ]),
     );
   });
 });

@@ -24,27 +24,23 @@ export type ControllerArgs<M extends ModuleDefinition> = {
   actions: ControllerActions<M>;
 };
 
-export type ActionGenerator<M extends ModuleDefinition> = Generator<
-  unknown,
-  (model: M["Model"]) => M["Model"],
-  void
->;
+export type ActionGenerator = Generator<void | Promise<void>, void, void>;
 
 export type ControllerDefinition<M extends ModuleDefinition> = (
   controller: ControllerArgs<M>,
 ) => ControllerInstance<M>;
 
 export type ControllerInstance<M extends ModuleDefinition> = {
-  [Lifecycle.Mount]?(parameters: M["Routes"]): ActionGenerator<M>;
-  [Lifecycle.Derive]?(attributes: M["Attributes"]): ActionGenerator<M>;
-  [Lifecycle.Tree]?(): ActionGenerator<M>;
-  [Lifecycle.Unmount]?(): ActionGenerator<M>;
+  [Lifecycle.Mount]?(parameters: M["Routes"]): ActionGenerator;
+  [Lifecycle.Derive]?(attributes: M["Attributes"]): ActionGenerator;
+  [Lifecycle.Tree]?(): ActionGenerator;
+  [Lifecycle.Unmount]?(): ActionGenerator;
 } & Partial<Handlers<M>>;
 
 type Handlers<M extends ModuleDefinition> = {
   [K in Head<M["Actions"]>]: (
     payload: Payload<M["Actions"], K>,
-  ) => ActionGenerator<M>;
+  ) => ActionGenerator;
 };
 
 type Payload<A extends Actions, K> = A extends [K, infer P] ? P : never;
