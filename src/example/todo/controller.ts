@@ -9,7 +9,7 @@ export default create.controller<Module>((self) => {
   return {
     *[Lifecycle.Mount]() {
       yield self.actions.io(async () => {
-        // await utils.sleep(1_000);
+        await utils.sleep(1_000);
 
         const tasks = await db.todos.toArray();
 
@@ -66,15 +66,15 @@ export default create.controller<Module>((self) => {
 
         const task = await db.todos.get(taskId);
         await db.todos.update(taskId, { completed: !task?.completed });
-        const final = await db.todos.get(taskId);
+        const row = await db.todos.get(taskId);
 
         return self.actions.produce((draft) => {
           const index = self.model.tasks.findIndex(
             (task) => task.id === taskId,
           );
 
-          if (~index && final) {
-            draft.tasks[index] = final;
+          if (~index && row) {
+            draft.tasks[index].completed = row.completed;
           }
         });
       });

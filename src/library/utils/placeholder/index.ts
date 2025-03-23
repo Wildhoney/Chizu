@@ -36,20 +36,21 @@ export function observe<M extends ModuleDefinition["Model"]>(
       const value = Reflect.get(target, key) as M | Placeholder<M>;
       const placeholder = value instanceof Placeholder;
       const unwrapped = placeholder ? value.value() : value;
-      const process = placeholder ? value.process() : null;
-      const type = Array.isArray(target) ? "array" : "object";
+      // const process = placeholder ? value.process() : null;
+      // const type = Array.isArray(target) ? "array" : "object";
 
       if (key === unwrap) return target;
 
-      if (placeholder && process) {
-        mutations.add({
-          key: type === "array" ? null : key,
-          value: target,
-          type,
-          process,
-          state: value.state(),
-        });
-      }
+      // if (placeholder && process) {
+      //   console.log('xx')
+      //   mutations.add({
+      //     key: type === "array" ? null : key,
+      //     value: target,
+      //     type,
+      //     process,
+      //     state: value.state(),
+      //   });
+      // }
 
       return typeof unwrapped === "object"
         ? observe(unwrapped as object, mutations)
@@ -62,13 +63,12 @@ export function observe<M extends ModuleDefinition["Model"]>(
       const resolved = isPlaceholder ? placeholder.value() : value;
       const unwrapped =
         resolved == null ? null : (resolved[unwrap] ?? resolved);
-      const type = Array.isArray(unwrapped) ? "array" : "object";
+      const array = /^\d+$/.test(String(key));
 
       if (isPlaceholder && process) {
         mutations.add({
-          key: type === "array" ? null : key,
-          value: Array.isArray(target) ? unwrapped : target,
-          type,
+          key: array ? null : key,
+          value: typeof unwrapped === "object" ? unwrapped : target,
           process,
           state: placeholder.state(),
         });
@@ -101,11 +101,7 @@ export function validate<M extends ModuleDefinition["Model"]>(
           const applicableMutations = [...mutations].filter((mutation) => {
             return (
               mutation.value === target &&
-              (mutation.type === "array"
-                ? true
-                : /^\d+$/.test(String(mutation.key))
-                  ? true
-                  : mutation.key === key)
+              (mutation.key === key || !mutation.key)
             );
           });
 

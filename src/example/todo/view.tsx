@@ -19,7 +19,7 @@ export default create.view<Module>((self) => {
         disabled={!self.model.task}
         onClick={() => self.actions.dispatch([Events.Add])}
       >
-        {self.validate.tasks.is(State.Adding) ? (
+        {self.validate.tasks.is(State.Updating) ? (
           <>Adding task&hellip;</>
         ) : (
           "Add task"

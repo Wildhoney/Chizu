@@ -66,7 +66,7 @@ describe("observe()", () => {
       Symbol("process"),
     );
     expect(mutations).toEqual(
-      new Set([expect.objectContaining({ key: "0", state: State.Updating })]),
+      new Set([expect.objectContaining({ key: null, state: State.Updating })]),
     );
   });
 
@@ -88,7 +88,9 @@ describe("observe()", () => {
       Symbol("process"),
     );
     expect(mutations).toEqual(
-      new Set([expect.objectContaining({ key: null, state: State.Updating })]),
+      new Set([
+        expect.objectContaining({ key: "people", state: State.Updating }),
+      ]),
     );
   });
 
@@ -162,13 +164,13 @@ describe("observe()", () => {
     segment.people[0] = placeholder(segment.people[0], State.Removing, process);
     expect(segment.people[0].name).toEqual("Adam");
     expect(mutations).toEqual(
-      new Set([expect.objectContaining({ key: "0", state: State.Removing })]),
+      new Set([expect.objectContaining({ key: null, state: State.Removing })]),
     );
 
     segment.people = segment.people.filter((person) => person.name !== "Eve");
     expect(segment.people).toEqual([{ name: "Adam" }]);
     expect(mutations).toEqual(
-      new Set([expect.objectContaining({ key: "0", state: State.Removing })]),
+      new Set([expect.objectContaining({ key: null, state: State.Removing })]),
     );
   });
 
@@ -188,7 +190,7 @@ describe("observe()", () => {
     const segment = observe(model, mutations);
     segment.person.name = placeholder("Eve", State.Updating, Symbol("process"));
     expect(mutations).toEqual(
-      new Set([expect.objectContaining({ key: "name", type: "object" })]),
+      new Set([expect.objectContaining({ key: "name" })]),
     );
 
     segment.favouriteCountries[0].name = placeholder(
@@ -198,8 +200,8 @@ describe("observe()", () => {
     );
     expect(mutations).toEqual(
       new Set([
-        expect.objectContaining({ key: "name", type: "object" }),
-        expect.objectContaining({ key: "name", type: "object" }),
+        expect.objectContaining({ key: "name" }),
+        expect.objectContaining({ key: "name" }),
       ]),
     );
 
@@ -210,9 +212,9 @@ describe("observe()", () => {
     );
     expect(mutations).toEqual(
       new Set([
-        expect.objectContaining({ key: "name", type: "object" }),
-        expect.objectContaining({ key: "name", type: "object" }),
-        expect.objectContaining({ key: null, type: "array" }),
+        expect.objectContaining({ key: "name" }),
+        expect.objectContaining({ key: "name" }),
+        expect.objectContaining({ key: "favouriteCountries" }),
       ]),
     );
   });
