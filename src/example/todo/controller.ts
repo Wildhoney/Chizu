@@ -1,4 +1,4 @@
-import { Lifecycle, State, create, utils } from "../../library/index.ts";
+import { Lifecycle, State, create } from "../../library/index.ts";
 import { pk } from "../../library/utils/index.ts";
 import { Events, Module, Task } from "./types.ts";
 import { Db } from "./utils.ts";
@@ -9,8 +9,6 @@ export default create.controller<Module>((self) => {
   return {
     *[Lifecycle.Mount]() {
       yield self.actions.io(async () => {
-        await utils.sleep(1_000);
-
         const tasks = await db.todos.toArray();
 
         return self.actions.produce((draft) => {
@@ -32,7 +30,7 @@ export default create.controller<Module>((self) => {
     *[Events.Add]() {
       const id = pk();
 
-      const optimistic: Task = {
+      const task: Task = {
         id,
         summary: String(self.model.task),
         date: new Date(),
@@ -40,15 +38,10 @@ export default create.controller<Module>((self) => {
       };
 
       yield self.actions.io(async () => {
-        await utils.sleep(1_000);
-
-        const id = await db.todos.put({ ...optimistic, id: undefined });
+        const id = await db.todos.put({ ...task, id: undefined });
 
         return self.actions.produce((model) => {
-          const index = self.model.tasks.findIndex(
-            (task) => task.id === optimistic.id,
-          );
-
+          const index = self.model.tasks.findIndex(({ id }) => id === task.id);
           if (~index) model.tasks[index].id = id;
         });
       });
@@ -56,26 +49,19 @@ export default create.controller<Module>((self) => {
       return self.actions.produce((draft) => {
         draft.task = null;
         draft.tasks = self.actions.placeholder(draft.tasks, State.Updating);
-        draft.tasks.push(self.actions.placeholder(optimistic, State.Adding));
+        draft.tasks.push(self.actions.placeholder(task, State.Adding));
       });
     },
 
     *[Events.Completed](taskId) {
       yield self.actions.io(async () => {
-        await utils.sleep(1_000);
-
         const task = await db.todos.get(taskId);
         await db.todos.update(taskId, { completed: !task?.completed });
         const row = await db.todos.get(taskId);
 
         return self.actions.produce((draft) => {
-          const index = self.model.tasks.findIndex(
-            (task) => task.id === taskId,
-          );
-
-          if (~index && row) {
-            draft.tasks[index].completed = row.completed;
-          }
+          const index = self.model.tasks.findIndex(({ id }) => id === taskId);
+          if (~index && row) draft.tasks[index].completed = row.completed;
         });
       });
 
@@ -94,29 +80,22 @@ export default create.controller<Module>((self) => {
 
     *[Events.Remove](taskId) {
       yield self.actions.io(async () => {
-        await utils.sleep(3_000);
-
-        // await db.todos.delete(taskId);
+        await db.todos.delete(taskId);
 
         return self.actions.produce((draft) => {
-          const index = self.model.tasks.findIndex(
-            (task) => task.id === taskId,
-          );
-
-          // debugger;
-          draft.tasks.splice(index, 1);
+          const index = self.model.tasks.findIndex(({ id }) => id === taskId);
+          if (~index) draft.tasks.splice(index, 1);
         });
       });
 
       return self.actions.produce((draft) => {
         const index = self.model.tasks.findIndex((task) => task.id === taskId);
 
-        if (~index) {
+        if (~index)
           draft.tasks[index] = self.actions.placeholder(
             self.model.tasks[index],
             State.Removing,
           );
-        }
       });
     },
   };
