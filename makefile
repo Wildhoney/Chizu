@@ -1,6 +1,9 @@
 unit:
 	npx jest
 
+browser:
+	npx playwright test
+
 typecheck:
 	npx tsc --noEmit
 
@@ -15,3 +18,7 @@ preview:
 
 fmt:
 	npx prettier --write .
+
+test:
+	make unit
+	make browser
