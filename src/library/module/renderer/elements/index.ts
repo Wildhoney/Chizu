@@ -1,9 +1,11 @@
 import { Props } from "./types";
+import createCache, { EmotionCache } from "@emotion/cache";
 import * as React from "react";
 
 export default function useElements(props: Props) {
   const customElement = React.useRef<null | HTMLElement>(null);
   const shadowBoundary = React.useRef<null | ShadowRoot>(null);
+  const styleCache = React.useRef<null | EmotionCache>(null);
 
   React.useLayoutEffect(() => {
     if (customElement.current && !shadowBoundary.current) {
@@ -11,6 +13,12 @@ export default function useElements(props: Props) {
         mode: "open",
       });
 
+      const cache = createCache({
+        key: "updateatsomepoint",
+        container: shadowBoundary.current,
+      });
+
+      styleCache.current = cache;
       props.update.rerender();
     }
   }, []);
@@ -19,6 +27,7 @@ export default function useElements(props: Props) {
     return {
       customElement,
       shadowBoundary,
+      styleCache,
     };
   }, []);
 }

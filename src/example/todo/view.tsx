@@ -1,10 +1,11 @@
 import { State, create } from "../../library/index.ts";
 import { isPk } from "../../library/utils/index.ts";
+import { Container } from "./styles.ts";
 import { Events, Module } from "./types.ts";
 
 export default create.view<Module>((self) => {
   return (
-    <section>
+    <Container>
       <h1>Todo app</h1>
 
       <input
@@ -79,6 +80,6 @@ export default create.view<Module>((self) => {
           ))}
         </ol>
       )}
-    </section>
+    </Container>
   );
 });

@@ -11,6 +11,7 @@ import useProcess from "./process/index.ts";
 import useQueue from "./queue/index.ts";
 import { Props } from "./types.ts";
 import useUpdate from "./update/index.ts";
+import { CacheProvider } from "@emotion/react";
 import { ReactElement } from "react";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
@@ -26,6 +27,7 @@ export default function renderer<M extends ModuleDefinition>({
 
   const model = useModel({ options });
   const logger = useLogger({ options, elements });
+
   const dispatchers = useDispatchers({
     options,
     update,
@@ -36,6 +38,7 @@ export default function renderer<M extends ModuleDefinition>({
     mutations,
     process,
   });
+
   const actions = useActions<M>({
     options,
     model,
@@ -55,7 +58,9 @@ export default function renderer<M extends ModuleDefinition>({
       children:
         elements.shadowBoundary.current &&
         ReactDOM.createPortal(
-          options.view(actions.view),
+          <CacheProvider value={elements.styleCache.current}>
+            {options.view(actions.view)}
+          </CacheProvider>,
           elements.shadowBoundary.current,
         ),
     });
