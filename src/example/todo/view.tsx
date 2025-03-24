@@ -1,5 +1,5 @@
 import { State, create } from "../../library/index.ts";
-import { isPk } from "../../library/utils/index.ts";
+import { pk } from "../../library/utils/index.ts";
 import { Container } from "./styles.ts";
 import { Events, Module } from "./types.ts";
 
@@ -41,7 +41,7 @@ export default create.view<Module>((self) => {
             <li key={String(task.id)}>
               <input
                 disabled={
-                  !isPk(task.id) ||
+                  !pk(task.id) ||
                   self.validate.tasks[index].completed.is(State.Pending)
                 }
                 type="checkbox"
@@ -63,8 +63,7 @@ export default create.view<Module>((self) => {
 
               <button
                 disabled={
-                  !isPk(task.id) ||
-                  self.validate.tasks[index].is(State.Removing)
+                  !pk(task.id) || self.validate.tasks[index].is(State.Removing)
                 }
                 onClick={() =>
                   task.id && self.actions.dispatch([Events.Remove, task.id])
