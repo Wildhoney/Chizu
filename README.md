@@ -68,7 +68,7 @@ Fetching the name from an external source using an `actions.io` causes the contr
 export default create.controller<Module>((self) => {
   return {
     *[Events.Name]() {
-      self.actions.io(async () => {
+      yield self.actions.io(async () => {
         const name = await fetch(/* ... */);
 
         return self.actions.produce((draft) => {
@@ -110,7 +110,7 @@ In the above example the name is fetched asynchronously &ndash; however there is
 export default create.controller<Module>((self) => {
   return {
     *[Events.Name]() {
-      self.actions.io(async () => {
+      yield self.actions.io(async () => {
         const name = await fetch(/* ... */);
 
         return self.actions.produce((draft) => {
