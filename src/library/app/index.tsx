@@ -1,6 +1,7 @@
 import { Routes } from "../types/index.ts";
 import { AppContext, AppOptions, TreeProps } from "./types.ts";
 import { closest } from "./utils.ts";
+import { Global, css } from "@emotion/react";
 import EventEmitter from "eventemitter3";
 import * as React from "react";
 import * as ReactDOM from "react-dom/client";
@@ -24,9 +25,20 @@ export default function app<R extends Routes>(options: AppOptions<R>): void {
 
   if (Module)
     root.render(
-      <Tree options={appOptions}>
-        <Child />
-      </Tree>,
+      <>
+        <Global
+          styles={css`
+            body {
+              padding: 0;
+              margin: 0;
+            }
+          `}
+        />
+
+        <Tree options={appOptions}>
+          <Child />
+        </Tree>
+      </>,
     );
 }
 
