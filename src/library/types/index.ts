@@ -1,3 +1,5 @@
+import { Head } from "../module/renderer/types";
+
 export const enum Transmit {
   Unicast = "unicast",
   Multicast = "multicast",
@@ -71,3 +73,10 @@ export type Events<A extends Attributes> = Pick<
 >;
 
 export type Pk<T> = undefined | Symbol | T;
+
+export type Queue<A extends ModuleDefinition["Actions"]> = {
+  event: Head<A>;
+  actions: {
+    abort: AbortController["abort"];
+  };
+};

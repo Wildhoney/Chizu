@@ -4,6 +4,7 @@ import {
   Events,
   Lifecycle,
   ModuleDefinition,
+  Queue,
   State,
 } from "../types/index.ts";
 
@@ -11,8 +12,12 @@ export type Produce<M extends ModuleDefinition> =
   | void
   | ((model: M["Model"]) => M["Model"]);
 
+export type IoHelpers = {
+  signal: AbortSignal;
+};
+
 export type ControllerActions<M extends ModuleDefinition> = {
-  io<T>(ƒ: () => T): T;
+  io<T>(ƒ: (helpers: IoHelpers) => T): T;
   placeholder<T>(value: T, state: State): T;
   produce(ƒ: (draft: M["Model"]) => void): void;
   dispatch(event: M["Actions"]): void;
@@ -20,6 +25,7 @@ export type ControllerActions<M extends ModuleDefinition> = {
 
 export type ControllerArgs<M extends ModuleDefinition> = {
   model: M["Model"];
+  queue: Queue<M["Actions"]>;
   events: Events<M["Attributes"]>;
   actions: ControllerActions<M>;
 };

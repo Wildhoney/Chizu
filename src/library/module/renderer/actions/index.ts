@@ -1,3 +1,4 @@
+import { IoHelpers } from "../../../controller/types.ts";
 import { Events, ModuleDefinition, State } from "../../../types/index.ts";
 import {
   observe,
@@ -23,7 +24,7 @@ export default function useActions<M extends ModuleDefinition>(
             {} as Events<M["Attributes"]>,
           ),
         actions: {
-          io<T>(ƒ: () => T): T {
+          io<T>(ƒ: (helpers: IoHelpers) => T): T {
             return ƒ as T;
           },
           placeholder<T>(value: T, state: State) {

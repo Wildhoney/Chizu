@@ -17,7 +17,7 @@ export function dispatcher<M extends ModuleDefinition>(
 
       try {
         const context: Context<M> = { task, process, ƒ, payload, props };
-        const ios = sync<M>(props, context, false);
+        const ios = sync<M>(props, context);
 
         if (props.queue.current.size > 1) {
           await Promise.allSettled([...props.queue.current].slice(0, -1));
@@ -37,7 +37,6 @@ export function dispatcher<M extends ModuleDefinition>(
 function sync<M extends ModuleDefinition>(
   props: UseDispatchHandlerProps<M>,
   context: Context<M>,
-  pending: boolean,
 ) {
   const ios = new Set();
   const discovery = context.ƒ(...context.payload);
@@ -48,18 +47,17 @@ function sync<M extends ModuleDefinition>(
     if (result.done && result.value) {
       props.process.current = context.process;
       const model = result.value(context.props.model.current);
-      context.props.model.current = model;
+      if (model) context.props.model.current = model;
       props.process.current = null;
       context.props.update.rerender();
 
       return ios;
     }
 
-    if (!pending) {
-      props.process.current = context.process;
-      ios.add(result.value());
-      props.process.current = null;
-    }
+    const abortController = new AbortController();
+    props.process.current = context.process;
+    ios.add(result.value({ signal: abortController.signal }));
+    props.process.current = null;
   }
 }
 
@@ -76,7 +74,7 @@ async function async<M extends ModuleDefinition>(
         ? io.value(context.props.model.current)
         : null;
 
-    context.props.model.current = model;
+    if (model) context.props.model.current = model;
     props.process.current = null;
     props.mutations.current = new Set(
       [...props.mutations.current].filter(
