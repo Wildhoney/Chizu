@@ -10,6 +10,7 @@ Strongly typed web component library using generators and efficiently updated vi
 
 1. [Benefits](#benefits)
 1. [Getting started](#getting-started)
+1. [Handling errors](#handling-errors)
 
 ## Benefits
 
@@ -146,5 +147,73 @@ export default create.view<Module>((self) => {
       </button>
     </>
   );
+});
+```
+
+## Handling Errors
+
+Controller actions can throw errors directly or in any of their associated `yield` actions &ndash; all unhandled errors are automatically caught and added to the `model.errors` vector &ndash; you can render these [in a toast](https://github.com/fkhadra/react-toastify#readme) or similar UI.
+
+You can also customise these errors a little further with your own error `enum` which describes the error type:
+
+<kbd>Types</kbd>
+
+```tsx
+export const enum Errors {
+  UserValidation,
+  IncorrectPassword,
+}
+```
+
+<kbd>Controller</kbd>
+
+```tsx
+export default create.controller<Module>((self) => {
+  return {
+    *[Events.Name]() {
+      yield self.actions.io(async () => {
+        const name = await fetch(/* ... */);
+
+        if (!name) throw new IoError(Errors.UserValidation);
+
+        return self.actions.produce((draft) => {
+          draft.name = name;
+        });
+      });
+
+      return self.actions.produce((draft) => {
+        draft.name = null;
+      });
+    },
+  };
+});
+```
+
+However showing a toast message is not always relevant, you may want a more detailed error message such as a user not found message &ndash; although you could introduce another property for such errors in your model, you could mark the property as fallible by giving it a `Maybe` type because it then keeps everything nicely associated with the `name` property rather than creating another property:
+
+<kbd>Controller</kbd>
+
+```tsx
+export default create.controller<Module>((self) => {
+  return {
+    *[Events.Name]() {
+      yield self.actions.io(async () => {
+        const name = await fetch(/* ... */);
+
+        if (!name)
+          return self.actions.produce((draft) => {
+            draft.name = Maybe.Fault(new IoError(Errors.UserValidation));
+          });
+
+        return self.actions.produce((draft) => {
+          draft.name = Maybe.Present(name);
+        });
+      });
+
+      return self.actions.produce((draft) => {
+        draft.name = Maybe.Present(null);
+      });
+    },
+  };
 });
 ```
