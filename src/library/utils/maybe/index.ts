@@ -10,7 +10,7 @@ export default abstract class Maybe<T> {
     return new Absent<T>();
   }
 
-  static Fault<T>(error: Error): Maybe<T> {
+  static Fault<T extends Error>(error: T): Maybe<T> {
     return new Fault<T>(error);
   }
 }
