@@ -1,4 +1,4 @@
-import { Lifecycle, State, create } from "../../library/index.ts";
+import { Lifecycle, State, create, utils } from "../../library/index.ts";
 import { pk } from "../../library/utils/index.ts";
 import { Events, Module, Task } from "./types.ts";
 import { Db } from "./utils.ts";
@@ -9,6 +9,8 @@ export default create.controller<Module>((self) => {
   return {
     *[Lifecycle.Mount]() {
       yield self.actions.io(async () => {
+        await utils.sleep(1_000);
+
         const tasks = await db.todos.toArray();
 
         return self.actions.produce((draft) => {
@@ -38,6 +40,8 @@ export default create.controller<Module>((self) => {
       };
 
       yield self.actions.io(async () => {
+        await utils.sleep(1_000);
+
         const id = await db.todos.put({ ...task, id: undefined });
 
         return self.actions.produce((model) => {
@@ -55,6 +59,8 @@ export default create.controller<Module>((self) => {
 
     *[Events.Completed](taskId) {
       yield self.actions.io(async () => {
+        await utils.sleep(1_000);
+
         const task = await db.todos.get(taskId);
         await db.todos.update(taskId, { completed: !task?.completed });
         const row = await db.todos.get(taskId);
@@ -80,6 +86,8 @@ export default create.controller<Module>((self) => {
 
     *[Events.Remove](taskId) {
       yield self.actions.io(async () => {
+        await utils.sleep(1_000);
+
         await db.todos.delete(taskId);
 
         return self.actions.produce((draft) => {

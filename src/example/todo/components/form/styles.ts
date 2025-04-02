@@ -7,12 +7,14 @@ export const Container = styled.section`
 `;
 
 export const Input = styled.input`
-  padding: 0;
   margin: 0;
   flex: 1;
   padding: 20px 15px;
   outline: none;
   border: 0;
+  font-family: "Lato", sans-serif;
+  font-weight: 400;
+  font-size: 14px;
 
   &::placeholder {
     color: #cccccc;
@@ -22,22 +24,29 @@ export const Input = styled.input`
 export const Button = styled.button`
   padding: 0;
   margin: 0;
-  padding: 20px;
-  background: black;
+  padding: 10px;
+  background-color: transparent;
   border-radius: 5px;
-  color: white;
   font-weight: bold;
   border: 0;
   outline: none;
   cursor: pointer;
+  color: black;
   display: flex;
   place-content: center;
   place-items: center;
   gap: 8px;
-  transition: background 0.3s;
+  transition: color 0.3s;
+  font-family: "Lato", sans-serif;
+  font-weight: 400;
+  font-size: 14px;
 
   &:disabled {
     cursor: not-allowed;
-    background: #cccccc;
+    color: #cccccc;
+  }
+
+  &:hover {
+    text-decoration: underline;
   }
 `;

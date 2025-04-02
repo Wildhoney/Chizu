@@ -6,9 +6,9 @@ export const Container = styled.ol`
   overflow-y: auto;
   padding: 20px 0 0 0;
   list-style-type: none;
-  border-top: 1px solid lightgrey;
+  border-top: 1px solid #eaeaea;
   margin-top: 10px;
-  box-shadow: inset 0 10px 10px -10px rgba(0, 0, 0, 0.1);
+  padding-bottom: 20px;
 `;
 
 export const Row = styled.li`
@@ -31,18 +31,36 @@ export const Details = styled.div<{ pending: boolean }>`
   display: flex;
   place-items: center;
   display: flex;
-  gap: 5px;
+  gap: 10px;
+  flex: 1;
   font-style: ${({ pending }) => (pending ? "italic" : "normal")};
 `;
 
-export const Summary = styled.label<{ completed: boolean }>`
+export const Task = styled.label`
   cursor: pointer;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+`;
+
+export const Name = styled.div<{ completed: boolean }>`
   transition: color 0.3s;
   text-decoration: ${({ completed }) => (completed ? "line-through" : "none")};
   color: ${({ completed }) => (completed ? "grey" : "black")};
+  font-family: "Lato", sans-serif;
+  font-weight: 400;
+  font-size: 14px;
+`;
+
+export const Date = styled.div`
+  font-size: 11px;
+  color: darkgrey;
+  font-family: "Lato", sans-serif;
+  font-weight: 300;
 `;
 
 export const Empty = styled.div`
-  padding: 10px 20px 20px;
+  padding: 10px 20px 10px 10px;
   font-size: 14px;
 `;

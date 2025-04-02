@@ -2,15 +2,19 @@ import { useApp } from "../../../app/index.tsx";
 import { ModuleDefinition } from "../../../types/index.ts";
 import { Head, Tail } from "../types.ts";
 import { GeneratorFn, Props } from "./types.ts";
-import { dispatcher } from "./utils.ts";
+import { isBroadcast, useDispatcher } from "./utils.ts";
 import EventEmitter from "eventemitter3";
 import * as React from "react";
 
+/**
+ * @param props {Props<M>}
+ * @returns { attach: (action: Head<M["Actions"]>, ƒ: F) => void; dispatch: (action: Head<M["Actions"]>, data: Tail<M["Actions"]>) => void; }
+ */
 export default function useDispatchers<M extends ModuleDefinition>(
   props: Props<M>,
 ) {
   const app = useApp();
-  const dispatch = dispatcher(props);
+  const dispatch = useDispatcher(props);
 
   return React.useMemo(() => {
     const unicast = new EventEmitter();
@@ -19,13 +23,17 @@ export default function useDispatchers<M extends ModuleDefinition>(
     return {
       attach<F extends GeneratorFn<M>>(action: Head<M["Actions"]>, ƒ: F) {
         const name = String(action);
-        unicast.on(name, dispatch(action, ƒ));
-        broadcast.on(name, dispatch(action, ƒ));
+
+        isBroadcast(name)
+          ? broadcast.on(name, dispatch(action, ƒ))
+          : unicast.on(name, dispatch(action, ƒ));
       },
       dispatch(action: Head<M["Actions"]>, data: Tail<M["Actions"]>) {
         const name = String(action);
-        const isBroadcast = name.startsWith("distributed");
-        isBroadcast ? broadcast.emit(name, data) : unicast.emit(name, data);
+
+        isBroadcast(name)
+          ? broadcast.emit(name, data)
+          : unicast.emit(name, data);
       },
     };
   }, []);

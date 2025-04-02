@@ -1,8 +1,18 @@
-import { State } from "../../../../library";
-import { pk } from "../../../../library/utils";
+import { State } from "../../../../library/index.ts";
+import { pk } from "../../../../library/utils/index.ts";
 import { Events } from "../../types";
-import { Button, Container, Details, Empty, Row, Summary } from "./styles";
-import { Props } from "./types";
+import {
+  Button,
+  Container,
+  Date,
+  Details,
+  Empty,
+  Name,
+  Row,
+  Task,
+} from "./styles.ts";
+import { Props } from "./types.ts";
+import dayjs from "dayjs";
 import { LoaderPinwheel, Trash2 } from "lucide-react";
 import { ReactElement } from "react";
 
@@ -34,9 +44,13 @@ export default function List({ self }: Props): ReactElement {
                 task.id && self.actions.dispatch([Events.Completed, task.id])
               }
             />{" "}
-            <Summary htmlFor={String(task.id)} completed={task.completed}>
-              {task.summary}
-            </Summary>
+            <Task htmlFor={String(task.id)}>
+              <Name completed={task.completed}>{task.summary}</Name>
+
+              <Date>
+                Added: {dayjs(task.date.toString()).format("DD/MM/YYYY")}
+              </Date>
+            </Task>
           </Details>
 
           <Button

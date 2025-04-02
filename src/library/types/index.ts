@@ -48,7 +48,7 @@ export type Module<
   C extends Attributes,
   D extends Routes | [Routes, Parameters],
 > = {
-  Model: A;
+  Model: Omit<A, "errors"> & { errors?: Error[] };
   Actions: B;
   Attributes: C;
   Routes: D;
@@ -79,4 +79,14 @@ export type Queue<A extends ModuleDefinition["Actions"]> = {
   actions: {
     abort: AbortController["abort"];
   };
-};
+}[];
+
+export type EventError =
+  | {
+      type: string;
+      message: null | string;
+    }
+  | {
+      type: null;
+      message: string;
+    };

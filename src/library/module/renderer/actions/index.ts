@@ -17,6 +17,7 @@ export default function useActions<M extends ModuleDefinition>(
         get model() {
           return props.model.current;
         },
+        queue: [],
         events: Object.entries(props.options.attributes)
           .filter(([_, value]) => typeof value === "function")
           .reduce(

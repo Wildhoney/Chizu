@@ -9,7 +9,6 @@ export default function useController<M extends ModuleDefinition>(
     const controller = props.options.controller(props.actions.controller);
     const actions = Object.entries(controller);
     actions.forEach(([name, ƒ]) => props.dispatchers.attach(name, ƒ));
-
     return controller;
   }, []);
 }

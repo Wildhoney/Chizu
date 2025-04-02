@@ -35,6 +35,7 @@ export type Context<M extends ModuleDefinition> = {
   task: PromiseWithResolvers<void>;
   process: Symbol;
   ƒ: GeneratorFn<M>;
+  abortController: AbortController;
   payload: Tail<M["Actions"]>;
   props: UseDispatchHandlerProps<M>;
 };
