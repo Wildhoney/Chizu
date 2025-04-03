@@ -38,7 +38,9 @@ export default function useActions<M extends ModuleDefinition>(
             };
           },
           dispatch([action, ...data]) {
-            return props.dispatchers.dispatch(action, data);
+            const task = Promise.withResolvers<void>();
+            props.dispatchers.dispatch(action, data, task);
+            return task.promise;
           },
         },
       },
@@ -51,7 +53,9 @@ export default function useActions<M extends ModuleDefinition>(
         },
         actions: {
           dispatch([action, ...data]) {
-            return props.dispatchers.dispatch(action, data);
+            const task = Promise.withResolvers<void>();
+            props.dispatchers.dispatch(action, data, task);
+            return task.promise;
           },
         },
       },

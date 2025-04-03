@@ -8,7 +8,7 @@ export type Validator<M extends Model> = {
 };
 
 export type ViewActions<M extends ModuleDefinition> = {
-  dispatch(event: M["Actions"]): void;
+  dispatch(event: M["Actions"]): Promise<void>;
 };
 
 export type ViewArgs<M extends ModuleDefinition> = {

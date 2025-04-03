@@ -1,5 +1,5 @@
 import { useApp } from "../../../app/index.tsx";
-import { ModuleDefinition } from "../../../types/index.ts";
+import { ModuleDefinition, Task } from "../../../types/index.ts";
 import { Head, Tail } from "../types.ts";
 import { GeneratorFn, Props } from "./types.ts";
 import { isBroadcast, useDispatcher } from "./utils.ts";
@@ -28,12 +28,16 @@ export default function useDispatchers<M extends ModuleDefinition>(
           ? broadcast.on(name, dispatch(action, ƒ))
           : unicast.on(name, dispatch(action, ƒ));
       },
-      dispatch(action: Head<M["Actions"]>, data: Tail<M["Actions"]>) {
+      dispatch(
+        action: Head<M["Actions"]>,
+        data: Tail<M["Actions"]>,
+        task?: Task,
+      ) {
         const name = String(action);
 
         isBroadcast(name)
-          ? broadcast.emit(name, data)
-          : unicast.emit(name, data);
+          ? broadcast.emit(name, task, data)
+          : unicast.emit(name, task, data);
       },
     };
   }, []);

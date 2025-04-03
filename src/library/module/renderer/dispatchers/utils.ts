@@ -1,4 +1,4 @@
-import { EventError, ModuleDefinition } from "../../../types/index.ts";
+import { EventError, ModuleDefinition, Task } from "../../../types/index.ts";
 import { Head, Tail } from "../types.ts";
 import { Context, GeneratorFn, UseDispatchHandlerProps } from "./types.ts";
 
@@ -10,11 +10,13 @@ export function useDispatcher<M extends ModuleDefinition>(
   props: UseDispatchHandlerProps<M>,
 ) {
   return (_name: Head<M["Actions"]>, ƒ: GeneratorFn<M>) => {
-    return async (payload: Tail<M["Actions"]>): Promise<void> => {
+    return async (
+      task: Task = Promise.withResolvers<void>(),
+      payload: Tail<M["Actions"]>,
+    ): Promise<void> => {
       if (typeof ƒ !== "function") return;
 
       const process = Symbol(`process/${Math.random()}`);
-      const task = Promise.withResolvers<void>();
       props.queue.current.add(task.promise);
       const abortController = new AbortController();
 

@@ -20,7 +20,7 @@ export type ControllerActions<M extends ModuleDefinition> = {
   io<T>(ƒ: (helpers: IoHelpers) => T): T;
   placeholder<T>(value: T, state: State): T;
   produce(ƒ: (draft: M["Model"]) => void): void;
-  dispatch(event: M["Actions"]): void;
+  dispatch(event: M["Actions"]): Promise<void>;
 };
 
 export type ControllerArgs<M extends ModuleDefinition> = {

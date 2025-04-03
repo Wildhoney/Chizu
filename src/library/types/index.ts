@@ -90,3 +90,5 @@ export type EventError =
       type: null;
       message: string;
     };
+
+export type Task = PromiseWithResolvers<void>;
