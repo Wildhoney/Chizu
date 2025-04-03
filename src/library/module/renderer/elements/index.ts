@@ -1,8 +1,10 @@
 import { Props } from "./types";
+import { useCacheKey } from "./utils";
 import createCache, { EmotionCache } from "@emotion/cache";
 import * as React from "react";
 
 export default function useElements(props: Props) {
+  const key = useCacheKey();
   const customElement = React.useRef<null | HTMLElement>(null);
   const shadowBoundary = React.useRef<null | ShadowRoot>(null);
   const styleCache = React.useRef<null | EmotionCache>(null);
@@ -14,7 +16,7 @@ export default function useElements(props: Props) {
       });
 
       const cache = createCache({
-        key: "updateatsomepoint",
+        key,
         container: shadowBoundary.current,
       });
 

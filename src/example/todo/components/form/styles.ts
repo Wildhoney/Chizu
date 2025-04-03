@@ -46,7 +46,7 @@ export const Button = styled.button`
     color: #cccccc;
   }
 
-  &:hover {
+  &:not(:disabled):hover {
     text-decoration: underline;
   }
 `;
