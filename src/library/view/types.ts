@@ -11,11 +11,11 @@ export type ViewActions<M extends ModuleDefinition> = {
   dispatch(event: M["Actions"]): Promise<void>;
 };
 
-export type ViewArgs<M extends ModuleDefinition> = {
+export type ViewArgs<M extends ModuleDefinition> = Readonly<{
   model: M["Model"];
   validate: Validator<M["Model"]>;
   actions: ViewActions<M>;
-};
+}>;
 
 export type ViewDefinition<M extends ModuleDefinition> = (
   actions: ViewArgs<M>,

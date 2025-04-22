@@ -14,3 +14,5 @@ export type TreeProps = {
   options: AppContext;
   children: React.ReactNode;
 };
+
+export type UseApp = AppContext;

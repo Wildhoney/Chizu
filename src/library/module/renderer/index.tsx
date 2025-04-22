@@ -1,3 +1,4 @@
+import { useApp } from "../../app/index.tsx";
 import { ModuleDefinition } from "../../types/index.ts";
 import useActions from "./actions/index.ts";
 import useController from "./controller/index.ts";
@@ -19,6 +20,7 @@ import * as ReactDOM from "react-dom";
 export default function renderer<M extends ModuleDefinition>({
   options,
 }: Props<M>): ReactElement {
+  const app = useApp();
   const update = useUpdate();
   const queue = useQueue();
   const mutations = useMutations();
@@ -29,6 +31,7 @@ export default function renderer<M extends ModuleDefinition>({
   const logger = useLogger({ options, elements });
 
   const dispatchers = useDispatchers({
+    app,
     options,
     update,
     model,
@@ -40,6 +43,7 @@ export default function renderer<M extends ModuleDefinition>({
   });
 
   const actions = useActions<M>({
+    app,
     options,
     model,
     dispatchers,

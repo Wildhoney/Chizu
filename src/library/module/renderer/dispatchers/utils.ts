@@ -1,4 +1,4 @@
-import { EventError, ModuleDefinition, Task } from "../../../types/index.ts";
+import { Lifecycle, ModuleDefinition, Task } from "../../../types/index.ts";
 import { Head, Tail } from "../types.ts";
 import { Context, GeneratorFn, UseDispatchHandlerProps } from "./types.ts";
 
@@ -22,6 +22,7 @@ export function useDispatcher<M extends ModuleDefinition>(
 
       try {
         const context: Context<M> = {
+          app: props.app,
           task,
           process,
           ƒ,
@@ -36,11 +37,10 @@ export function useDispatcher<M extends ModuleDefinition>(
         }
 
         if (ios.size > 0) await flushIos<M>(props, context, ios);
-      } catch (error) {
-        console.error("Error in dispatcher", error);
-      } finally {
         props.queue.current.delete(task.promise);
         task.resolve();
+      } catch (error) {
+        props.app.appEmitter.emit(Lifecycle.Error, task, [error]);
       }
     };
   };
@@ -62,7 +62,7 @@ function inspectAction<M extends ModuleDefinition>(
     try {
       const result = discovery.next();
 
-      if (result.done && result.value) {
+      if (result.done && typeof result.value === "function") {
         props.process.current = context.process;
         const model = result.value(context.props.model.current);
         if (model) context.props.model.current = model;
@@ -76,16 +76,13 @@ function inspectAction<M extends ModuleDefinition>(
       ios.add(
         result
           .value({ signal: context.abortController.signal })
-          .catch((error: unknown) => {
-            return (model: M["Model"]) => {
-              if (getError(error)) model.errors.push(getError(error));
-            };
+          .catch((error: unknown) => () => {
+            props.app.appEmitter.emit(Lifecycle.Error, context.task, [error]);
           }),
       );
       props.process.current = null;
     } catch (error) {
-      if (getError(error)) props.model.current.errors.push(getError(error));
-      context.props.update.rerender();
+      props.app.appEmitter.emit(Lifecycle.Error, context.task, [error]);
       return new Set();
     }
   }
@@ -105,8 +102,12 @@ async function flushIos<M extends ModuleDefinition>(
   (await Promise.allSettled(ios)).forEach((io) => {
     props.process.current = context.process;
 
+    if (io.status === "rejected") {
+      return;
+    }
+
     const model =
-      io.status === "fulfilled" && typeof io.value === "function"
+      typeof io.value === "function"
         ? io.value(context.props.model.current)
         : io;
 
@@ -132,26 +133,14 @@ export function isBroadcast(name: string): boolean {
 }
 
 /**
- * Check if the error is an instance of Error.
- *
- * @param error {unknown}
- * @returns {Error}
- */
-export function getError(error: unknown): null | EventError {
-  if (error instanceof IoError) return error.into();
-  if (error instanceof Error) return { type: null, message: error.message };
-  return null;
-}
-
-/**
  * Custom error class for IO errors.
  *
- * @class IoError
+ * @class EventError
  * @extends Error
  * @param type {string} - The type of the error.
  * @param message {string} - The error message.
  */
-export class IoError extends Error {
+export class EventError extends Error {
   #type: string;
   #message: null | string;
 
@@ -161,10 +150,11 @@ export class IoError extends Error {
     this.#message = message;
   }
 
-  into(): EventError {
-    return {
-      type: this.#type,
-      message: this.#message,
-    };
+  get type(): string {
+    return this.#type;
+  }
+
+  get message(): string {
+    return this.#message || "";
   }
 }

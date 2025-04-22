@@ -35,6 +35,7 @@ export const enum Lifecycle {
   Mount = "lifecycle/mount",
   Tree = "lifecycle/tree",
   Derive = "lifecycle/derive",
+  Error = "distributed/lifecycle/error",
   Unmount = "lifecycle/unmount",
 }
 
@@ -48,7 +49,7 @@ export type Module<
   C extends Attributes,
   D extends Routes | [Routes, Parameters],
 > = {
-  Model: Omit<A, "errors"> & { errors?: Error[] };
+  Model: A;
   Actions: B;
   Attributes: C;
   Routes: D;
@@ -80,15 +81,5 @@ export type Queue<A extends ModuleDefinition["Actions"]> = {
     abort: AbortController["abort"];
   };
 }[];
-
-export type EventError =
-  | {
-      type: string;
-      message: null | string;
-    }
-  | {
-      type: null;
-      message: string;
-    };
 
 export type Task = PromiseWithResolvers<void>;

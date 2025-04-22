@@ -19,11 +19,11 @@ Strongly typed web component library using generators and efficiently updated vi
 - Built-in support for [optimistic updates](https://medium.com/@kyledeguzmanx/what-are-optimistic-updates-483662c3e171) within components.
 - Mostly standard JavaScript without quirky rules and exceptions.
 - Clear separation of concerns between business logic and markup.
-- First-class support for skeleton loading using generators..
+- First-class support for skeleton loading using generators.
 - Strongly typed throughout &ndash; styles, controllers and views.
 - Avoid vendor lock-in with framework agnostic libraries such as [Shoelace](https://shoelace.style/).
 - Easily communicate between controllers using distributed actions.
-- State is mutated sequentially ([FIFO](<https://en.wikipedia.org/wiki/FIFO_(computing_and_electronics)>)) and [deeply merged](#state-merging) for queued mutations.
+- State is mutated sequentially ([FIFO](<https://en.wikipedia.org/wiki/FIFO_(computing_and_electronics)>)) and deeply merged for queued mutations.
 
 ## Getting started
 
@@ -152,7 +152,7 @@ export default create.view<Module>((self) => {
 
 ## Handling Errors
 
-Controller actions can throw errors directly or in any of their associated `yield` actions &ndash; all unhandled errors are automatically caught and added to the `model.errors` vector &ndash; you can render these [in a toast](https://github.com/fkhadra/react-toastify#readme) or similar UI.
+Controller actions can throw errors directly or in any of their associated `yield` actions &ndash; all unhandled errors are automatically caught and broadcast using the `Lifecycle.Error` action &ndash; you can render these [in a toast](https://github.com/fkhadra/react-toastify#readme) or similar UI.
 
 You can also customise these errors a little further with your own error `enum` which describes the error type:
 
@@ -174,7 +174,7 @@ export default create.controller<Module>((self) => {
       yield self.actions.io(async () => {
         const name = await fetch(/* ... */);
 
-        if (!name) throw new IoError(Errors.UserValidation);
+        if (!name) throw new EventError(Errors.UserValidation);
 
         return self.actions.produce((draft) => {
           draft.name = name;
@@ -202,7 +202,7 @@ export default create.controller<Module>((self) => {
 
         if (!name)
           return self.actions.produce((draft) => {
-            draft.name = Maybe.Fault(new IoError(Errors.UserValidation));
+            draft.name = Maybe.Fault(new EventError(Errors.UserValidation));
           });
 
         return self.actions.produce((draft) => {

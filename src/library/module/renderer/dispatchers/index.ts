@@ -14,7 +14,7 @@ export default function useDispatchers<M extends ModuleDefinition>(
   props: Props<M>,
 ) {
   const app = useApp();
-  const dispatch = useDispatcher(props);
+  const dispatcher = useDispatcher(props);
 
   return React.useMemo(() => {
     const unicast = new EventEmitter();
@@ -25,8 +25,8 @@ export default function useDispatchers<M extends ModuleDefinition>(
         const name = String(action);
 
         isBroadcast(name)
-          ? broadcast.on(name, dispatch(action, ƒ))
-          : unicast.on(name, dispatch(action, ƒ));
+          ? broadcast.on(name, dispatcher(action, ƒ))
+          : unicast.on(name, dispatcher(action, ƒ));
       },
       dispatch(
         action: Head<M["Actions"]>,

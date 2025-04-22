@@ -16,6 +16,7 @@ export function useApp() {
 
 export default function app<R extends Routes>(options: AppOptions<R>): void {
   const Module = closest<R>(options);
+
   const appOptions = {
     appEmitter: new EventEmitter(),
   };

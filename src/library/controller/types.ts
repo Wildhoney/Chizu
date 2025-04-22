@@ -1,3 +1,4 @@
+import { EventError } from "../module/renderer/dispatchers/utils.ts";
 import { Head } from "../module/renderer/types.ts";
 import {
   Actions,
@@ -23,12 +24,12 @@ export type ControllerActions<M extends ModuleDefinition> = {
   dispatch(event: M["Actions"]): Promise<void>;
 };
 
-export type ControllerArgs<M extends ModuleDefinition> = {
+export type ControllerArgs<M extends ModuleDefinition> = Readonly<{
   model: M["Model"];
   queue: Queue<M["Actions"]>;
   events: Events<M["Attributes"]>;
   actions: ControllerActions<M>;
-};
+}>;
 
 export type ActionGenerator = Generator<void | Promise<void>, void, void>;
 
@@ -40,6 +41,7 @@ export type ControllerInstance<M extends ModuleDefinition> = {
   [Lifecycle.Mount]?(parameters: M["Routes"]): ActionGenerator;
   [Lifecycle.Derive]?(attributes: M["Attributes"]): ActionGenerator;
   [Lifecycle.Tree]?(): ActionGenerator;
+  [Lifecycle.Error]?(error: Error | EventError): ActionGenerator;
   [Lifecycle.Unmount]?(): ActionGenerator;
 } & Partial<Handlers<M>>;
 

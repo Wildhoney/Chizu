@@ -1,3 +1,4 @@
+import { UseApp } from "../../../app/types.ts";
 import { Produce } from "../../../controller/types.ts";
 import { ModuleDefinition } from "../../../types/index.ts";
 import { UseElements } from "../elements/types.ts";
@@ -11,6 +12,7 @@ import { UseUpdate } from "../update/types.ts";
 import useDispatchers from "./index.ts";
 
 export type Props<M extends ModuleDefinition> = {
+  app: UseApp;
   options: UseOptions<M>;
   update: UseUpdate;
   model: UseModel;
@@ -32,6 +34,7 @@ export type GeneratorFn<M extends ModuleDefinition> = (
 ) => Generator<any, Produce<M>, any>;
 
 export type Context<M extends ModuleDefinition> = {
+  app: UseApp;
   task: PromiseWithResolvers<void>;
   process: Symbol;
   ƒ: GeneratorFn<M>;
