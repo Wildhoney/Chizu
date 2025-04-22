@@ -202,16 +202,16 @@ export default create.controller<Module>((self) => {
 
         if (!name)
           return self.actions.produce((draft) => {
-            draft.name = Maybe.Fault(new EventError(Errors.UserValidation));
+            draft.name = Maybe.of(new EventError(Errors.UserValidation));
           });
 
         return self.actions.produce((draft) => {
-          draft.name = Maybe.Present(name);
+          draft.name = Maybe.of(name);
         });
       });
 
       return self.actions.produce((draft) => {
-        draft.name = Maybe.Present(null);
+        draft.name = Maybe.of(null);
       });
     },
   };

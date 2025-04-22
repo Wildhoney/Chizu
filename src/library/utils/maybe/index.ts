@@ -1,54 +1,31 @@
-export default abstract class Maybe<T> {
-  abstract map<U>(fn: (val: T) => U): Maybe<U>;
-  abstract otherwise(defaultValue: T): T;
+type Otherwise = null | undefined | Error;
+type Value<T> = Exclude<T, Otherwise>;
 
-  static Present<T>(value: T): Maybe<T> {
-    return new Present(value);
+export default class Maybe<T> {
+  #value: T;
+
+  static of<T>(value: T): Maybe<T> {
+    return new Maybe(value);
   }
 
-  static Absent<T>(): Maybe<T> {
-    return new Absent<T>();
+  constructor(value: T) {
+    this.#value = value;
   }
 
-  static Fault<T extends Error>(error: T): Maybe<T> {
-    return new Fault<T>(error);
-  }
-}
+  map<U>(unwrap?: never, otherwise?: never): T;
+  map<U>(unwrap?: (value: Value<T>) => U, otherwise?: never): T | U;
+  map<U, V>(
+    unwrap?: (value: Value<T>) => U,
+    otherwise?: (value: Otherwise) => V,
+  ): U | V;
+  map<U>(
+    unwrap = (value: Value<T>) => value,
+    otherwise = (value: Otherwise) => value,
+  ): T | U {
+    if (this.#value == null || this.#value instanceof Error) {
+      return otherwise(this.#value as Otherwise) as T | U;
+    }
 
-class Present<T> extends Maybe<T> {
-  constructor(private value: T) {
-    super();
-  }
-
-  map<U>(fn: (val: T) => U): Maybe<U> {
-    return new Present(fn(this.value));
-  }
-
-  otherwise(_: T): T {
-    return this.value;
-  }
-}
-
-class Absent<T> extends Maybe<T> {
-  map<U>(_: (val: T) => U): Maybe<U> {
-    return new Absent<U>();
-  }
-
-  otherwise(defaultValue: T): T {
-    return defaultValue;
-  }
-}
-
-class Fault<T> extends Maybe<T> {
-  constructor(private error: Error) {
-    super();
-  }
-
-  map<U>(_: (val: T) => U): Maybe<U> {
-    return new Fault<U>(this.error);
-  }
-
-  otherwise(_: T): T {
-    throw this.error;
+    return unwrap(this.#value as Value<T>) as T | U;
   }
 }
