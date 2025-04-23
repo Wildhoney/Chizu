@@ -1,12 +1,12 @@
-import styled from "@emotion/styled";
+import { css } from "@emotion/css";
 
-export const Container = styled.section`
+export const container = css`
   display: flex;
   flex: 1;
   border-radius: 10px;
 `;
 
-export const Input = styled.input`
+export const input = css`
   margin: 0;
   flex: 1;
   padding: 20px 15px;
@@ -21,7 +21,7 @@ export const Input = styled.input`
   }
 `;
 
-export const Button = styled.button`
+export const button = css`
   padding: 0;
   margin: 0;
   padding: 10px;
@@ -40,12 +40,10 @@ export const Button = styled.button`
   font-family: "Lato", sans-serif;
   font-weight: 400;
   font-size: 14px;
-
   &:disabled {
     cursor: not-allowed;
     color: #cccccc;
   }
-
   &:not(:disabled):hover {
     text-decoration: underline;
   }

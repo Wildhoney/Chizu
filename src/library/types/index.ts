@@ -25,10 +25,6 @@ export type Actions = [ActionName] | [ActionName, ...ActionPayload];
 
 export type Model = Record<string, any>;
 
-export type RoutePaths<R extends Routes> = R[keyof R];
-
-export type Routes = Record<string, string | number | symbol>;
-
 export type Parameters = undefined | string;
 
 export const enum Lifecycle {
@@ -46,20 +42,17 @@ export type Attributes = Record<string, unknown>;
 export type Module<
   A extends Model,
   B extends Actions,
-  C extends Attributes,
-  D extends Routes | [Routes, Parameters],
+  C extends Attributes = {},
 > = {
   Model: A;
   Actions: B;
   Attributes: C;
-  Routes: D;
 };
 
 export type ModuleDefinition = {
   Model: Model;
   Actions: Actions;
   Attributes: Attributes;
-  Routes: Routes | [Routes, Parameters];
 };
 
 type Fns<A extends Attributes> = {

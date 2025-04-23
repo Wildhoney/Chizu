@@ -1,6 +1,6 @@
-import styled from "@emotion/styled";
+import { css } from "@emotion/css";
 
-export const Container = styled.section`
+export const container = css`
   width: 100vw;
   height: 100vh;
   display: flex;
@@ -10,7 +10,7 @@ export const Container = styled.section`
   background-color: #efefef;
 `;
 
-export const Enclosure = styled.div`
+export const boundary = css`
   width: 100%;
   max-width: 30vw;
   display: flex;

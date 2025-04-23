@@ -1,16 +1,19 @@
 import { create } from "../../library/index.ts";
 import Field from "./components/form/index.tsx";
 import List from "./components/list/index.tsx";
-import { Container, Enclosure } from "./styles.ts";
+import * as styles from "./styles.ts";
 import { Module } from "./types.ts";
+import { BrowserRouter } from "react-router";
 
 export default create.view<Module>((self) => {
   return (
-    <Container>
-      <Enclosure>
-        <Field self={self} />
-        <List self={self} />
-      </Enclosure>
-    </Container>
+    <BrowserRouter>
+      <section className={styles.container}>
+        <div className={styles.boundary}>
+          <Field self={self} />
+          <List self={self} />
+        </div>
+      </section>
+    </BrowserRouter>
   );
 });

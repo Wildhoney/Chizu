@@ -38,7 +38,7 @@ export type ControllerDefinition<M extends ModuleDefinition> = (
 ) => ControllerInstance<M>;
 
 export type ControllerInstance<M extends ModuleDefinition> = {
-  [Lifecycle.Mount]?(parameters: M["Routes"]): ActionGenerator;
+  [Lifecycle.Mount]?(): ActionGenerator;
   [Lifecycle.Derive]?(attributes: M["Attributes"]): ActionGenerator;
   [Lifecycle.Tree]?(): ActionGenerator;
   [Lifecycle.Error]?(error: Error | EventError): ActionGenerator;

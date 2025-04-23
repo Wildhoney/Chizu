@@ -1,16 +1,7 @@
 import { State } from "../../../../library/index.ts";
 import { pk } from "../../../../library/utils/index.ts";
 import { Events } from "../../types";
-import {
-  Button,
-  Container,
-  Date,
-  Details,
-  Empty,
-  Name,
-  Row,
-  Task,
-} from "./styles.ts";
+import * as styles from "./styles.ts";
 import { Props } from "./types.ts";
 import dayjs from "dayjs";
 import { LoaderPinwheel, Trash2 } from "lucide-react";
@@ -18,20 +9,24 @@ import { ReactElement } from "react";
 
 export default function List({ self }: Props): ReactElement {
   return (
-    <Container>
+    <ul className={styles.container}>
       {self.model.tasks.length === 0 && (
-        <Empty>
+        <div className={styles.empty}>
           {self.validate.tasks.is(State.Pending) ? (
             <>Please wait&hellip;</>
           ) : (
             "You have no tasks yet."
           )}
-        </Empty>
+        </div>
       )}
 
       {self.model.tasks.map((task, index) => (
-        <Row key={String(task.id)}>
-          <Details pending={self.validate.tasks[index].is(State.Adding)}>
+        <li key={String(task.id)} className={styles.row}>
+          <div
+            className={styles.details(
+              self.validate.tasks[index].completed.is(State.Pending),
+            )}
+          >
             <input
               id={String(task.id)}
               disabled={
@@ -43,17 +38,21 @@ export default function List({ self }: Props): ReactElement {
               onChange={() =>
                 task.id && self.actions.dispatch([Events.Completed, task.id])
               }
-            />{" "}
-            <Task htmlFor={String(task.id)}>
-              <Name completed={task.completed}>{task.summary}</Name>
+            />
 
-              <Date>
+            <label htmlFor={String(task.id)} className={styles.task}>
+              <div className={styles.details(task.completed)}>
+                {task.summary}
+              </div>
+
+              <div className={styles.date}>
                 Added: {dayjs(task.date.toString()).format("DD/MM/YYYY")}
-              </Date>
-            </Task>
-          </Details>
+              </div>
+            </label>
+          </div>
 
-          <Button
+          <button
+            className={styles.button}
             disabled={
               !pk(task.id) || self.validate.tasks[index].is(State.Removing)
             }
@@ -66,9 +65,9 @@ export default function List({ self }: Props): ReactElement {
             ) : (
               <Trash2 size={20} />
             )}
-          </Button>
-        </Row>
+          </button>
+        </li>
       ))}
-    </Container>
+    </ul>
   );
 }

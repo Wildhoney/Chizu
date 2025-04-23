@@ -1,6 +1,6 @@
-import styled from "@emotion/styled";
+import { css } from "@emotion/css";
 
-export const Container = styled.ol`
+export const container = css`
   margin: 0;
   max-height: 200px;
   overflow-y: auto;
@@ -11,14 +11,14 @@ export const Container = styled.ol`
   padding-bottom: 20px;
 `;
 
-export const Row = styled.li`
+export const row = css`
   display: flex;
   font-size: 14px;
   justify-content: space-between;
   padding: 5px 15px;
 `;
 
-export const Button = styled.button`
+export const button = css`
   background: none;
   border: 0;
   outline: none;
@@ -27,16 +27,16 @@ export const Button = styled.button`
   font-size: 14px;
 `;
 
-export const Details = styled.div<{ pending: boolean }>`
+export const details = (pending: boolean) => css`
   display: flex;
   place-items: center;
   display: flex;
   gap: 10px;
   flex: 1;
-  font-style: ${({ pending }) => (pending ? "italic" : "normal")};
+  font-style: ${pending ? "italic" : "normal"};
 `;
 
-export const Task = styled.label`
+export const task = css`
   cursor: pointer;
   flex: 1;
   display: flex;
@@ -44,23 +44,23 @@ export const Task = styled.label`
   gap: 5px;
 `;
 
-export const Name = styled.div<{ completed: boolean }>`
+export const name = (completed: boolean) => css`
   transition: color 0.3s;
-  text-decoration: ${({ completed }) => (completed ? "line-through" : "none")};
-  color: ${({ completed }) => (completed ? "grey" : "black")};
+  text-decoration: ${completed ? "line-through" : "none"};
+  color: ${completed ? "grey" : "black"};
   font-family: "Lato", sans-serif;
   font-weight: 400;
   font-size: 14px;
 `;
 
-export const Date = styled.div`
+export const date = css`
   font-size: 11px;
   color: darkgrey;
   font-family: "Lato", sans-serif;
   font-weight: 300;
 `;
 
-export const Empty = styled.div`
+export const empty = css`
   padding: 10px 20px 10px 10px;
   font-size: 14px;
 `;

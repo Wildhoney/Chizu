@@ -1,6 +1,6 @@
 import { Create } from "../../library/index.ts";
 import { Pk } from "../../library/types/index.ts";
-import { DistributedActions, Route, Routes } from "../types.ts";
+import { DistributedActions } from "../types.ts";
 
 type Id = number;
 
@@ -31,9 +31,4 @@ export type Actions =
   | [Events.Completed, Pk<Id>]
   | [Events.Remove, Pk<Id>];
 
-export type Module = Create.Module<
-  Model,
-  Actions,
-  {},
-  [Routes, Route.Dashboard]
->;
+export type Module = Create.Module<Model, Actions>;
