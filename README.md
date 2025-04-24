@@ -1,10 +1,8 @@
-# Marea
+<div align="center">
+  <img src="/media/logo.png" width="475" />
+</div>
 
-> /maˈɾe.a/
-
-<img src="/media/logo.png" />
-
-Strongly typed web component library using generators and efficiently updated views alongside the publish-subscribe pattern.
+Strongly typed React framework using generators and efficiently updated views alongside the publish-subscribe pattern.
 
 ## Contents
 
