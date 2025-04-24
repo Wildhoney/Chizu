@@ -11,7 +11,7 @@ export function useApp() {
   return React.useContext(Context);
 }
 
-export default function app(tree: React.ElementType): void {
+export default function app(tree: React.ComponentType): void {
   const root = ReactDOM.createRoot(document.body);
   root.render(<Tree tree={tree} />);
 }

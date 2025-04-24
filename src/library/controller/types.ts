@@ -7,6 +7,7 @@ import {
   ModuleDefinition,
   Queue,
   State,
+  Values,
 } from "../types/index.ts";
 
 export type Produce<M extends ModuleDefinition> =
@@ -25,10 +26,10 @@ export type ControllerActions<M extends ModuleDefinition> = {
 };
 
 export type ControllerArgs<M extends ModuleDefinition> = Readonly<{
-  model: M["Model"];
-  queue: Queue<M["Actions"]>;
-  events: Events<M["Attributes"]>;
-  actions: ControllerActions<M>;
+  model: Readonly<M["Model"]>;
+  queue: Readonly<Queue<M["Actions"]>>;
+  events: Readonly<Events<M["Props"]>>;
+  actions: Readonly<ControllerActions<M>>;
 }>;
 
 export type ActionGenerator = Generator<void | Promise<void>, void, void>;
@@ -39,8 +40,8 @@ export type ControllerDefinition<M extends ModuleDefinition> = (
 
 export type ControllerInstance<M extends ModuleDefinition> = {
   [Lifecycle.Mount]?(): ActionGenerator;
-  [Lifecycle.Derive]?(attributes: M["Attributes"]): ActionGenerator;
-  [Lifecycle.Tree]?(): ActionGenerator;
+  [Lifecycle.Derive]?(props: Values<M["Props"]>): ActionGenerator;
+  [Lifecycle.Tree]?(tree: HTMLElement): ActionGenerator;
   [Lifecycle.Error]?(error: Error | EventError): ActionGenerator;
   [Lifecycle.Unmount]?(): ActionGenerator;
 } & Partial<Handlers<M>>;

@@ -6,14 +6,14 @@ import * as React from "react";
 export default function module<M extends ModuleDefinition>(
   name: TemplateStringsArray,
 ) {
-  return (options: Options<M>): React.ElementType<M["Attributes"]> => {
+  return (options: Options<M>): React.ComponentType<M["Props"]> => {
     return React.memo(
-      (attributes: M["Attributes"]) =>
+      (props: M["Props"]) =>
         renderer<M>({
           options: {
             ...options,
             name: name.join("") as ElementName,
-            attributes,
+            props,
           },
         }),
       (a, b) => JSON.stringify(a) === JSON.stringify(b),

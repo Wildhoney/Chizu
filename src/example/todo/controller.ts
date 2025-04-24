@@ -1,5 +1,4 @@
 import { Lifecycle, State, create, utils } from "../../library/index.ts";
-import { pk } from "../../library/utils/index.ts";
 import { Events, Module, Task } from "./types.ts";
 import { Db } from "./utils.ts";
 
@@ -30,7 +29,7 @@ export default create.controller<Module>((self) => {
     },
 
     *[Events.Add]() {
-      const id = pk();
+      const id = utils.pk();
 
       const task: Task = {
         id,

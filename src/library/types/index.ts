@@ -15,8 +15,6 @@ export const enum State {
   Moving = 16,
 }
 
-export const reference = Symbol("marea-reference");
-
 export type ActionName = Lifecycle | string | number;
 
 type ActionPayload = [any, ...any[]];
@@ -37,34 +35,37 @@ export const enum Lifecycle {
 
 export type Name<A extends Actions> = A[0];
 
-export type Attributes = Record<string, unknown>;
+export type Props = Record<string, unknown>;
 
-export type Module<
-  A extends Model,
-  B extends Actions,
-  C extends Attributes = {},
-> = {
-  Model: A;
-  Actions: B;
-  Attributes: C;
+export type Module<M extends Model, A extends Actions, P extends Props = {}> = {
+  Model: M;
+  Actions: A;
+  Props: P;
 };
 
 export type ModuleDefinition = {
   Model: Model;
   Actions: Actions;
-  Attributes: Attributes;
+  Props: Props;
 };
 
-type Fns<A extends Attributes> = {
-  [K in keyof A]: A[K] extends (...args: any[]) => any ? A[K] : never;
+type Fns<P extends Props> = {
+  [K in keyof P]: P[K] extends (...args: any[]) => any ? P[K] : never;
 };
 
-export type Events<A extends Attributes> = Pick<
-  Fns<A>,
-  {
-    [K in keyof Fns<A>]: Fns<A>[K] extends never ? never : K;
-  }[keyof Fns<A>]
->;
+type NonFns<P extends Props> = {
+  [K in keyof P]: P[K] extends (...args: any[]) => any ? never : P[K];
+};
+
+export type Events<P extends Props> = {
+  [K in keyof Fns<P> as Fns<P>[K] extends never ? never : K]: Fns<P>[K];
+};
+
+export type Values<P extends Props> = {
+  [K in keyof NonFns<P> as NonFns<P>[K] extends never
+    ? never
+    : K]: NonFns<P>[K];
+};
 
 export type Pk<T> = undefined | Symbol | T;
 

@@ -1,5 +1,4 @@
-import { Create } from "../../library/index.ts";
-import { Pk } from "../../library/types/index.ts";
+import { Create, Pk } from "../../library/index.ts";
 import { DistributedActions } from "../types.ts";
 
 type Id = number;

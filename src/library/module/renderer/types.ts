@@ -9,7 +9,7 @@ export type Props<M extends ModuleDefinition> = {
 
 export type UseOptions<M extends ModuleDefinition> = Options<M> & {
   name: ElementName;
-  attributes: M["Attributes"];
+  props: M["Props"];
 };
 
 export type Head<T extends any[]> = T extends [infer First, ...any[]]

@@ -49,7 +49,7 @@ export default function renderer<M extends ModuleDefinition>({
   });
 
   useController({ options, dispatchers, actions });
-  useLifecycles({ options, dispatchers });
+  useLifecycles({ options, dispatchers, elements });
 
   return React.useMemo(() => {
     logger.output({});

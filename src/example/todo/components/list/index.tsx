@@ -1,5 +1,4 @@
-import { State } from "../../../../library/index.ts";
-import { pk } from "../../../../library/utils/index.ts";
+import { State, utils } from "../../../../library/index.ts";
 import { Events } from "../../types";
 import * as styles from "./styles.ts";
 import { Props } from "./types.ts";
@@ -30,7 +29,7 @@ export default function List({ self }: Props): ReactElement {
             <input
               id={String(task.id)}
               disabled={
-                !pk(task.id) ||
+                !utils.pk(task.id) ||
                 self.validate.tasks[index].completed.is(State.Pending)
               }
               type="checkbox"
@@ -54,7 +53,8 @@ export default function List({ self }: Props): ReactElement {
           <button
             className={styles.button}
             disabled={
-              !pk(task.id) || self.validate.tasks[index].is(State.Removing)
+              !utils.pk(task.id) ||
+              self.validate.tasks[index].is(State.Removing)
             }
             onClick={() =>
               task.id && self.actions.dispatch([Events.Remove, task.id])

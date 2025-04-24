@@ -10,3 +10,6 @@ export * as utils from "./utils/index.ts";
 export const create = { app, module, model, view, controller };
 export { EventError } from "./module/renderer/dispatchers/utils.ts";
 export type * as Create from "./types/index.ts";
+
+export type { ViewArgs as Args } from "./view/types.ts";
+export type { Pk } from "./types/index.ts";

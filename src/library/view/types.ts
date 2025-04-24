@@ -1,4 +1,4 @@
-import { Model, ModuleDefinition, State } from "../types/index.ts";
+import { Events, Model, ModuleDefinition, State } from "../types/index.ts";
 import * as React from "react";
 
 export type Validator<M extends Model> = {
@@ -12,9 +12,10 @@ export type ViewActions<M extends ModuleDefinition> = {
 };
 
 export type ViewArgs<M extends ModuleDefinition> = Readonly<{
-  model: M["Model"];
-  validate: Validator<M["Model"]>;
-  actions: ViewActions<M>;
+  model: Readonly<M["Model"]>;
+  events: Readonly<Events<M["Props"]>>;
+  validate: Readonly<Validator<M["Model"]>>;
+  actions: Readonly<ViewActions<M>>;
 }>;
 
 export type ViewDefinition<M extends ModuleDefinition> = (

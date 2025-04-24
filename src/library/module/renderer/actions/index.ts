@@ -5,6 +5,7 @@ import {
   placeholder,
   validate,
 } from "../../../utils/placeholder/index.ts";
+import { Validator } from "../../../view/types.ts";
 import { Props, UseActions } from "./types.ts";
 import * as React from "react";
 
@@ -15,15 +16,10 @@ export default function useActions<M extends ModuleDefinition>(
     () => ({
       controller: {
         get model() {
-          return props.model.current;
+          return props.model.current as Readonly<M["Model"]>;
         },
         queue: [],
-        events: Object.entries(props.options.attributes)
-          .filter(([_, value]) => typeof value === "function")
-          .reduce(
-            (acc, [key, value]) => ({ ...acc, [key]: value }),
-            {} as Events<M["Attributes"]>,
-          ),
+        events: props.options.props as Events<M["Props"]>,
         actions: {
           io<T>(ƒ: (helpers: IoHelpers) => T): T {
             return ƒ as T;
@@ -46,11 +42,15 @@ export default function useActions<M extends ModuleDefinition>(
       },
       view: {
         get model() {
-          return props.model.current;
+          return props.model.current as Readonly<M["Model"]>;
         },
         get validate() {
-          return validate(props.model.current, props.mutations.current);
+          return validate(
+            props.model.current,
+            props.mutations.current,
+          ) as Readonly<Validator<M["Model"]>>;
         },
+        events: props.options.props as Events<M["Props"]>,
         actions: {
           dispatch([action, ...data]) {
             const task = Promise.withResolvers<void>();

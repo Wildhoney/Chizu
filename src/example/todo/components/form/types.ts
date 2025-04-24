@@ -1,6 +1,6 @@
-import { ViewArgs } from "../../../../library/view/types";
-import { Module } from "../../types";
+import { Args } from "../../../../library/index.ts";
+import { Module } from "../../types.ts";
 
 export type Props = {
-  self: ViewArgs<Module>;
+  self: Args<Module>;
 };

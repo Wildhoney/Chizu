@@ -40,6 +40,7 @@ export function useDispatcher<M extends ModuleDefinition>(
         props.queue.current.delete(task.promise);
         task.resolve();
       } catch (error) {
+        console.log("hmm, error", error);
         props.app.appEmitter.emit(Lifecycle.Error, task, [error]);
       }
     };
@@ -73,13 +74,15 @@ function inspectAction<M extends ModuleDefinition>(
       }
 
       props.process.current = context.process;
-      ios.add(
-        result
-          .value({ signal: context.abortController.signal })
-          .catch((error: unknown) => () => {
-            props.app.appEmitter.emit(Lifecycle.Error, context.task, [error]);
-          }),
-      );
+
+      if (typeof result.value === "function")
+        ios.add(
+          result
+            .value({ signal: context.abortController.signal })
+            .catch((error: unknown) => () => {
+              props.app.appEmitter.emit(Lifecycle.Error, context.task, [error]);
+            }),
+        );
       props.process.current = null;
     } catch (error) {
       props.app.appEmitter.emit(Lifecycle.Error, context.task, [error]);

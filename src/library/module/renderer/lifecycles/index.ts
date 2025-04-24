@@ -7,12 +7,15 @@ export default function useLifecycles<M extends ModuleDefinition>(
 ) {
   const invoked = React.useRef<boolean>(false);
 
-  React.useEffect((): void => {
+  React.useLayoutEffect((): void => {
     props.dispatchers.dispatch(Lifecycle.Mount, []);
-    props.dispatchers.dispatch(Lifecycle.Derive, [props.options.attributes]);
-  }, [props.options.attributes]);
+    props.dispatchers.dispatch(Lifecycle.Tree, [
+      props.elements.customElement.current,
+    ]);
+    props.dispatchers.dispatch(Lifecycle.Derive, [props.options.props]);
+  }, [props.options.props]);
 
-  React.useEffect(() => {
+  React.useLayoutEffect(() => {
     if (invoked.current) {
       return;
     }
