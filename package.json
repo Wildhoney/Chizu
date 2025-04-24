@@ -2,25 +2,26 @@
   "name": "chizu",
   "version": "0.0.1",
   "type": "module",
-  "dependencies": {
-    "@emotion/css": "^11.13.5",
-    "@emotion/styled": "^11.14.0",
-    "@heroui/checkbox": "^2.3.15",
-    "antd": "^5.24.5",
-    "dayjs": "^1.11.13",
-    "eventemitter3": "^5.0.1",
-    "lucide-react": "^0.484.0",
-    "pubsub-js": "^1.9.5",
-    "ramda": "^0.30.1",
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0",
-    "react-router": "^7.5.1",
-    "react-router-dom": "^7.5.1"
+  "main": "dist/chizu.js",
+  "exports": {
+    ".": {
+      "import": "./dist/chizu.js",
+      "require": "./dist/chizu.umd.cjs"
+    }
   },
+  "dependencies": {
+    "eventemitter3": "^5.0.1",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "files": [
+    "dist"
+  ],
   "devDependencies": {
     "@babel/preset-env": "^7.26.0",
     "@babel/preset-react": "^7.26.3",
     "@babel/preset-typescript": "^7.26.0",
+    "@emotion/css": "^11.13.5",
     "@jest/globals": "^29.7.0",
     "@playwright/test": "^1.51.1",
     "@testing-library/dom": "^10.4.0",
@@ -30,10 +31,12 @@
     "@types/pubsub-js": "^1.8.6",
     "@types/react": "^19.0.8",
     "@types/react-dom": "^19.0.3",
+    "dayjs": "^1.11.13",
     "dexie": "^4.0.11",
     "get-port-cli": "^3.0.0",
     "jest": "^29.7.0",
     "jest-environment-jsdom": "^29.7.0",
+    "lucide-react": "^0.484.0",
     "playwright": "^1.51.1",
     "prettier": "^3.4.2",
     "react-test-renderer": "^19.0.0",

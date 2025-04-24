@@ -5,7 +5,7 @@ import * as React from "react";
 export default function useLogger<M extends ModuleDefinition>(props: Props<M>) {
   return React.useMemo(
     () => ({
-      output(metrics: Metrics): void {
+      output(_metrics: Metrics): void {
         const node = props.elements.customElement.current;
         console.groupCollapsed(
           `%cRendered`,
