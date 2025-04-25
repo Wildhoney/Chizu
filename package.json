@@ -3,10 +3,10 @@
   "version": "0.0.4",
   "type": "module",
   "main": "./dist/chizu.js",
-  "types": "./dist/types/index.d.ts",
+  "types": "./dist/index.d.ts",
   "exports": {
     ".": {
-      "types": "./dist/types/index.d.ts",
+      "types": "./dist/index.d.ts",
       "import": "./dist/chizu.js",
       "require": "./dist/chizu.umd.cjs"
     }
