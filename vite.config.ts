@@ -1,9 +1,16 @@
 import { resolve } from "node:path";
 import { visualizer } from "rollup-plugin-visualizer";
 import { defineConfig } from "vite";
+import dts from "vite-plugin-dts";
 
 export default defineConfig({
-  plugins: [visualizer()],
+  plugins: [
+    visualizer(),
+    dts({
+      insertTypesEntry: true,
+      include: ["src/library"],
+    }),
+  ],
   build: {
     lib: {
       entry: resolve(__dirname, "src/library/index.ts"),

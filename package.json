@@ -2,9 +2,11 @@
   "name": "chizu",
   "version": "0.0.2",
   "type": "module",
-  "main": "dist/chizu.js",
+  "main": "./dist/chizu.js",
+  "types": "./dist/types/index.d.ts",
   "exports": {
     ".": {
+      "types": "./dist/types/index.d.ts",
       "import": "./dist/chizu.js",
       "require": "./dist/chizu.umd.cjs"
     }
@@ -45,6 +47,7 @@
     "ts-node": "^10.9.2",
     "typescript": "~5.7.3",
     "vite": "^6.0.5",
+    "vite-plugin-dts": "^4.5.3",
     "wait-on": "^8.0.3"
   }
 }
