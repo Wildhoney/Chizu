@@ -1,6 +1,6 @@
 {
   "name": "chizu",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "type": "module",
   "main": "./dist/chizu.js",
   "types": "./dist/types/index.d.ts",
