@@ -25,3 +25,11 @@ fmt:
 test:
 	make unit
 	make browser
+
+deploy:
+	npm version minor
+	git push
+	git push --tags
+	npm publish
+	gh release create v$(shell node -p "require('./package.json').version") --title "v$(shell node -p "require('./package.json').version")" --generate-notes
+	gh release upload v$(shell node -p "require('./package.json').version") dist/* --clobber
