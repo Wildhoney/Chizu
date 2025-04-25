@@ -7,7 +7,6 @@ export default defineConfig({
   plugins: [
     visualizer(),
     dts({
-      insertTypesEntry: true,
       include: ["src/library"],
     }),
   ],
