@@ -1,4 +1,4 @@
-import { Head } from "../module/renderer/types";
+import { Head } from "../module/renderer/types.ts";
 
 export const enum Transmit {
   Unicast = "unicast",

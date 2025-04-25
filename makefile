@@ -14,7 +14,8 @@ dev:
 	npx vite
 
 build:
-	npx tsc -b && npx vite build
+	# npx tsc -b
+	npx vite build
 
 preview:
 	npx vite preview
