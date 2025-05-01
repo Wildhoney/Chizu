@@ -14,7 +14,6 @@ export type ViewActions<M extends ModuleDefinition> = {
 export type ViewArgs<M extends ModuleDefinition> = Readonly<{
   model: Readonly<M["Model"]>;
   events: Readonly<Events<M["Props"]>>;
-  validate: Readonly<Validator<M["Model"]>>;
   actions: Readonly<ViewActions<M>>;
 }>;
 

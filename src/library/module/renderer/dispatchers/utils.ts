@@ -16,7 +16,6 @@ export function useDispatcher<M extends ModuleDefinition>(
     ): Promise<void> => {
       if (typeof ƒ !== "function") return;
 
-      const process = Symbol(`process/${Math.random()}`);
       props.queue.current.add(task.promise);
       const abortController = new AbortController();
 
@@ -24,7 +23,6 @@ export function useDispatcher<M extends ModuleDefinition>(
         const context: Context<M> = {
           app: props.app,
           task,
-          process,
           ƒ,
           abortController,
           payload,
@@ -36,7 +34,7 @@ export function useDispatcher<M extends ModuleDefinition>(
           await Promise.allSettled([...props.queue.current].slice(0, -1));
         }
 
-        if (ios.size > 0) await flushIos<M>(props, context, ios);
+        if (ios.size > 0) await flushIos<M>(context, ios);
         props.queue.current.delete(task.promise);
         task.resolve();
       } catch (error) {
@@ -64,16 +62,12 @@ function inspectAction<M extends ModuleDefinition>(
       const result = discovery.next();
 
       if (result.done && typeof result.value === "function") {
-        props.process.current = context.process;
         const model = result.value(context.props.model.current);
         if (model) context.props.model.current = model;
-        props.process.current = null;
         context.props.update.rerender();
 
         return ios;
       }
-
-      props.process.current = context.process;
 
       if (typeof result.value === "function")
         ios.add(
@@ -83,7 +77,6 @@ function inspectAction<M extends ModuleDefinition>(
               props.app.appEmitter.emit(Lifecycle.Error, context.task, [error]);
             }),
         );
-      props.process.current = null;
     } catch (error) {
       props.app.appEmitter.emit(Lifecycle.Error, context.task, [error]);
       return new Set();
@@ -92,19 +85,15 @@ function inspectAction<M extends ModuleDefinition>(
 }
 
 /**
- * @param props {UseDispatchHandlerProps<M>}
  * @param context {Context<M>}
  * @param ios {Set<unknown>}
  * @returns {Promise<void>}
  */
 async function flushIos<M extends ModuleDefinition>(
-  props: UseDispatchHandlerProps<M>,
   context: Context<M>,
   ios: Set<unknown>,
 ) {
   (await Promise.allSettled(ios)).forEach((io) => {
-    props.process.current = context.process;
-
     if (io.status === "rejected") {
       return;
     }
@@ -115,12 +104,6 @@ async function flushIos<M extends ModuleDefinition>(
         : io;
 
     if (model) context.props.model.current = model;
-    props.process.current = null;
-    props.mutations.current = new Set(
-      [...props.mutations.current].filter(
-        (mutation) => mutation.process !== context.process,
-      ),
-    );
     context.props.update.rerender();
   });
 }

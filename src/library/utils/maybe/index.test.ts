@@ -1,45 +1,46 @@
 import Maybe from "./index.ts";
 import { describe, expect, it } from "@jest/globals";
 
-type Value = number | null | undefined | Error;
-
 describe("Maybe", () => {
-  it("should handle the value type", () => {
-    const a = Maybe.of<Value>(10);
-    const b = a.map();
-    expect(b).toEqual(10);
+  it("Maybe.Ok", () => {
+    const a = Maybe.Ok(42) as Maybe<number>;
+    const b = a.otherwise(null);
+    const c = a.map((x) => x + 1).otherwise(null);
 
-    const c = Maybe.of<Value>(20);
-    const d = c.map((x) => x * 2);
-    expect(d).toEqual(40);
+    expect(b).toBe(42);
+    expect(c).toBe(43);
 
-    const e = Maybe.of<Value>(30);
-    const f = e.map(
-      (x) => x * 2,
-      (_) => "Nothing",
-    );
-    expect(f).toEqual(60);
+    const x = Maybe.Ok({ y: Maybe.Ok("Adam") }) as unknown as Maybe<{
+      y: Maybe<string>;
+    }>;
+    const y = x.map((x) => x.y.map((y) => y + " Smith")).otherwise(null);
+    expect(y).toBe("Adam Smith");
   });
 
-  it("should handle the nothing type", () => {
-    const a = Maybe.of<Value>(null);
-    const b = a.map();
-    expect(b).toEqual(null);
+  it("Maybe.None", () => {
+    const a = Maybe.None() as Maybe<number>;
+    const b = a.otherwise(null);
+    const c = a.map((x) => x + 1).otherwise(null);
 
-    const c = Maybe.of<undefined | number>(undefined);
-    const d = c.map(
-      (x) => x * 2,
-      (_) => "Nothing",
-    );
-    expect(d).toEqual("Nothing");
+    expect(b).toBe(null);
+    expect(c).toBe(null);
   });
 
-  it("should handle the fault type", () => {
-    const a = Maybe.of<Value>(new Error("Something went wrong"));
-    const b = a.map(
-      (x) => x,
-      (_) => "Error",
-    );
-    expect(b).toEqual("Error");
+  it("Maybe.Error", () => {
+    const a = Maybe.Error(new Error("test")) as unknown as Maybe<number>;
+    const b = a.otherwise(null);
+    const c = a.map((x) => x + 1).otherwise(null);
+
+    expect(b).toBe(null);
+    expect(c).toBe(null);
+  });
+
+  it("Maybe.Loading", () => {
+    const a = Maybe.Loading(42) as Maybe<number>;
+    const b = a.otherwise(null);
+    const c = a.map((x) => x + 1).otherwise(null);
+
+    expect(b).toBe(42);
+    expect(c).toBe(43);
   });
 });

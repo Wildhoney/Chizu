@@ -19,14 +19,13 @@ export default defineConfig({
     },
     rollupOptions: {
       external(id) {
-        return ["react", "react-dom", "eventemitter3"].some(
+        return ["react", "eventemitter3"].some(
           (pkg) => id === pkg || id.startsWith(pkg + "/"),
         );
       },
       output: {
         globals: {
           react: "React",
-          "react-dom": "ReactDOM",
           eventemitter3: "EventEmitter3",
           "react-dom/client": "ReactDOM",
           "react/jsx-runtime": "jsxRuntime",

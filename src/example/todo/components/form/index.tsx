@@ -6,6 +6,8 @@ import { CirclePlus, LoaderPinwheel } from "lucide-react";
 import { ReactElement } from "react";
 
 export default function Form({ self }: Props): ReactElement {
+  console.log(self.model.task);
+
   return (
     <section className={styles.container}>
       <input
@@ -23,15 +25,15 @@ export default function Form({ self }: Props): ReactElement {
         disabled={!self.model.task}
         onClick={() => self.actions.dispatch([Events.Add])}
       >
-        {self.validate.tasks.is(State.Updating) ? (
+        {/* {self.validate.tasks.is(State.Updating) ? (
           <>
             Adding task&hellip; <LoaderPinwheel size={20} />
           </>
-        ) : (
-          <>
-            Add task <CirclePlus size={20} />
-          </>
-        )}
+        ) : ( */}
+        <>
+          Add task <CirclePlus size={20} />
+        </>
+        {/* )} */}
       </button>
     </section>
   );

@@ -1,0 +1,21 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`produce should create a proxy object 1`] = `
+{
+  "children": {
+    "names": [
+      "Imogen",
+      "Phoebe",
+    ],
+  },
+  "name": {
+    "first": "Adam",
+    "last": "Timberlake",
+  },
+  "spouse": {
+    "name": {
+      "first": "Maria",
+    },
+  },
+}
+`;

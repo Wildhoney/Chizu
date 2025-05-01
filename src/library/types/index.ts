@@ -1,18 +1,17 @@
 import { Head } from "../module/renderer/types.ts";
 
-export const enum Transmit {
+export enum Transmit {
   Unicast = "unicast",
   Multicast = "multicast",
   Broadcast = "broadcast",
 }
 
-export const enum State {
-  Idle = 0,
-  Pending = 1,
-  Adding = 2,
-  Removing = 4,
-  Updating = 8,
-  Moving = 16,
+export enum State {
+  Add = 1,
+  Remove = 2,
+  Update = 4,
+  Move = 8,
+  Replace = 16,
 }
 
 export type ActionName = Lifecycle | string | number;
@@ -25,7 +24,7 @@ export type Model = Record<string, any>;
 
 export type Parameters = undefined | string;
 
-export const enum Lifecycle {
+export enum Lifecycle {
   Mount = "lifecycle/mount",
   Tree = "lifecycle/tree",
   Derive = "lifecycle/derive",

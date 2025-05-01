@@ -7,8 +7,4 @@ export type AppContext = {
   appEmitter: EventEmitter;
 };
 
-export type TreeProps = {
-  tree: React.ComponentType;
-};
-
 export type UseApp = AppContext;
