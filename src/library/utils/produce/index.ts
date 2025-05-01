@@ -1,6 +1,6 @@
 import { ModuleDefinition } from "../../types/index.ts";
 import Maybe from "../maybe/index.ts";
-import clone from "rfdc";
+import clone from "lodash/cloneDeepWith";
 
 export type MaybeObject = { __kind: "Maybe" };
 
@@ -31,8 +31,11 @@ export default function produce<M extends ModuleDefinition["Model"]>(
     });
   }
 
-  // const cloned = clone({ proto: true })(model) as Producible<M>;
-  // console.log(model, cloned);
-  const proxy = next(model);
-  return [model, proxy];
+  const cloned = clone(model, (value) => {
+    if (value instanceof Maybe) {
+      return value.clone();
+    }
+  });
+  const proxy = next(cloned);
+  return [cloned, proxy];
 }

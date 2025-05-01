@@ -13,8 +13,8 @@
   },
   "dependencies": {
     "eventemitter3": "^5.0.1",
-    "react": "^19.0.0",
-    "rfdc": "^1.4.1"
+    "lodash": "^4.17.21",
+    "react": "^19.0.0"
   },
   "files": [
     "dist"
@@ -30,6 +30,7 @@
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.2.0",
     "@trivago/prettier-plugin-sort-imports": "^5.2.2",
+    "@types/lodash": "^4.17.16",
     "@types/pubsub-js": "^1.8.6",
     "@types/react": "^19.0.8",
     "@types/react-dom": "^19.0.3",

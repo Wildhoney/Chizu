@@ -112,4 +112,8 @@ export default class Maybe<T> {
 
     return value as T extends Maybe<infer V> ? V | U : T | U;
   }
+
+  clone(): Maybe<T> {
+    return new Maybe(this.#value, this.#states[0], this.#processes[0]);
+  }
 }
