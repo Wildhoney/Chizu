@@ -1,5 +1,5 @@
 import { Lifecycle, Maybe, create, utils } from "../../library/index.ts";
-import { Events, Module } from "./types.ts";
+import { Events, Module, Task } from "./types.ts";
 import { Db } from "./utils.ts";
 
 export default create.controller<Module>((self) => {
@@ -27,39 +27,39 @@ export default create.controller<Module>((self) => {
       });
     },
 
-    // *[Events.Add]() {
-    //   const id = utils.pk();
+    *[Events.Add]() {
+      const id = utils.pk();
 
-    //   const draftTask: Task = {
-    //     id: Maybe.Loading(id),
-    //     summary: String(self.model.task),
-    //     date: new Date(),
-    //     completed: Maybe.Loading(false),
-    //   };
+      const optimistic: Task = {
+        id,
+        summary: String(self.model.task),
+        // date: new Date(),
+        // completed: Maybe.Loading(false),
+      };
 
-    //   yield self.actions.io(async () => {
-    //     await utils.sleep(1_000);
+      // yield self.actions.io(async () => {
+      //   await utils.sleep(1_000);
 
-    //     const id = await db.todos.put({ ...draftTask, id: Maybe.None() });
+      //   const id = await db.todos.put({ ...draftTask, id: Maybe.None() });
 
-    //     return self.actions.produce((draft) => {
-    //       const index = self.model.tasks
-    //         .map((task) =>
-    //           task.findIndex((task) =>
-    //             task.map((task) => task.id === draftTask.id),
-    //           ),
-    //         )
-    //         .otherwise(-1);
-    //       if (~index) draft.tasks[index].id = id;
-    //     });
-    //   });
+      //   return self.actions.produce((draft) => {
+      //     const index = self.model.tasks
+      //       .map((task) =>
+      //         task.findIndex((task) =>
+      //           task.map((task) => task.id === draftTask.id),
+      //         ),
+      //       )
+      //       .otherwise(-1);
+      //     if (~index) draft.tasks[index].id = id;
+      //   });
+      // });
 
-    //   return self.actions.produce((draft) => {
-    //     const tasks = self.model.tasks.otherwise([]);
-    //     draft.task = null;
-    //     draft.tasks = Maybe.Loading([...tasks, draftTask]);
-    //   });
-    // },
+      return self.actions.produce((draft) => {
+        const tasks = self.model.tasks.otherwise([]);
+        draft.task = null;
+        draft.tasks = Maybe.Loading([...tasks, optimistic]);
+      });
+    },
 
     // *[Events.Completed](taskId) {
     //   yield self.actions.io(async () => {

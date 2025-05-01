@@ -6,7 +6,9 @@ export default function List({ self }: Props): ReactElement {
   return (
     <ul className={styles.container}>
       {self.model.tasks
-        .map((tasks) => tasks.map((task) => <li key={task.id}>{task.id}</li>))
+        .map((tasks) =>
+          tasks.map((task) => <li key={String(task.id)}>{task.summary}</li>),
+        )
         .otherwise([])}
     </ul>
   );
