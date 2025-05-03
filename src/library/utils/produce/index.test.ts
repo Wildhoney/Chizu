@@ -1,24 +1,35 @@
-import produce from "./index.ts";
+import { produce } from ".";
+import { Process } from "../../module/renderer/process/types";
+import { Operation } from "../../types";
+import { State, state, states } from "./utils";
 import { describe, expect, it } from "@jest/globals";
 
 describe("produce", () => {
-  it("should create a proxy object", () => {
-    type Model = {
-      name: { first: string; last: string };
-      spouse: { name: { first: string } };
-      children: { names: string[] };
-    };
+  const process: Process = Symbol("process");
 
-    const [model, proxy] = produce<Model>({
-      name: { first: "", last: "Timberlake" },
-      spouse: { name: { first: "" } },
-      children: { names: [] },
+  it("transforms the model with simple primitives", () => {
+    const current = { name: { first: "Adam" }, location: { area: "Brighton" } };
+    const updated = produce(current, process, (draft) => {
+      draft.name.first = "Maria";
+      draft.location = { area: "Watford" };
     });
 
-    proxy.name.first = "Adam";
-    proxy.spouse.name.first = "Maria";
-    proxy.children.names = ["Imogen", "Phoebe"];
+    expect(updated).toEqual({
+      name: { first: "Maria" },
+      location: { area: "Watford" },
+    });
+  });
 
-    expect(model).toMatchSnapshot();
+  it("transforms the model with state operations", () => {
+    const current = { name: { first: "Adam" }, location: { area: "Brighton" } };
+    const updated = produce(current, process, (draft) => {
+      draft.name.first = state("Maria", Operation.Update);
+      draft.location = state({ area: "Watford" }, Operation.Replace);
+    });
+
+    expect(updated).toEqual({
+      name: { first: "Maria", [states]: [expect.any(State)] },
+      location: { area: "Watford", [states]: [expect.any(State)] },
+    });
   });
 });

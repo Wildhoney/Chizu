@@ -1,41 +1,39 @@
+import { Process } from "../../module/renderer/process/types.ts";
 import { ModuleDefinition } from "../../types/index.ts";
-import Maybe from "../maybe/index.ts";
-import clone from "lodash/cloneDeepWith";
+import { State, states } from "./utils.ts";
+import { Immer, Patch, applyPatches, enablePatches } from "immer";
+import get from "lodash/get";
 
-export type MaybeObject = { __kind: "Maybe" };
+const immer = new Immer();
+immer.setAutoFreeze(false);
+enablePatches();
 
-export type Producible<T> = {
-  [K in keyof T]: T[K] extends Maybe<infer U>
-    ? U extends object
-      ? U & MaybeObject
-      : T[K]
-    : T[K];
-};
-
-export default function produce<M extends ModuleDefinition["Model"]>(
+export function produce<M extends ModuleDefinition["Model"]>(
   model: M,
-): [Producible<M>, Producible<M>] {
-  function next(model: Producible<M>): Producible<M> {
-    return new Proxy(model, {
-      get(target, prop) {
-        const value = Reflect.get(target, prop) as Producible<M>;
-        if (typeof prop === "symbol") return value;
-        if (value === undefined) Reflect.set(target, prop, {});
-        return next(Reflect.get(target, prop) as Producible<M>);
-      },
+  process: null | Process,
+  ƒ: (model: M) => void,
+): M {
+  const [, patches] = immer.produceWithPatches(model, ƒ);
 
-      set(target, prop, value) {
-        Reflect.set(target, prop, value);
-        return true;
-      },
-    });
-  }
+  return applyPatches(
+    model,
+    patches.flatMap((patch): Patch[] => {
+      if (patch.value instanceof State) {
+        patch.value.process = process;
 
-  const cloned = clone(model, (value) => {
-    if (value instanceof Maybe) {
-      return value.clone();
-    }
-  });
-  const proxy = next(cloned);
-  return [cloned, proxy];
+        const op = "add" as const;
+        const values = { future: patch.value, current: get(model, patch.path) };
+        const object = typeof values.current === "object";
+        const path = object ? patch.path : patch.path.slice(0, -1);
+        // const index = (get(model, [...path, states]) ?? []).length;
+
+        return [
+          { ...patch, value: patch.value.value },
+          { op, path: [...path, states], value: [patch.value] },
+        ];
+      }
+
+      return [patch];
+    }),
+  );
 }

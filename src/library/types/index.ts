@@ -6,7 +6,7 @@ export enum Transmit {
   Broadcast = "broadcast",
 }
 
-export enum State {
+export enum Operation {
   Add = 1,
   Remove = 2,
   Update = 4,

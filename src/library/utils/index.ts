@@ -2,7 +2,6 @@ import { EventError } from "../module/renderer/dispatchers/utils.ts";
 import { Pk } from "../types/index.ts";
 
 export { default as sleep } from "./sleep/index.ts";
-export { default as maybe } from "./maybe/index.ts";
 
 export function pk<T>(): Symbol;
 export function pk<T>(id: Pk<T>): boolean;
