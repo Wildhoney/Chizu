@@ -1,5 +1,14 @@
 import { Process } from "../../module/renderer/process/types.ts";
 import { Operation } from "../../types/index.ts";
+import { Immer, enablePatches } from "immer";
+
+export const config = {
+  immer: new Immer(),
+  states: Symbol("states"),
+};
+
+config.immer.setAutoFreeze(false);
+enablePatches();
 
 export class State<T> {
   public process: null | Process = null;
@@ -18,5 +27,3 @@ export class State<T> {
 export function state<T>(value: T, state: null | Operation = null): T {
   return new State(value, state) as T;
 }
-
-export const states = Symbol("states") as unknown as string;
