@@ -1,4 +1,4 @@
-import * as produce from ".";
+import { produce } from ".";
 import { Process } from "../../module/renderer/process/types";
 import { Operation } from "../../types";
 import { State, config, state } from "./utils";
@@ -14,31 +14,18 @@ describe("produce", () => {
   };
 
   it("transforms the model with simple primitives", () => {
-    const patches = produce.patches(model, (draft) => {
+    const models = produce(model, process, (draft) => {
       draft.name.first = "Maria";
       draft.location = { area: "Watford" };
       draft.children.push({ name: "Phoebe" });
     });
 
-    const stateless = produce.states({
-      model,
-      process,
-      patches,
-      enumerable: false,
-    });
-    expect(stateless).toEqual({
+    expect(models.draft).toEqual({
       name: { first: "Maria" },
       location: { area: "Watford" },
       children: [{ name: "Imogen" }, { name: "Phoebe" }],
     });
-
-    const stateful = produce.states({
-      model,
-      process,
-      patches,
-      enumerable: true,
-    });
-    expect(stateful).toEqual({
+    expect(models.model).toEqual({
       name: { first: "Maria" },
       location: { area: "Watford" },
       children: [{ name: "Imogen" }, { name: "Phoebe" }],
@@ -46,31 +33,18 @@ describe("produce", () => {
   });
 
   it("transforms the model with state operations", () => {
-    const patches = produce.patches(model, (draft) => {
+    const models = produce(model, process, (draft) => {
       draft.name.first = state("Maria", Operation.Update);
       draft.location = state({ area: "Watford" }, Operation.Replace);
       draft.children.push(state({ name: "Phoebe" }, Operation.Add));
     });
 
-    const stateless = produce.states({
-      model,
-      process,
-      patches,
-      enumerable: false,
-    });
-    expect(stateless).toEqual({
+    expect(models.model).toEqual({
       name: { first: "Maria" },
       location: { area: "Watford" },
       children: [{ name: "Imogen" }, { name: "Phoebe" }],
     });
-
-    const stateful = produce.states({
-      model,
-      process,
-      patches,
-      enumerable: true,
-    });
-    expect(stateful).toEqual({
+    expect(models.draft).toEqual({
       name: { first: "Maria", [config.states]: [expect.any(State)] },
       location: { area: "Watford", [config.states]: [expect.any(State)] },
       children: [
