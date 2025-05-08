@@ -1,5 +1,5 @@
 import { Process } from "../../module/renderer/process/types.ts";
-import { ModuleDefinition, Operation } from "../../types/index.ts";
+import { Operation } from "../../types/index.ts";
 import { Immer, enablePatches } from "immer";
 
 export const config = {
@@ -10,11 +10,10 @@ export const config = {
 config.immer.setAutoFreeze(false);
 enablePatches();
 
-export class State<T> {
-  public process: null | Process = null;
-
+export class State<M> {
   constructor(
-    public value: T,
+    public value: M,
+    public process: null | Process,
     public operation: null | Operation = null,
     public field: null | string = null,
   ) {
@@ -24,16 +23,10 @@ export class State<T> {
   }
 }
 
-export function state<T>(value: T, state: null | Operation = null): T {
-  return new State(value, state) as T;
-}
-
-export class Models<M extends ModuleDefinition["Model"]> {
-  constructor(
-    public model: M,
-    public draft: M,
-  ) {
-    this.model = model;
-    this.draft = draft;
-  }
+export function state<M>(
+  value: M,
+  operation: null | Operation,
+  process: null | Process,
+) {
+  return new State(value, process, operation) as M;
 }

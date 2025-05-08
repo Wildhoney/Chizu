@@ -1,4 +1,4 @@
-import { Create, Maybe, Pk } from "../../library/index.ts";
+import { Create, Pk } from "../../library/index.ts";
 import { DistributedActions } from "../types.ts";
 
 type Id = number;
@@ -6,14 +6,14 @@ type Id = number;
 export type Task = {
   id: Pk<Id>;
   summary: string;
-  // date: Date;
-  // completed: Maybe<boolean>;
+  date: Date;
+  completed: boolean;
 };
 
 export type Model = {
   id: number;
   task: null | string;
-  tasks: Maybe<Task[]>;
+  tasks: Task[];
 };
 
 export const enum Events {

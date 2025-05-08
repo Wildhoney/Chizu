@@ -1,13 +1,10 @@
-import { State } from "../../../../library";
 import { Events } from "../../types";
 import * as styles from "./styles.ts";
 import { Props } from "./types";
-import { CirclePlus, LoaderPinwheel } from "lucide-react";
+import { CirclePlus } from "lucide-react";
 import { ReactElement } from "react";
 
 export default function Form({ self }: Props): ReactElement {
-  console.log(self.model.task);
-
   return (
     <section className={styles.container}>
       <input

@@ -5,22 +5,14 @@ import {
   Events,
   Lifecycle,
   ModuleDefinition,
+  Operation,
   Queue,
   Values,
 } from "../types/index.ts";
-import { Producible } from "../utils/produce/index.ts";
-
-export type Produce<M extends ModuleDefinition> =
-  | void
-  | ((model: M["Model"]) => M["Model"]);
-
-export type IoHelpers = {
-  signal: AbortSignal;
-};
 
 export type ControllerActions<M extends ModuleDefinition> = {
-  io<T>(ƒ: (helpers: IoHelpers) => T): T;
-  produce(ƒ: (draft: Producible<M["Model"]>) => void): void;
+  state<T>(value: T, operation: null | Operation): T;
+  produce(ƒ: (draft: M["Model"]) => void): void;
   dispatch(event: M["Actions"]): Promise<void>;
 };
 
@@ -31,7 +23,11 @@ export type ControllerArgs<M extends ModuleDefinition> = Readonly<{
   actions: Readonly<ControllerActions<M>>;
 }>;
 
-export type ActionGenerator = Generator<void | Promise<void>, void, void>;
+export type ActionGenerator = AsyncGenerator<
+  void | Promise<void>,
+  void | Promise<void>,
+  void | Promise<void>
+>;
 
 export type ControllerDefinition<M extends ModuleDefinition> = (
   controller: ControllerArgs<M>,

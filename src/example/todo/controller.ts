@@ -1,65 +1,62 @@
-import { Lifecycle, Maybe, create, utils } from "../../library/index.ts";
-import { Events, Module, Task } from "./types.ts";
+import { Lifecycle, Operation, create, utils } from "../../library/index.ts";
+import { Events, Module } from "./types.ts";
 import { Db } from "./utils.ts";
 
 export default create.controller<Module>((self) => {
   const db = new Db();
 
   return {
-    *[Lifecycle.Mount]() {
-      yield self.actions.io(async () => {
-        await utils.sleep(1_000);
-
-        const tasks = await db.todos.toArray();
-        return self.actions.produce((draft) => {
-          draft.tasks = Maybe.Ok(tasks);
-        });
+    async *[Lifecycle.Mount]() {
+      yield self.actions.produce((draft) => {
+        draft.tasks = self.actions.state([], Operation.Add);
       });
 
-      return self.actions.produce((draft) => {
-        draft.tasks = Maybe.Loading([]);
+      await utils.sleep(1_000);
+      const tasks = await db.todos.toArray();
+
+      yield self.actions.produce((draft) => {
+        draft.tasks = tasks;
       });
     },
 
-    *[Events.Task](task) {
-      return self.actions.produce((draft) => {
+    async *[Events.Task](task) {
+      yield self.actions.produce((draft) => {
         draft.task = task;
       });
     },
 
-    *[Events.Add]() {
-      const id = utils.pk();
+    // *[Events.Add]() {
+    //   const id = utils.pk();
 
-      const optimistic: Task = {
-        id,
-        summary: String(self.model.task),
-        // date: new Date(),
-        // completed: Maybe.Loading(false),
-      };
+    //   const optimistic: Task = {
+    //     id,
+    //     summary: String(self.model.task),
+    //     date: new Date(),
+    //     completed: false,
+    //   };
 
-      // yield self.actions.io(async () => {
-      //   await utils.sleep(1_000);
+    //   // yield self.actions.io(async () => {
+    //   //   await utils.sleep(1_000);
 
-      //   const id = await db.todos.put({ ...draftTask, id: Maybe.None() });
+    //   //   const id = await db.todos.put({ ...draftTask, id: Maybe.None() });
 
-      //   return self.actions.produce((draft) => {
-      //     const index = self.model.tasks
-      //       .map((task) =>
-      //         task.findIndex((task) =>
-      //           task.map((task) => task.id === draftTask.id),
-      //         ),
-      //       )
-      //       .otherwise(-1);
-      //     if (~index) draft.tasks[index].id = id;
-      //   });
-      // });
+    //   //   return self.actions.produce((draft) => {
+    //   //     const index = self.model.tasks
+    //   //       .map((task) =>
+    //   //         task.findIndex((task) =>
+    //   //           task.map((task) => task.id === draftTask.id),
+    //   //         ),
+    //   //       )
+    //   //       .otherwise(-1);
+    //   //     if (~index) draft.tasks[index].id = id;
+    //   //   });
+    //   // });
 
-      return self.actions.produce((draft) => {
-        const tasks = self.model.tasks.otherwise([]);
-        draft.task = null;
-        draft.tasks = Maybe.Loading([...tasks, optimistic]);
-      });
-    },
+    //   return self.actions.produce((draft) => {
+    //     draft.task = null;
+    //     draft.tasks = [...self.model.tasks, optimistic];
+    //   });
+    // },
 
     // *[Events.Completed](taskId) {
     //   yield self.actions.io(async () => {

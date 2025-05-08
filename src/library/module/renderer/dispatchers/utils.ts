@@ -1,6 +1,7 @@
-import { Lifecycle, ModuleDefinition, Task } from "../../../types/index.ts";
+import { ModuleDefinition, Task } from "../../../types/index.ts";
+import { cleanup } from "../../../utils/produce/index.ts";
 import { Head, Tail } from "../types.ts";
-import { Context, GeneratorFn, UseDispatchHandlerProps } from "./types.ts";
+import { GeneratorFn, UseDispatchHandlerProps } from "./types.ts";
 
 /**
  * @param props {UseDispatchHandlerProps<M>}
@@ -16,96 +17,25 @@ export function useDispatcher<M extends ModuleDefinition>(
     ): Promise<void> => {
       if (typeof ƒ !== "function") return;
 
-      props.queue.current.add(task.promise);
-      const abortController = new AbortController();
+      // const abort = new AbortController();
+      const process = Symbol("process");
 
-      try {
-        const context: Context<M> = {
-          app: props.app,
-          task,
-          ƒ,
-          abortController,
-          payload,
-          props,
-        };
-        const ios = inspectAction<M>(props, context);
+      for await (const produce of ƒ(...payload)) {
+        props.process.current = process;
+        const models = produce(props.model.current.stateful, process);
+        props.process.current = null;
 
-        if (props.queue.current.size > 1) {
-          await Promise.allSettled([...props.queue.current].slice(0, -1));
-        }
-
-        if (ios.size > 0) await flushIos<M>(context, ios);
-        props.queue.current.delete(task.promise);
-        task.resolve();
-      } catch (error) {
-        console.log("hmm, error", error);
-        props.app.appEmitter.emit(Lifecycle.Error, task, [error]);
+        props.model.current = models;
+        props.update.rerender();
       }
+
+      const models = cleanup(props.model.current, process);
+      props.model.current = models;
+      props.update.rerender();
+
+      task.resolve();
     };
   };
-}
-
-/**
- * @param props {UseDispatchHandlerProps<M>}
- * @param context {Context<M>}
- * @returns {Set<unknown>}
- */
-function inspectAction<M extends ModuleDefinition>(
-  props: UseDispatchHandlerProps<M>,
-  context: Context<M>,
-) {
-  const ios = new Set();
-  const discovery = context.ƒ(...context.payload);
-
-  while (true) {
-    try {
-      const result = discovery.next();
-
-      if (result.done && typeof result.value === "function") {
-        const model = result.value(context.props.model.current);
-        if (model) context.props.model.current = model;
-        context.props.update.rerender();
-
-        return ios;
-      }
-
-      if (typeof result.value === "function")
-        ios.add(
-          result
-            .value({ signal: context.abortController.signal })
-            .catch((error: unknown) => () => {
-              props.app.appEmitter.emit(Lifecycle.Error, context.task, [error]);
-            }),
-        );
-    } catch (error) {
-      props.app.appEmitter.emit(Lifecycle.Error, context.task, [error]);
-      return new Set();
-    }
-  }
-}
-
-/**
- * @param context {Context<M>}
- * @param ios {Set<unknown>}
- * @returns {Promise<void>}
- */
-async function flushIos<M extends ModuleDefinition>(
-  context: Context<M>,
-  ios: Set<unknown>,
-) {
-  (await Promise.allSettled(ios)).forEach((io) => {
-    if (io.status === "rejected") {
-      return;
-    }
-
-    const model =
-      typeof io.value === "function"
-        ? io.value(context.props.model.current)
-        : io;
-
-    if (model) context.props.model.current = model;
-    context.props.update.rerender();
-  });
 }
 
 /**

@@ -7,6 +7,7 @@ import useElements from "./elements/index.ts";
 import useLifecycles from "./lifecycles/index.ts";
 import useLogger from "./logger/index.ts";
 import useModel from "./model/index.ts";
+import useProcess from "./process/index.ts";
 import useQueue from "./queue/index.ts";
 import { Props } from "./types.ts";
 import useUpdate from "./update/index.ts";
@@ -20,6 +21,7 @@ export default function renderer<M extends ModuleDefinition>({
   const update = useUpdate();
   const queue = useQueue();
   const elements = useElements();
+  const process = useProcess();
 
   const model = useModel({ options });
   const logger = useLogger({ options, elements });
@@ -31,9 +33,10 @@ export default function renderer<M extends ModuleDefinition>({
     model,
     logger,
     queue,
+    process,
   });
 
-  const actions = useActions<M>({ app, options, model, dispatchers });
+  const actions = useActions<M>({ app, options, model, dispatchers, process });
 
   useController({ options, dispatchers, actions });
   useLifecycles({ options, dispatchers, elements });
