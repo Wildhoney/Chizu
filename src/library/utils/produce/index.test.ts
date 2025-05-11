@@ -6,13 +6,13 @@ import { describe, expect, it } from "@jest/globals";
 
 const process: Process = Symbol("process");
 
-describe("produce", () => {
-  const model = {
-    name: { first: "Adam" },
-    location: { area: "Brighton" },
-    children: [{ name: "Imogen" }],
-  };
+const model = {
+  name: { first: "Adam" },
+  location: { area: "Brighton" },
+  children: [{ name: "Imogen" }],
+};
 
+describe("update", () => {
   it("transforms the model with simple primitives", () => {
     const models = update(model, process, (draft) => {
       draft.name.first = "Maria";
@@ -25,12 +25,12 @@ describe("produce", () => {
       location: { area: "Watford" },
       children: [{ name: "Imogen" }, { name: "Phoebe" }],
     });
+
     expect(models.stateful).toEqual({
-      name: { first: "Maria" },
-      location: { area: "Watford" },
-      children: [{ name: "Imogen" }, { name: "Phoebe" }],
+      name: { first: "Maria", [config.states]: [] },
+      location: { area: "Watford", [config.states]: [] },
+      children: [{ name: "Imogen" }, { name: "Phoebe", [config.states]: [] }],
     });
-    expect(models.interface.name.is(Operation.Update)).toBe(false);
   });
 
   it("transforms the model with state operations", () => {
@@ -45,6 +45,7 @@ describe("produce", () => {
       location: { area: "Watford" },
       children: [{ name: "Imogen" }, { name: "Phoebe" }],
     });
+
     expect(models.stateful).toEqual({
       name: { first: "Maria", [config.states]: [expect.any(State)] },
       location: { area: "Watford", [config.states]: [expect.any(State)] },
@@ -53,9 +54,10 @@ describe("produce", () => {
         { name: "Phoebe", [config.states]: [expect.any(State)] },
       ],
     });
-    expect(models.interface.name.is(Operation.Update)).toBe(true);
   });
+});
 
+describe("cleanup", () => {
   it("transforms the model by cleaning up state processes", () => {
     const models = cleanup(
       update(model, process, (draft) => {
@@ -71,5 +73,19 @@ describe("produce", () => {
       location: { area: "Watford", [config.states]: [] },
       children: [{ name: "Imogen" }, { name: "Phoebe", [config.states]: [] }],
     });
+  });
+});
+
+describe.only("validatable", () => {
+  it("transforms the model with validatable operations", () => {
+    const models = update(model, process, (draft) => {
+      draft.name.first = state("Maria", Operation.Update, process);
+      draft.location = state({ area: "Watford" }, Operation.Replace, process);
+      draft.children.push(state({ name: "Phoebe" }, Operation.Add, process));
+    });
+
+    expect(models.validatable.name.first.is(Operation.Update)).toBe(true);
+    expect(models.validatable.location.is(Operation.Replace)).toBe(true);
+    expect(models.validatable.children[1].is(Operation.Add)).toBe(true);
   });
 });

@@ -39,7 +39,10 @@ export default function useActions<M extends ModuleDefinition>(
       },
       view: {
         get model() {
-          return props.model.current.interface as Validatable<
+          return props.model.current.stateless as Readonly<M["Model"]>;
+        },
+        get validate() {
+          return props.model.current.validatable as Validatable<
             Readonly<M["Model"]>
           >;
         },

@@ -4,7 +4,7 @@ import { Immer, enablePatches } from "immer";
 
 export const config = {
   immer: new Immer(),
-  states: Symbol("states"),
+  states: "states",
 };
 
 config.immer.setAutoFreeze(false);
@@ -15,7 +15,7 @@ export class State<M> {
     public value: M,
     public process: null | Process,
     public operation: null | Operation = null,
-    public field: null | string = null,
+    public field: null | number | string = null,
   ) {
     this.value = value;
     this.operation = operation;

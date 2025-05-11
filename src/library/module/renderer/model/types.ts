@@ -12,8 +12,8 @@ export type Validate = { is(operation: Operation): boolean };
 
 export type Validatable<M> = {
   [K in keyof M]: M[K] extends object
-    ? M[K] extends Array<any>
-      ? M[K] & Validate
+    ? M[K] extends Array<infer U>
+      ? Array<Validatable<U> & Validate> & Validate
       : Validatable<M[K]> & Validate
-    : M[K];
+    : M[K] & Validate;
 } & Validate;

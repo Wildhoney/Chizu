@@ -4,7 +4,7 @@ import { Props } from "./types.ts";
 import { ReactElement } from "react";
 
 export default function List({ self }: Props): ReactElement {
-  if (self.model.tasks.is(Operation.Add)) {
+  if (self.validate.tasks.is(Operation.Add)) {
     return <>Loading&hellip;</>;
   }
 

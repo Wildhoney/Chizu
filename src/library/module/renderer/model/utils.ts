@@ -9,37 +9,38 @@ export class Models<M extends ModuleDefinition["Model"]> {
     public stateful: M,
   ) {}
 
-  get interface(): Validatable<M> {
-    return proxy(this.stateless, this.stateful);
+  get validatable(): Validatable<M> {
+    return validatable(this.stateful);
   }
 }
 
-function proxy<
-  M1 extends ModuleDefinition["Model"],
-  M2 extends ModuleDefinition["Model"],
->(model: M1, draft: M2, path: string[] = []): Validatable<M1> {
-  return new Proxy(model, {
-    get(target, property) {
+function validatable<M extends ModuleDefinition["Model"]>(
+  stateful: M,
+  properties: string[] = [],
+): Validatable<M> {
+  return new Proxy(stateful, {
+    get(_, property) {
       if (property === "is") {
         return (operation: Operation) => {
-          const object = path.length === 0 ? draft : get(draft, path);
-          const states: undefined | State<M1>[] = object?.[config.states];
+          const value = get(stateful, properties);
+          const path =
+            typeof value === "object" ? properties : properties.slice(0, -1);
+          const object = path.length === 0 ? stateful : get(stateful, path);
+          const states: undefined | State<M>[] = object?.[config.states];
+
           if (!states) return false;
+
           const operations = new Set(states.map((state) => state.operation));
           const state = Array.from(operations).reduce(
-            (acc, op) => acc | (op ?? 0),
+            (current, operation) => current | (operation ?? 0),
             0,
           );
+
           return (state & operation) === operation;
         };
       }
 
-      const value = Reflect.get(target, property);
-      if (value && typeof value === "object") {
-        return proxy(value, draft, [...path, String(property)]);
-      }
-
-      return value;
+      return validatable(stateful, [...properties, String(property)]);
     },
-  }) as Validatable<M1>;
+  }) as Validatable<M>;
 }

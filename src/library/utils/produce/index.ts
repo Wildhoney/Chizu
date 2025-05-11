@@ -44,7 +44,9 @@ export function update<M extends ModuleDefinition["Model"]>(
       const state = get(model, [...path, config.states]) ?? [];
 
       return void Object.defineProperty(get(draft, path), config.states, {
-        value: [...state, patch.value],
+        value: [...state, patch.value].filter(
+          (state) => state instanceof State,
+        ),
         enumerable: true,
         writable: true,
         configurable: false,
@@ -52,9 +54,10 @@ export function update<M extends ModuleDefinition["Model"]>(
     }
 
     patch.value.process = process;
+    patch.value.field = object ? null : patch.path[patch.path.length - 1];
 
     return void Object.defineProperty(get(draft, path), config.states, {
-      value: [...state, patch.value],
+      value: [...state, patch.value].filter((state) => state instanceof State),
       enumerable: true,
       writable: true,
       configurable: false,
