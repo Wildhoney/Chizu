@@ -20,8 +20,19 @@ export function useDispatcher<M extends ModuleDefinition>(
 
       // const abort = new AbortController();
       const process = Symbol("process");
+      const generator = ƒ(...payload);
 
-      for await (const produce of ƒ(...payload)) {
+      while (true) {
+        const { value, done } = await generator.next();
+
+        if (done) {
+          const models = value(props.model.current.stateful, process);
+          props.model.current = cleanup(models, process);
+          props.update.rerender();
+          break;
+        }
+
+        const produce = value;
         props.process.current = process;
         const models = produce(props.model.current.stateful, process);
         props.process.current = null;
@@ -29,10 +40,6 @@ export function useDispatcher<M extends ModuleDefinition>(
         props.model.current = models;
         props.update.rerender();
       }
-
-      const models = cleanup(props.model.current, process);
-      props.model.current = models;
-      props.update.rerender();
 
       task.resolve();
     };

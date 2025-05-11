@@ -8,6 +8,8 @@ export default function List({ self }: Props): ReactElement {
     return <>Loading&hellip;</>;
   }
 
+  console.log(self.model);
+
   return (
     <ul className={styles.container}>
       {self.model.tasks.map((task) => (
