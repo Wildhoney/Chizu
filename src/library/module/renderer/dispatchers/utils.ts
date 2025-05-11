@@ -1,7 +1,8 @@
+import { ActionEvent } from "../../../controller/types.ts";
 import { ModuleDefinition, Task } from "../../../types/index.ts";
 import { cleanup } from "../../../utils/produce/index.ts";
 import { Head, Tail } from "../types.ts";
-import { GeneratorFn, UseDispatchHandlerProps } from "./types.ts";
+import { UseDispatchHandlerProps } from "./types.ts";
 
 /**
  * @param props {UseDispatchHandlerProps<M>}
@@ -10,7 +11,7 @@ import { GeneratorFn, UseDispatchHandlerProps } from "./types.ts";
 export function useDispatcher<M extends ModuleDefinition>(
   props: UseDispatchHandlerProps<M>,
 ) {
-  return (_name: Head<M["Actions"]>, ƒ: GeneratorFn<M>) => {
+  return (_name: Head<M["Actions"]>, ƒ: ActionEvent<M>) => {
     return async (
       task: Task = Promise.withResolvers<void>(),
       payload: Tail<M["Actions"]>,

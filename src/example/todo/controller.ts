@@ -14,13 +14,13 @@ export default create.controller<Module>((self) => {
       await utils.sleep(1_000);
       const tasks = await db.todos.toArray();
 
-      yield self.actions.produce((draft) => {
+      return self.actions.produce((draft) => {
         draft.tasks = tasks;
       });
     },
 
     async *[Events.Task](task) {
-      yield self.actions.produce((draft) => {
+      return self.actions.produce((draft) => {
         draft.task = task;
       });
     },

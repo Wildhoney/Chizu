@@ -1,7 +1,8 @@
 import { useApp } from "../../../app/index.tsx";
+import { ActionEvent } from "../../../controller/types.ts";
 import { ModuleDefinition, Task } from "../../../types/index.ts";
 import { Head, Tail } from "../types.ts";
-import { GeneratorFn, Props } from "./types.ts";
+import { Props } from "./types.ts";
 import { isBroadcast, useDispatcher } from "./utils.ts";
 import EventEmitter from "eventemitter3";
 import * as React from "react";
@@ -21,7 +22,7 @@ export default function useDispatchers<M extends ModuleDefinition>(
     const broadcast = app.appEmitter;
 
     return {
-      attach<F extends GeneratorFn<M>>(action: Head<M["Actions"]>, ƒ: F) {
+      attach<F extends ActionEvent<M>>(action: Head<M["Actions"]>, ƒ: F) {
         const name = String(action);
 
         isBroadcast(name)

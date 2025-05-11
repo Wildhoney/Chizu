@@ -1,4 +1,5 @@
 import { EventError } from "../module/renderer/dispatchers/utils.ts";
+import { Models } from "../module/renderer/model/utils.ts";
 import { Head } from "../module/renderer/types.ts";
 import {
   Actions,
@@ -12,7 +13,9 @@ import {
 
 export type ControllerActions<M extends ModuleDefinition> = {
   state<T>(value: T, operation: null | Operation): T;
-  produce(ƒ: (draft: M["Model"]) => void): void;
+  produce(
+    ƒ: (model: M["Model"]) => void,
+  ): (model: M["Model"], process: Symbol) => Models<M["Model"]>;
   dispatch(event: M["Actions"]): Promise<void>;
 };
 
@@ -23,10 +26,14 @@ export type ControllerArgs<M extends ModuleDefinition> = Readonly<{
   actions: Readonly<ControllerActions<M>>;
 }>;
 
-export type ActionGenerator = AsyncGenerator<
-  void | Promise<void>,
-  void | Promise<void>,
-  void | Promise<void>
+export type ActionEvent<M extends ModuleDefinition> = (
+  ...args: M["Actions"][number]
+) => ActionGenerator<M>;
+
+export type ActionGenerator<M extends ModuleDefinition> = AsyncGenerator<
+  (model: M["Model"], process: Symbol) => Models<M["Model"]>,
+  (model: M["Model"], process: Symbol) => Models<M["Model"]>,
+  unknown
 >;
 
 export type ControllerDefinition<M extends ModuleDefinition> = (
@@ -34,17 +41,17 @@ export type ControllerDefinition<M extends ModuleDefinition> = (
 ) => ControllerInstance<M>;
 
 export type ControllerInstance<M extends ModuleDefinition> = {
-  [Lifecycle.Mount]?(): ActionGenerator;
-  [Lifecycle.Derive]?(props: Values<M["Props"]>): ActionGenerator;
-  [Lifecycle.Tree]?(tree: HTMLElement): ActionGenerator;
-  [Lifecycle.Error]?(error: Error | EventError): ActionGenerator;
-  [Lifecycle.Unmount]?(): ActionGenerator;
+  [Lifecycle.Mount]?(): ActionGenerator<M>;
+  [Lifecycle.Derive]?(props: Values<M["Props"]>): ActionGenerator<M>;
+  [Lifecycle.Tree]?(tree: HTMLElement): ActionGenerator<M>;
+  [Lifecycle.Error]?(error: Error | EventError): ActionGenerator<M>;
+  [Lifecycle.Unmount]?(): ActionGenerator<M>;
 } & Partial<Handlers<M>>;
 
 type Handlers<M extends ModuleDefinition> = {
   [K in Head<M["Actions"]>]: (
     payload: Payload<M["Actions"], K>,
-  ) => ActionGenerator;
+  ) => ActionGenerator<M>;
 };
 
 type Payload<A extends Actions, K> = A extends [K, infer P] ? P : never;
