@@ -1,9 +1,7 @@
 import { Models } from "../../module/renderer/model/utils.ts";
-import { Process } from "../../module/renderer/process/types.ts";
-import { ModuleDefinition } from "../../types/index.ts";
+import { ModuleDefinition, Process } from "../../types/index.ts";
 import { State, config } from "./utils.ts";
-import { Patch } from "immer";
-import get from "lodash/get";
+import traverse, { TraverseContext } from "traverse";
 
 /**
  * Produces a new model by applying a series of patches to the given model.
@@ -21,50 +19,42 @@ export function update<M extends ModuleDefinition["Model"]>(
   process: Process,
   ƒ: (model: M) => void,
 ): Models<M> {
-  const [, patches] = config.immer.produceWithPatches(model, ƒ);
-  const values = patches.map((patch): Patch => {
-    const state = patch.value instanceof State;
-    return state ? { ...patch, value: patch.value.value } : patch;
-  });
-
-  const draft = config.immer.applyPatches(model, values);
-
-  patches.forEach((patch): void => {
-    const values = {
-      current: get(model, patch.path) as unknown,
-      updated: get(draft, patch.path) as unknown,
-    };
-
-    const object =
-      typeof values.current === "object" || typeof values.updated === "object";
-    const path = object ? patch.path : patch.path.slice(0, -1);
-    const state = get(draft, [...path, config.states]) ?? [];
-
-    if (!(patch.value instanceof State)) {
-      const state = get(model, [...path, config.states]) ?? [];
-
-      return void Object.defineProperty(get(draft, path), config.states, {
-        value: [...state, patch.value].filter(
-          (state) => state instanceof State,
-        ),
-        enumerable: true,
-        writable: true,
-        configurable: false,
-      });
-    }
-
-    patch.value.process = process;
-    patch.value.field = object ? null : patch.path[patch.path.length - 1];
-
-    return void Object.defineProperty(get(draft, path), config.states, {
-      value: [...state, patch.value].filter((state) => state instanceof State),
-      enumerable: true,
-      writable: true,
-      configurable: false,
+  function primitives(model: M): M {
+    return traverse(model).forEach(function (this: TraverseContext) {
+      if (this.node instanceof State) {
+        this.update(this.node.value);
+      }
     });
-  });
+  }
 
-  return new Models<M>(config.immer.applyPatches(model, values), draft);
+  function state(model: M): M {
+    return traverse(model).forEach(function (this: TraverseContext): void {
+      if (this.node instanceof State) {
+        const object = typeof this.node.value === "object";
+        const states =
+          (object ? this.node.value : this.parent?.node)?.[config.states] ?? [];
+        const state = this.node.bind(process);
+
+        if (object) {
+          this.update(
+            {
+              ...this.node.value,
+              [config.states]: [...states, state],
+            },
+            true,
+          );
+        } else {
+          if (this.parent) this.parent.node[config.states] = [...states, state];
+          this.update(this.node.value);
+        }
+      }
+    });
+  }
+
+  const stateless = config.immer.produce(model, ƒ);
+  const stateful = config.immer.produce(model, ƒ);
+
+  return new Models<M>(primitives(stateless), state(stateful));
 }
 
 /**
@@ -79,23 +69,21 @@ export function cleanup<M extends ModuleDefinition["Model"]>(
   models: Models<M>,
   process: Process,
 ): Models<M> {
-  function cleanup(model: M): void {
-    if (model && typeof model === "object") {
-      const states: undefined | State<M>[] = Reflect.get(model, config.states);
+  const stateful = traverse(models.stateful).forEach(function (
+    this: TraverseContext,
+  ): void {
+    if (this.node && this.node[config.states]) {
+      const states: State<M>[] = this.node[config.states];
 
-      if (states)
-        Reflect.set(
-          model,
-          config.states,
-          states.filter((state) => state.process !== process),
-        );
-
-      for (const key in model)
-        if (Object.prototype.hasOwnProperty.call(model, key)) {
-          cleanup(Reflect.get(model, key));
-        }
+      this.update(
+        {
+          ...this.node,
+          [config.states]: states.filter((state) => state.process !== process),
+        },
+        true,
+      );
     }
-  }
+  });
 
-  return cleanup(models.stateful), models;
+  return new Models<M>(models.stateless, stateful);
 }

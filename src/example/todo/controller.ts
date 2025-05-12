@@ -1,5 +1,5 @@
 import { Lifecycle, Operation, create, utils } from "../../library/index.ts";
-import { Events, Module } from "./types.ts";
+import { Events, Module, Task } from "./types.ts";
 import { Db } from "./utils.ts";
 
 export default create.controller<Module>((self) => {
@@ -25,102 +25,61 @@ export default create.controller<Module>((self) => {
       });
     },
 
-    // *[Events.Add]() {
-    //   const id = utils.pk();
+    async *[Events.Add]() {
+      const optimistic: Task = {
+        id: utils.pk(),
+        summary: String(self.model.task),
+        date: new Date(),
+        completed: false,
+      };
 
-    //   const optimistic: Task = {
-    //     id,
-    //     summary: String(self.model.task),
-    //     date: new Date(),
-    //     completed: false,
-    //   };
+      yield self.actions.produce((draft) => {
+        draft.task = null;
+        draft.tasks.push(self.actions.state(optimistic, Operation.Replace));
+      });
 
-    //   // yield self.actions.io(async () => {
-    //   //   await utils.sleep(1_000);
+      const pk = await db.todos.put({ ...optimistic, id: undefined });
+      const index = self.model.tasks.findIndex(
+        (task) => task.id === optimistic.id,
+      );
 
-    //   //   const id = await db.todos.put({ ...draftTask, id: Maybe.None() });
+      return self.actions.produce((draft) => {
+        draft.tasks[index] = { ...optimistic, id: pk };
+      });
+    },
 
-    //   //   return self.actions.produce((draft) => {
-    //   //     const index = self.model.tasks
-    //   //       .map((task) =>
-    //   //         task.findIndex((task) =>
-    //   //           task.map((task) => task.id === draftTask.id),
-    //   //         ),
-    //   //       )
-    //   //       .otherwise(-1);
-    //   //     if (~index) draft.tasks[index].id = id;
-    //   //   });
-    //   // });
+    async *[Events.Completed](taskId) {
+      const index = self.model.tasks.findIndex((task) => task.id === taskId);
 
-    //   return self.actions.produce((draft) => {
-    //     draft.task = null;
-    //     draft.tasks = [...self.model.tasks, optimistic];
-    //   });
-    // },
+      yield self.actions.produce((draft) => {
+        const task = self.model.tasks[index];
+        draft.tasks[index] = { ...task, completed: !task.completed };
+      });
 
-    // *[Events.Completed](taskId) {
-    //   yield self.actions.io(async () => {
-    //     await utils.sleep(1_000);
+      const task = await db.todos.get(taskId);
+      await db.todos.update(taskId, {
+        completed: !task?.completed,
+      });
+      const row = await db.todos.get(taskId);
 
-    //     const task = await db.todos.get(taskId);
-    //     await db.todos.update(taskId, {
-    //       completed: Maybe.Ok(!task?.completed),
-    //     });
-    //     const row = await db.todos.get(taskId);
+      return self.actions.produce((draft) => {
+        if (row) draft.tasks[index] = row;
+      });
+    },
 
-    //     return self.actions.produce((draft) => {
-    //       const tasks = draft.tasks.otherwise([]);
-    //       const index = tasks.findIndex(({ id }) => id.otherwise(0) === taskId);
-    //       if (~index && row) tasks[index].completed = row.completed;
-    //     });
-    //   });
+    async *[Events.Remove](taskId) {
+      const index = self.model.tasks.findIndex((task) => task.id === taskId);
 
-    //   return self.actions.produce((draft) => {
-    //     const tasks = draft.tasks.otherwise([]);
-    //     const index = tasks.findIndex(
-    //       (task) => task.id.otherwise(0) === taskId,
-    //     );
+      yield self.actions.produce((draft) => {
+        const task = self.model.tasks[index];
+        draft.tasks[index] = { ...task, completed: !task.completed };
+      });
 
-    //     if (~index) {
-    //       const tasks = draft.tasks.otherwise([]);
-    //       tasks[index].completed = Maybe.Loading(
-    //         !tasks[index].completed,
-    //         State.Update,
-    //       );
-    //     }
-    //   });
-    // },
+      await db.todos.delete(taskId);
 
-    // *[Events.Remove](taskId) {
-    //   yield self.actions.io(async () => {
-    //     await utils.sleep(1_000);
-    //     await db.todos.delete(taskId);
-
-    //     return self.actions.produce((draft) => {
-    //       const index = self.model.tasks
-    //         .map((task) =>
-    //           task.findIndex((task) =>
-    //             task.map((task) => task.id.map((id) => id === taskId)),
-    //           ),
-    //         )
-    //         .otherwise(-1);
-    //       if (~index) draft.tasks.splice(index, 1);
-    //     });
-    //   });
-
-    //   return self.actions.produce((draft) => {
-    //     const tasks = self.model.tasks.otherwise([]);
-    //     const index = self.model.tasks
-    //       .map((task) =>
-    //         task.findIndex((task) =>
-    //           task.map((task) => task.id.map((id) => id === taskId)),
-    //         ),
-    //       )
-    //       .otherwise(-1);
-    //     const task = tasks[index];
-
-    //     if (~index) draft.tasks[index] = Maybe.Loading(task, State.Remove);
-    //   });
-    // },
+      return self.actions.produce((draft) => {
+        draft.tasks.splice(index, 1);
+      });
+    },
   };
 });

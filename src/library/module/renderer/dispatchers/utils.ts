@@ -33,9 +33,7 @@ export function useDispatcher<M extends ModuleDefinition>(
         }
 
         const produce = value;
-        props.process.current = process;
         const models = produce(props.model.current.stateful, process);
-        props.process.current = null;
 
         props.model.current = models;
         props.update.rerender();

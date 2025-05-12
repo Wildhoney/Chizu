@@ -15,7 +15,8 @@
     "eventemitter3": "^5.0.1",
     "immer": "^10.1.1",
     "lodash": "^4.17.21",
-    "react": "^19.0.0"
+    "react": "^19.0.0",
+    "traverse": "0.6.8"
   },
   "files": [
     "dist"
@@ -35,6 +36,7 @@
     "@types/pubsub-js": "^1.8.6",
     "@types/react": "^19.0.8",
     "@types/react-dom": "^19.0.3",
+    "@types/traverse": "^0.6.37",
     "dayjs": "^1.11.13",
     "dexie": "^4.0.11",
     "get-port-cli": "^3.0.0",

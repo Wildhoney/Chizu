@@ -4,7 +4,6 @@ import { ModuleDefinition } from "../../../types/index.ts";
 import { ViewArgs } from "../../../view/types.ts";
 import { UseDispatchers } from "../dispatchers/types.ts";
 import { UseModel } from "../model/types.ts";
-import { UseProcess } from "../process/types.ts";
 import { UseOptions } from "../types.ts";
 
 export type Props<M extends ModuleDefinition> = {
@@ -12,7 +11,6 @@ export type Props<M extends ModuleDefinition> = {
   options: UseOptions<M>;
   model: UseModel;
   dispatchers: UseDispatchers;
-  process: UseProcess;
 };
 
 export type UseActions<M extends ModuleDefinition> = {

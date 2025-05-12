@@ -2,7 +2,6 @@ import { UseApp } from "../../../app/types.ts";
 import { ModuleDefinition } from "../../../types/index.ts";
 import { UseLogger } from "../logger/types.ts";
 import { UseModel } from "../model/types.ts";
-import { UseProcess } from "../process/types.ts";
 import { UseQueue } from "../queue/types.ts";
 import { UseOptions } from "../types.ts";
 import { UseUpdate } from "../update/types.ts";
@@ -15,7 +14,6 @@ export type Props<M extends ModuleDefinition> = {
   model: UseModel;
   logger: UseLogger;
   queue: UseQueue;
-  process: UseProcess;
 };
 
 export type UseDispatchers = ReturnType<typeof useDispatchers>;

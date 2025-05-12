@@ -76,3 +76,5 @@ export type Queue<A extends ModuleDefinition["Actions"]> = {
 }[];
 
 export type Task = PromiseWithResolvers<void>;
+
+export type Process = Symbol;

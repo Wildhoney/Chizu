@@ -1,9 +1,13 @@
-import { Events, ModuleDefinition, Operation } from "../../../types/index.ts";
+import {
+  Events,
+  ModuleDefinition,
+  Operation,
+  Process,
+} from "../../../types/index.ts";
 import { update } from "../../../utils/produce/index.ts";
 import { state } from "../../../utils/produce/utils.ts";
 import { Validatable } from "../model/types.ts";
 import { Models } from "../model/utils.ts";
-import { Process } from "../process/types.ts";
 import { Props, UseActions } from "./types.ts";
 import * as React from "react";
 
@@ -20,7 +24,7 @@ export default function useActions<M extends ModuleDefinition>(
         events: props.options.props as Events<M["Props"]>,
         actions: {
           state<T>(value: T, operation: null | Operation = null): T {
-            return state(value, operation, props.process.current);
+            return state(value, operation);
           },
           produce<M extends ModuleDefinition>(ƒ: (model: M["Model"]) => void) {
             return (
