@@ -54,6 +54,20 @@ describe("update", () => {
       ],
     });
   });
+
+  it.skip("transforms the model with chained state operations", () => {
+    const a = update(model, process, (draft) => {
+      draft.name.first = state("Maria", [State.Operation.Update]);
+    });
+    expect(a.validatable.name.first.is(State.Operation.Update)).toBe(true);
+    expect(a.validatable.name.first.is(State.Operation.Remove)).toBe(false);
+
+    const b = update(a.stateful, process, (draft) => {
+      draft.name.first = state("Maria", [State.Operation.Remove]);
+    });
+    expect(b.validatable.name.first.is(State.Operation.Update)).toBe(true);
+    expect(b.validatable.name.first.is(State.Operation.Remove)).toBe(true);
+  });
 });
 
 describe("cleanup", () => {
