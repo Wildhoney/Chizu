@@ -1,4 +1,4 @@
-import { Operation, utils } from "../../../../library/index.ts";
+import { State, utils } from "../../../../library/index.ts";
 import { Events } from "../../types.ts";
 import * as styles from "./styles.ts";
 import { Props } from "./types.ts";
@@ -10,7 +10,7 @@ export default function List({ self }: Props): ReactElement {
   if (self.model.tasks.length === 0) {
     return (
       <div className={styles.empty}>
-        {self.validate.tasks.is(Operation.Replace) ? (
+        {self.validate.tasks.optimistic() ? (
           <>Please wait&hellip;</>
         ) : (
           "You have no tasks yet."
@@ -27,7 +27,7 @@ export default function List({ self }: Props): ReactElement {
             id={String(task.id)}
             disabled={
               !utils.pk(task.id) ||
-              self.validate.tasks[index].completed.is(Operation.Add)
+              self.validate.tasks[index].completed.is(State.Operation.Add)
             }
             type="checkbox"
             checked={task.completed}
@@ -39,7 +39,7 @@ export default function List({ self }: Props): ReactElement {
           <label htmlFor={String(task.id)} className={styles.task}>
             <div
               className={styles.details(
-                self.validate.tasks[index].is(Operation.Add),
+                self.validate.tasks[index].is(State.Operation.Add),
               )}
             >
               {task.summary}
@@ -54,13 +54,13 @@ export default function List({ self }: Props): ReactElement {
             className={styles.button}
             disabled={
               !utils.pk(task.id) ||
-              self.validate.tasks[index].is(Operation.Remove)
+              self.validate.tasks[index].is(State.Operation.Remove)
             }
             onClick={() =>
               task.id && self.actions.dispatch([Events.Remove, task.id])
             }
           >
-            {self.validate.tasks[index].is(Operation.Remove) ? (
+            {self.validate.tasks[index].is(State.Operation.Remove) ? (
               <LoaderPinwheel size={20} />
             ) : (
               <Trash2 size={20} />

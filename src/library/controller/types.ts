@@ -7,12 +7,13 @@ import {
   Lifecycle,
   ModuleDefinition,
   Operation,
+  Optimistic,
   Queue,
   Values,
 } from "../types/index.ts";
 
 export type ControllerActions<M extends ModuleDefinition> = {
-  state<T>(value: T, operation: null | Operation): T;
+  state<T>(value: T, operations?: (Operation | Optimistic<T>)[]): T;
   produce(
     ƒ: (model: M["Model"]) => void,
   ): (model: M["Model"], process: Symbol) => Models<M["Model"]>;

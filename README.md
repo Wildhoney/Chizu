@@ -118,7 +118,7 @@ export default create.controller<Module>((self) => {
       });
 
       return self.actions.produce((draft) => {
-        draft.name = self.actions.pending(null, State.Updating);
+        draft.name = self.actions.pending(null, State.Operation.Updating);
       });
     },
   };
@@ -133,12 +133,12 @@ export default create.view<Module>((self) => {
     <>
       <p>Hey {self.model.name}</p>
 
-      {self.validate.name.is(State.Pending) && (
+      {self.validate.name.is(State.Operation.Pending) && (
         <p>Switching profiles&hellip;</p>
       )}
 
       <button
-        disabled={self.validate.name.is(State.Updating)}
+        disabled={self.validate.name.is(State.Operation.Updating)}
         onClick={() => self.actions.dispatch([Events.Name])}
       >
         Switch profile

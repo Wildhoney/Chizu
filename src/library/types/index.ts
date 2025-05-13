@@ -6,12 +6,22 @@ export enum Transmit {
   Broadcast = "broadcast",
 }
 
-export enum Operation {
-  Add = 1,
-  Remove = 2,
-  Update = 4,
-  Move = 8,
-  Replace = 16,
+export class Optimistic<T> {
+  constructor(public value: T) {}
+}
+
+export class State {
+  static Operation = {
+    Add: 1,
+    Remove: 2,
+    Update: 4,
+    Move: 8,
+    Replace: 16,
+  };
+
+  static Optimistic<T>(value: T): Optimistic<T> {
+    return new Optimistic(value);
+  }
 }
 
 export type ActionName = Lifecycle | string | number;
@@ -78,3 +88,5 @@ export type Queue<A extends ModuleDefinition["Actions"]> = {
 export type Task = PromiseWithResolvers<void>;
 
 export type Process = Symbol;
+
+export type Operation = number;

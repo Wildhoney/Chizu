@@ -1,6 +1,6 @@
 import { Models } from "../../module/renderer/model/utils.ts";
 import { ModuleDefinition, Process } from "../../types/index.ts";
-import { State, config } from "./utils.ts";
+import { Stateful, config } from "./utils.ts";
 import traverse, { TraverseContext } from "traverse";
 
 /**
@@ -20,8 +20,8 @@ export function update<M extends ModuleDefinition["Model"]>(
   ƒ: (model: M) => void,
 ): Models<M> {
   function primitives(model: M): M {
-    return traverse(model).forEach(function (this: TraverseContext) {
-      if (this.node instanceof State) {
+    return traverse(model).forEach(function (this: TraverseContext): void {
+      if (this.node instanceof Stateful) {
         this.update(this.node.value);
       }
     });
@@ -29,22 +29,22 @@ export function update<M extends ModuleDefinition["Model"]>(
 
   function state(model: M): M {
     return traverse(model).forEach(function (this: TraverseContext): void {
-      if (this.node instanceof State) {
+      if (this.node instanceof Stateful) {
         const object = typeof this.node.value === "object";
         const states =
           (object ? this.node.value : this.parent?.node)?.[config.states] ?? [];
-        const state = this.node.bind(process);
+        const state = this.node.attach(process);
 
         if (object) {
           this.update(
             {
               ...this.node.value,
-              [config.states]: [...states, state],
+              [config.states]: [state, ...states],
             },
             true,
           );
         } else {
-          if (this.parent) this.parent.node[config.states] = [...states, state];
+          if (this.parent) this.parent.node[config.states] = [state, ...states];
           this.update(this.node.value);
         }
       }
@@ -73,7 +73,7 @@ export function cleanup<M extends ModuleDefinition["Model"]>(
     this: TraverseContext,
   ): void {
     if (this.node && this.node[config.states]) {
-      const states: State<M>[] = this.node[config.states];
+      const states: Stateful<M>[] = this.node[config.states];
 
       this.update(
         {

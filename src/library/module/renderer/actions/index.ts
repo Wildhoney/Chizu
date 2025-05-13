@@ -2,6 +2,7 @@ import {
   Events,
   ModuleDefinition,
   Operation,
+  Optimistic,
   Process,
 } from "../../../types/index.ts";
 import { update } from "../../../utils/produce/index.ts";
@@ -23,8 +24,8 @@ export default function useActions<M extends ModuleDefinition>(
         queue: [],
         events: props.options.props as Events<M["Props"]>,
         actions: {
-          state<T>(value: T, operation: null | Operation = null): T {
-            return state(value, operation);
+          state<T>(value: T, operations: (Operation | Optimistic<T>)[]): T {
+            return state(value, operations);
           },
           produce<M extends ModuleDefinition>(ƒ: (model: M["Model"]) => void) {
             return (

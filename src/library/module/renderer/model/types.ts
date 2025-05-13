@@ -1,5 +1,5 @@
 import useModel from ".";
-import { ModuleDefinition, Operation } from "../../../types/index.ts";
+import { ModuleDefinition, State } from "../../../types/index.ts";
 import { UseOptions } from "../types.ts";
 
 export type Props<M extends ModuleDefinition> = {
@@ -8,7 +8,11 @@ export type Props<M extends ModuleDefinition> = {
 
 export type UseModel = ReturnType<typeof useModel>;
 
-export type Validate = { is(operation: Operation): boolean };
+export type Validate = {
+  pending(): boolean;
+  is(operation: State): boolean;
+  optimistic<T>(): T;
+};
 
 export type Validatable<M> = {
   [K in keyof M]: M[K] extends object

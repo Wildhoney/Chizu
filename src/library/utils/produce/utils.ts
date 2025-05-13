@@ -1,4 +1,4 @@
-import { Operation, Process } from "../../types/index.ts";
+import { Process, State } from "../../types/index.ts";
 import { Immer } from "immer";
 
 export const config = {
@@ -8,24 +8,23 @@ export const config = {
 
 config.immer.setAutoFreeze(false);
 
-export class State<M> {
+export class Stateful<M> {
   process: null | Process;
 
   constructor(
     public value: M,
-    public operation: null | Operation = null,
+    public operations: State[],
     public field: null | number | string = null,
   ) {
     this.process = null;
   }
 
-  public bind(process: Process): State<M> {
-    const state = new State(this.value, this.operation, this.field);
-    state.process = process;
-    return state;
+  public attach(process: Process): Stateful<M> {
+    this.process = process;
+    return this;
   }
 }
 
-export function state<M>(value: M, operation: null | Operation) {
-  return new State(value, operation) as M;
+export function state<M>(value: M, operations: State[] = []): M {
+  return new Stateful(value, operations) as M;
 }

@@ -1,4 +1,4 @@
-import { Lifecycle, Operation, create, utils } from "../../library/index.ts";
+import { Lifecycle, State, create, utils } from "../../library/index.ts";
 import { Events, Module, Task } from "./types.ts";
 import { Db } from "./utils.ts";
 
@@ -8,7 +8,7 @@ export default create.controller<Module>((self) => {
   return {
     async *[Lifecycle.Mount]() {
       yield self.actions.produce((draft) => {
-        draft.tasks = self.actions.state([], Operation.Replace);
+        draft.tasks = self.actions.state([], [State.Operation.Replace]);
       });
 
       await utils.sleep(1_000);
@@ -35,8 +35,10 @@ export default create.controller<Module>((self) => {
 
       yield self.actions.produce((draft) => {
         draft.task = null;
-        draft.tasks.push(self.actions.state(optimistic, Operation.Replace));
+        draft.tasks.push(self.actions.state(optimistic));
       });
+
+      await utils.sleep(10_000);
 
       const pk = await db.todos.put({ ...optimistic, id: undefined });
       const index = self.model.tasks.findIndex(
