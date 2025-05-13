@@ -8,7 +8,7 @@ export default create.controller<Module>((self) => {
   return {
     async *[Lifecycle.Mount]() {
       yield self.actions.produce((draft) => {
-        draft.tasks = self.actions.state([], Operation.Add);
+        draft.tasks = self.actions.state([], Operation.Replace);
       });
 
       await utils.sleep(1_000);

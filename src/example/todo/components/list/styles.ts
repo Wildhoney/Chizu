@@ -16,6 +16,7 @@ export const row = css`
   font-size: 14px;
   justify-content: space-between;
   padding: 5px 15px;
+  gap: 10px;
 `;
 
 export const button = css`
