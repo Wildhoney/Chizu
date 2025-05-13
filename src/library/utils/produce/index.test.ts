@@ -75,7 +75,7 @@ describe("cleanup", () => {
   });
 });
 
-describe.only("validatable", () => {
+describe("validatable", () => {
   it("transforms the model with validatable operations", () => {
     const models = update(model, process, (draft) => {
       draft.name.first = state("Maria", [State.Operation.Update]);

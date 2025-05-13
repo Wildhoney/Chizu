@@ -58,6 +58,8 @@ export default create.controller<Module>((self) => {
         draft.tasks[index] = { ...task, completed: !task.completed };
       });
 
+      await utils.sleep(10_000);
+
       const task = await db.todos.get(taskId);
       await db.todos.update(taskId, {
         completed: !task?.completed,
@@ -74,8 +76,10 @@ export default create.controller<Module>((self) => {
 
       yield self.actions.produce((draft) => {
         const task = self.model.tasks[index];
-        draft.tasks[index] = { ...task, completed: !task.completed };
+        draft.tasks[index] = self.actions.state(task, [State.Operation.Remove]);
       });
+
+      await utils.sleep(10_000);
 
       await db.todos.delete(taskId);
 

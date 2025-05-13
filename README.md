@@ -32,7 +32,7 @@ Controllers are responsible for mutating the state of the view. In the below exa
 ```tsx
 export default create.controller<Module>((self) => {
   return {
-    *[Events.Name](name) {
+    async *[Events.Name](name) {
       return self.actions.produce((draft) => {
         draft.name = name;
       });
@@ -66,17 +66,15 @@ Fetching the name from an external source using an `actions.io` causes the contr
 ```tsx
 export default create.controller<Module>((self) => {
   return {
-    *[Events.Name]() {
-      yield self.actions.io(async () => {
-        const name = await fetch(/* ... */);
-
-        return self.actions.produce((draft) => {
-          draft.name = name;
-        });
+    async *[Events.Name]() {
+      yield self.actions.produce((draft) => {
+        draft.name = null;
       });
 
+      const name = await fetch(/* ... */);
+
       return self.actions.produce((draft) => {
-        draft.name = null;
+        draft.name = name;
       });
     },
   };
@@ -101,7 +99,7 @@ export default create.view<Module>((self) => {
 
 As the event is invoked twice, it's important they are idempotent &ndash; by encapsulating your side effects in `actions.io` the promises are resolved before invoking the event again with those resolved values.
 
-In the above example the name is fetched asynchronously &ndash; however there is no feedback to the user, we can improve that by using the `self.actions.placeholder` and `self.validate` helpers:
+In the above example the name is fetched asynchronously &ndash; however there is no feedback to the user, we can improve that by using the `self.actions.state` and `self.validate` helpers:
 
 <kbd>Controller</kbd>
 
@@ -109,17 +107,15 @@ In the above example the name is fetched asynchronously &ndash; however there is
 export default create.controller<Module>((self) => {
   return {
     *[Events.Name]() {
-      yield self.actions.io(async () => {
+      yield self.actions.produce((draft) => {
+        draft.name = self.actions.state(null, [State.Operation.Update]);
+      });
+
         const name = await fetch(/* ... */);
 
         return self.actions.produce((draft) => {
           draft.name = name;
         });
-      });
-
-      return self.actions.produce((draft) => {
-        draft.name = self.actions.pending(null, State.Operation.Updating);
-      });
     },
   };
 });
@@ -133,12 +129,10 @@ export default create.view<Module>((self) => {
     <>
       <p>Hey {self.model.name}</p>
 
-      {self.validate.name.is(State.Operation.Pending) && (
-        <p>Switching profiles&hellip;</p>
-      )}
+      {self.validate.name.pending() && <p>Switching profiles&hellip;</p>}
 
       <button
-        disabled={self.validate.name.is(State.Operation.Updating)}
+        disabled={self.validate.name.is(State.Operation.Update)}
         onClick={() => self.actions.dispatch([Events.Name])}
       >
         Switch profile
@@ -169,18 +163,16 @@ export const enum Errors {
 export default create.controller<Module>((self) => {
   return {
     *[Events.Name]() {
-      yield self.actions.io(async () => {
-        const name = await fetch(/* ... */);
-
-        if (!name) throw new EventError(Errors.UserValidation);
-
-        return self.actions.produce((draft) => {
-          draft.name = name;
-        });
+      yield self.actions.produce((draft) => {
+        draft.name = null;
       });
 
+      const name = await fetch(/* ... */);
+
+      if (!name) throw new EventError(Errors.UserValidation);
+
       return self.actions.produce((draft) => {
-        draft.name = null;
+        draft.name = name;
       });
     },
   };
@@ -194,22 +186,21 @@ However showing a toast message is not always relevant, you may want a more deta
 ```tsx
 export default create.controller<Module>((self) => {
   return {
-    *[Events.Name]() {
-      yield self.actions.io(async () => {
-        const name = await fetch(/* ... */);
-
-        if (!name)
-          return self.actions.produce((draft) => {
-            draft.name = Maybe.of(new EventError(Errors.UserValidation));
-          });
-
-        return self.actions.produce((draft) => {
-          draft.name = Maybe.of(name);
-        });
+    async *[Events.Name]() {
+      yield self.actions.produce((draft) => {
+        draft.name = Maybe.of(null);
       });
 
+      const name = await fetch(/* ... */);
+
+      if (!name) {
+        return self.actions.produce((draft) => {
+          draft.name = Maybe.of(new EventError(Errors.UserValidation));
+        });
+      }
+
       return self.actions.produce((draft) => {
-        draft.name = Maybe.of(null);
+        draft.name = Maybe.of(name);
       });
     },
   };
