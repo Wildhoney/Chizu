@@ -44,7 +44,6 @@ export default function useActions<M extends ModuleDefinition>(
       },
       view: {
         get model() {
-          console.log(props.model.current.stateful);
           return props.model.current.stateless as Readonly<M["Model"]>;
         },
         get validate() {

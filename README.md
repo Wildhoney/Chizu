@@ -97,25 +97,22 @@ export default create.view<Module>((self) => {
 });
 ```
 
-As the event is invoked twice, it's important they are idempotent &ndash; by encapsulating your side effects in `actions.io` the promises are resolved before invoking the event again with those resolved values.
-
-In the above example the name is fetched asynchronously &ndash; however there is no feedback to the user, we can improve that by using the `self.actions.state` and `self.validate` helpers:
+<!-- In the above example the name is fetched asynchronously &ndash; however there is no feedback to the user, we can improve that by using the `self.actions.state` and `self.validate` helpers: -->
 
 <kbd>Controller</kbd>
 
 ```tsx
 export default create.controller<Module>((self) => {
   return {
-    *[Events.Name]() {
+    async *[Events.Name]() {
       yield self.actions.produce((draft) => {
         draft.name = self.actions.annotate(null, [State.Op.Update]);
       });
 
-        const name = await fetch(/* ... */);
-
-        return self.actions.produce((draft) => {
-          draft.name = name;
-        });
+      const name = await fetch(/* ... */);
+      return self.actions.produce((draft) => {
+        draft.name = name;
+      });
     },
   };
 });
