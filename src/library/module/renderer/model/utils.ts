@@ -1,8 +1,4 @@
-import {
-  ModuleDefinition,
-  Operation,
-  Optimistic,
-} from "../../../types/index.ts";
+import { Draft, ModuleDefinition, Op } from "../../../types/index.ts";
 import { Stateful, config } from "../../../utils/produce/utils.ts";
 import { Validatable } from "./types.ts";
 import get from "lodash/get";
@@ -10,7 +6,7 @@ import get from "lodash/get";
 export class Models<M extends ModuleDefinition["Model"]> {
   constructor(
     public stateless: M,
-    public stateful: M,
+    public stateful: M = stateless,
   ) {}
 
   get validatable(): Validatable<M> {
@@ -26,19 +22,20 @@ function validatable<M extends ModuleDefinition["Model"]>(
     get(_, property) {
       switch (property) {
         case "is": {
-          return (operation: Operation) => {
+          return (operation: Op) => {
             const states = read<M>(stateful, properties);
             if (!states) return false;
             const operations = new Set(
               states.flatMap((state) => state.operations),
-            ) as Set<Operation>;
+            ) as Set<Op>;
 
             const state = Array.from(operations).reduce(
               (current, operation) => current | (operation ?? 0),
               0,
             );
 
-            return (state & operation) === operation;
+            // return (state & operation) === operation;
+            return Boolean(state & operation);
           };
         }
 
@@ -49,19 +46,19 @@ function validatable<M extends ModuleDefinition["Model"]>(
           };
         }
 
-        case "optimistic": {
+        case "draft": {
           return () => {
             const states = read<M>(stateful, properties);
 
             if (!states) return get(stateful, properties);
 
-            const optimistic = states
+            const drafts = states
               .flatMap((state) => state.operations)
-              .find((operation) => operation instanceof Optimistic);
+              .find((operation) => operation instanceof Draft);
 
-            if (!optimistic) return get(stateful, properties);
+            if (!drafts) return get(stateful, properties);
 
-            return optimistic.value;
+            return drafts.value;
           };
         }
       }

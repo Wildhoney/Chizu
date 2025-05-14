@@ -10,7 +10,7 @@ export default function List({ self }: Props): ReactElement {
   if (self.model.tasks.length === 0) {
     return (
       <div className={styles.empty}>
-        {self.validate.tasks.optimistic() ? (
+        {self.validate.tasks.draft() ? (
           <>Please wait&hellip;</>
         ) : (
           "You have no tasks yet."
@@ -27,7 +27,7 @@ export default function List({ self }: Props): ReactElement {
             id={String(task.id)}
             disabled={
               !utils.pk(task.id) ||
-              self.validate.tasks[index].completed.is(State.Operation.Add)
+              self.validate.tasks[index].completed.is(State.Op.Add)
             }
             type="checkbox"
             checked={task.completed}
@@ -39,10 +39,12 @@ export default function List({ self }: Props): ReactElement {
           <label htmlFor={String(task.id)} className={styles.task}>
             <div
               className={styles.details(
-                self.validate.tasks[index].is(State.Operation.Add),
+                self.validate.tasks[index].is(State.Op.Add),
               )}
             >
               {task.summary}
+              {self.validate.tasks[index].is(State.Op.Add) && "Adding..."}
+              {self.validate.tasks[index].pending() && "Adding..."}
             </div>
 
             <div className={styles.date}>
@@ -54,13 +56,13 @@ export default function List({ self }: Props): ReactElement {
             className={styles.button}
             disabled={
               !utils.pk(task.id) ||
-              self.validate.tasks[index].is(State.Operation.Remove)
+              self.validate.tasks[index].is(State.Op.Remove)
             }
             onClick={() =>
               task.id && self.actions.dispatch([Events.Remove, task.id])
             }
           >
-            {self.validate.tasks[index].is(State.Operation.Remove) ? (
+            {self.validate.tasks[index].is(State.Op.Remove) ? (
               <LoaderPinwheel size={20} />
             ) : (
               <Trash2 size={20} />

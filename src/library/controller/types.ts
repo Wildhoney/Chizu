@@ -3,20 +3,20 @@ import { Models } from "../module/renderer/model/utils.ts";
 import { Head } from "../module/renderer/types.ts";
 import {
   Actions,
+  Draft,
   Events,
   Lifecycle,
   ModuleDefinition,
-  Operation,
-  Optimistic,
+  Op,
   Queue,
   Values,
 } from "../types/index.ts";
 
 export type ControllerActions<M extends ModuleDefinition> = {
-  state<T>(value: T, operations?: (Operation | Optimistic<T>)[]): T;
+  state<T>(value: T, operations?: (Op | Draft<T>)[]): T;
   produce(
     ƒ: (model: M["Model"]) => void,
-  ): (model: M["Model"], process: Symbol) => Models<M["Model"]>;
+  ): (models: Models<M["Model"]>, process: Symbol) => Models<M["Model"]>;
   dispatch(event: M["Actions"]): Promise<void>;
 };
 
@@ -32,8 +32,8 @@ export type ActionEvent<M extends ModuleDefinition> = (
 ) => ActionGenerator<M>;
 
 export type ActionGenerator<M extends ModuleDefinition> = AsyncGenerator<
-  (model: M["Model"], process: Symbol) => Models<M["Model"]>,
-  (model: M["Model"], process: Symbol) => Models<M["Model"]>,
+  (models: Models<M["Model"]>, process: Symbol) => Models<M["Model"]>,
+  (models: Models<M["Model"]>, process: Symbol) => Models<M["Model"]>,
   unknown
 >;
 

@@ -11,7 +11,7 @@ export type UseModel = ReturnType<typeof useModel>;
 export type Validate = {
   pending(): boolean;
   is(operation: State): boolean;
-  optimistic<T>(): T;
+  draft<T>(): T;
 };
 
 export type Validatable<M> = {

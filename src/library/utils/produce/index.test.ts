@@ -1,4 +1,5 @@
 import { cleanup, update } from ".";
+import { Models } from "../../module/renderer/model/utils.ts";
 import { Process, State } from "../../types/index.ts";
 import { Stateful, config, state } from "./utils.ts";
 import { describe, expect, it } from "@jest/globals";
@@ -13,19 +14,21 @@ const model = {
 
 describe("update", () => {
   it("transforms the model with simple primitives", () => {
-    const models = update(model, process, (draft) => {
+    const models = new Models(model);
+
+    const a = update(models, process, (draft) => {
       draft.name.first = "Maria";
       draft.location = { area: "Watford" };
       draft.children.push({ name: "Phoebe" });
     });
 
-    expect(models.stateless).toEqual({
+    expect(a.stateless).toEqual({
       name: { first: "Maria" },
       location: { area: "Watford" },
       children: [{ name: "Imogen" }, { name: "Phoebe" }],
     });
 
-    expect(models.stateful).toEqual({
+    expect(a.stateful).toEqual({
       name: { first: "Maria" },
       location: { area: "Watford" },
       children: [{ name: "Imogen" }, { name: "Phoebe" }],
@@ -33,19 +36,21 @@ describe("update", () => {
   });
 
   it("transforms the model with state operations", () => {
-    const models = update(model, process, (draft) => {
-      draft.name.first = state("Maria", [State.Operation.Update]);
-      draft.location = state({ area: "Watford" }, [State.Operation.Replace]);
-      draft.children.push(state({ name: "Phoebe" }, [State.Operation.Add]));
+    const models = new Models(model);
+
+    const a = update(models, process, (draft) => {
+      draft.name.first = state("Maria", [State.Op.Update]);
+      draft.location = state({ area: "Watford" }, [State.Op.Replace]);
+      draft.children.push(state({ name: "Phoebe" }, [State.Op.Add]));
     });
 
-    expect(models.stateless).toEqual({
+    expect(a.stateless).toEqual({
       name: { first: "Maria" },
       location: { area: "Watford" },
       children: [{ name: "Imogen" }, { name: "Phoebe" }],
     });
 
-    expect(models.stateful).toEqual({
+    expect(a.stateful).toEqual({
       name: { first: "Maria", [config.states]: [expect.any(Stateful)] },
       location: { area: "Watford", [config.states]: [expect.any(Stateful)] },
       children: [
@@ -55,33 +60,47 @@ describe("update", () => {
     });
   });
 
-  it.skip("transforms the model with chained state operations", () => {
-    const a = update(model, process, (draft) => {
-      draft.name.first = state("Maria", [State.Operation.Update]);
-    });
-    expect(a.validatable.name.first.is(State.Operation.Update)).toBe(true);
-    expect(a.validatable.name.first.is(State.Operation.Remove)).toBe(false);
+  it("transforms the model with chained state operations", () => {
+    const models = new Models(model);
 
-    const b = update(a.stateful, process, (draft) => {
-      draft.name.first = state("Maria", [State.Operation.Remove]);
+    const a = update(models, process, (draft) => {
+      draft.location = state({ area: "Horsham" }, [State.Op.Update]);
     });
-    expect(b.validatable.name.first.is(State.Operation.Update)).toBe(true);
-    expect(b.validatable.name.first.is(State.Operation.Remove)).toBe(true);
+
+    expect(a.stateful.location).toEqual({
+      area: "Horsham",
+      [config.states]: [expect.any(Stateful)],
+    });
+    expect(a.validatable.location.is(State.Op.Update)).toBe(true);
+    expect(a.validatable.location.is(State.Op.Replace)).toBe(false);
+
+    const b = update(a, process, (draft) => {
+      draft.location = state({ area: "Watford" }, [State.Op.Replace]);
+    });
+
+    expect(b.stateful.location).toEqual({
+      area: "Watford",
+      [config.states]: [expect.any(Stateful), expect.any(Stateful)],
+    });
+    expect(b.validatable.location.is(State.Op.Update)).toBe(true);
+    expect(b.validatable.location.is(State.Op.Replace)).toBe(true);
   });
 });
 
 describe("cleanup", () => {
   it("transforms the model by cleaning up state processes", () => {
-    const models = cleanup(
-      update(model, process, (draft) => {
-        draft.name.first = state("Maria", [State.Operation.Update]);
-        draft.location = state({ area: "Watford" }, [State.Operation.Replace]);
-        draft.children.push(state({ name: "Phoebe" }, [State.Operation.Add]));
+    const models = new Models(model);
+
+    const a = cleanup(
+      update(models, process, (draft) => {
+        draft.name.first = state("Maria", [State.Op.Update]);
+        draft.location = state({ area: "Watford" }, [State.Op.Replace]);
+        draft.children.push(state({ name: "Phoebe" }, [State.Op.Add]));
       }),
       process,
     );
 
-    expect(models.stateful).toEqual({
+    expect(a.stateful).toEqual({
       name: { first: "Maria", [config.states]: [] },
       location: { area: "Watford", [config.states]: [] },
       children: [{ name: "Imogen" }, { name: "Phoebe", [config.states]: [] }],
@@ -91,26 +110,28 @@ describe("cleanup", () => {
 
 describe("validatable", () => {
   it("transforms the model with validatable operations", () => {
-    const models = update(model, process, (draft) => {
-      draft.name.first = state("Maria", [State.Operation.Update]);
+    const models = new Models(model);
+
+    const a = update(models, process, (draft) => {
+      draft.name.first = state("Maria", [State.Op.Update]);
       draft.location = state({ area: "Watford" }, [
-        State.Operation.Replace,
-        State.Optimistic("Maybe Watford"),
+        State.Op.Replace,
+        State.Draft("Maybe Watford"),
       ]);
-      draft.children.push(state({ name: "Phoebe" }, [State.Operation.Add]));
+      draft.children.push(state({ name: "Phoebe" }, [State.Op.Add]));
     });
 
-    expect(models.validatable.name.first.pending()).toBe(true);
-    expect(models.validatable.name.first.is(State.Operation.Update)).toBe(true);
+    expect(a.validatable.name.first.pending()).toBe(true);
+    expect(a.validatable.name.first.is(State.Op.Update)).toBe(true);
 
-    expect(models.validatable.location.pending()).toBe(true);
-    expect(models.validatable.location.is(State.Operation.Replace)).toBe(true);
-    expect(models.validatable.location.optimistic()).toBe("Maybe Watford");
+    expect(a.validatable.location.pending()).toBe(true);
+    expect(a.validatable.location.is(State.Op.Replace)).toBe(true);
+    expect(a.validatable.location.draft()).toBe("Maybe Watford");
 
-    expect(models.validatable.children[0].pending()).toBe(false);
-    expect(models.validatable.children[0].is(State.Operation.Add)).toBe(false);
+    expect(a.validatable.children[0].pending()).toBe(false);
+    expect(a.validatable.children[0].is(State.Op.Add)).toBe(false);
 
-    expect(models.validatable.children[1].pending()).toBe(true);
-    expect(models.validatable.children[1].is(State.Operation.Add)).toBe(true);
+    expect(a.validatable.children[1].pending()).toBe(true);
+    expect(a.validatable.children[1].is(State.Op.Add)).toBe(true);
   });
 });

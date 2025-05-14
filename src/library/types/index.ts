@@ -6,12 +6,12 @@ export enum Transmit {
   Broadcast = "broadcast",
 }
 
-export class Optimistic<T> {
+export class Draft<T> {
   constructor(public value: T) {}
 }
 
 export class State {
-  static Operation = {
+  static Op = {
     Add: 1,
     Remove: 2,
     Update: 4,
@@ -19,8 +19,8 @@ export class State {
     Replace: 16,
   };
 
-  static Optimistic<T>(value: T): Optimistic<T> {
-    return new Optimistic(value);
+  static Draft<T>(value: T): Draft<T> {
+    return new Draft(value);
   }
 }
 
@@ -89,4 +89,4 @@ export type Task = PromiseWithResolvers<void>;
 
 export type Process = Symbol;
 
-export type Operation = number;
+export type Op = number;

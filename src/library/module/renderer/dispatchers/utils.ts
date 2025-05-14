@@ -26,16 +26,14 @@ export function useDispatcher<M extends ModuleDefinition>(
         const { value, done } = await generator.next();
 
         if (done) {
-          const models = value(props.model.current.stateful, process);
+          const models = value(props.model.current, process);
           props.model.current = cleanup(models, process);
           props.update.rerender();
           break;
         }
 
         const produce = value;
-        const models = produce(props.model.current.stateful, process);
-
-        props.model.current = models;
+        props.model.current = produce(props.model.current, process);
         props.update.rerender();
       }
 

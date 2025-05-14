@@ -3,7 +3,8 @@ import { Immer } from "immer";
 
 export const config = {
   immer: new Immer(),
-  states: Symbol("states"),
+  states: "_states",
+  // states: Symbol("states"),
 };
 
 config.immer.setAutoFreeze(false);

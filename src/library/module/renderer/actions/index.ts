@@ -1,8 +1,8 @@
 import {
+  Draft,
   Events,
   ModuleDefinition,
-  Operation,
-  Optimistic,
+  Op,
   Process,
 } from "../../../types/index.ts";
 import { update } from "../../../utils/produce/index.ts";
@@ -24,15 +24,15 @@ export default function useActions<M extends ModuleDefinition>(
         queue: [],
         events: props.options.props as Events<M["Props"]>,
         actions: {
-          state<T>(value: T, operations: (Operation | Optimistic<T>)[]): T {
+          state<T>(value: T, operations: (Op | Draft<T>)[]): T {
             return state(value, operations);
           },
           produce<M extends ModuleDefinition>(ƒ: (model: M["Model"]) => void) {
             return (
-              model: M["Model"],
+              models: Models<M["Model"]>,
               process: Process,
             ): Models<M["Model"]> => {
-              return update(model, process, ƒ);
+              return update(models, process, ƒ);
             };
           },
           dispatch([action, ...data]) {

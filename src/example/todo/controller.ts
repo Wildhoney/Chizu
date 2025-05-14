@@ -8,7 +8,7 @@ export default create.controller<Module>((self) => {
   return {
     async *[Lifecycle.Mount]() {
       yield self.actions.produce((draft) => {
-        draft.tasks = self.actions.state([], [State.Operation.Replace]);
+        draft.tasks = self.actions.state([], [State.Op.Replace]);
       });
 
       await utils.sleep(1_000);
@@ -26,7 +26,7 @@ export default create.controller<Module>((self) => {
     },
 
     async *[Events.Add]() {
-      const optimistic: Task = {
+      const task: Task = {
         id: utils.pk(),
         summary: String(self.model.task),
         date: new Date(),
@@ -35,18 +35,16 @@ export default create.controller<Module>((self) => {
 
       yield self.actions.produce((draft) => {
         draft.task = null;
-        draft.tasks.push(self.actions.state(optimistic));
+        draft.tasks.push(self.actions.state(task, [State.Op.Add]));
       });
 
       await utils.sleep(10_000);
 
-      const pk = await db.todos.put({ ...optimistic, id: undefined });
-      const index = self.model.tasks.findIndex(
-        (task) => task.id === optimistic.id,
-      );
+      const pk = await db.todos.put({ ...task, id: undefined });
+      const index = self.model.tasks.findIndex((task) => task.id === task.id);
 
       return self.actions.produce((draft) => {
-        draft.tasks[index] = { ...optimistic, id: pk };
+        draft.tasks[index] = { ...task, id: pk };
       });
     },
 
@@ -76,7 +74,7 @@ export default create.controller<Module>((self) => {
 
       yield self.actions.produce((draft) => {
         const task = self.model.tasks[index];
-        draft.tasks[index] = self.actions.state(task, [State.Operation.Remove]);
+        draft.tasks[index] = self.actions.state(task, [State.Op.Remove]);
       });
 
       await utils.sleep(10_000);

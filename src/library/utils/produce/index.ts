@@ -1,6 +1,7 @@
 import { Models } from "../../module/renderer/model/utils.ts";
 import { ModuleDefinition, Process } from "../../types/index.ts";
 import { Stateful, config } from "./utils.ts";
+import get from "lodash/get";
 import traverse, { TraverseContext } from "traverse";
 
 /**
@@ -15,11 +16,11 @@ import traverse, { TraverseContext } from "traverse";
  * @returns {Models<M>} A `Models` instance containing the updated model and its draft.
  */
 export function update<M extends ModuleDefinition["Model"]>(
-  model: M,
+  models: Models<M>,
   process: Process,
   ƒ: (model: M) => void,
 ): Models<M> {
-  function primitives(model: M): M {
+  function stateless(model: M): M {
     return traverse(model).forEach(function (this: TraverseContext): void {
       if (this.node instanceof Stateful) {
         this.update(this.node.value);
@@ -27,12 +28,17 @@ export function update<M extends ModuleDefinition["Model"]>(
     });
   }
 
-  function state(model: M): M {
+  function stateful(model: M): M {
     return traverse(model).forEach(function (this: TraverseContext): void {
       if (this.node instanceof Stateful) {
         const object = typeof this.node.value === "object";
-        const states =
-          (object ? this.node.value : this.parent?.node)?.[config.states] ?? [];
+
+        const path = [
+          ...(object ? this.path : this.path.slice(0, -1)),
+          config.states,
+        ];
+
+        const states: Stateful<M>[] = get(models.stateful, path) ?? [];
         const state = this.node.attach(process);
 
         if (object) {
@@ -45,16 +51,16 @@ export function update<M extends ModuleDefinition["Model"]>(
           );
         } else {
           if (this.parent) this.parent.node[config.states] = [state, ...states];
-          this.update(this.node.value);
+          this.update(this.node.value, true);
         }
       }
     });
   }
 
-  const stateless = config.immer.produce(model, ƒ);
-  const stateful = config.immer.produce(model, ƒ);
-
-  return new Models<M>(primitives(stateless), state(stateful));
+  return new Models<M>(
+    stateless(config.immer.produce(models.stateless, ƒ)),
+    stateful(config.immer.produce(models.stateful, ƒ)),
+  );
 }
 
 /**
@@ -72,6 +78,10 @@ export function cleanup<M extends ModuleDefinition["Model"]>(
   const stateful = traverse(models.stateful).forEach(function (
     this: TraverseContext,
   ): void {
+    if (this.node instanceof Stateful) {
+      return;
+    }
+
     if (this.node && this.node[config.states]) {
       const states: Stateful<M>[] = this.node[config.states];
 

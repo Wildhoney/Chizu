@@ -108,7 +108,7 @@ export default create.controller<Module>((self) => {
   return {
     *[Events.Name]() {
       yield self.actions.produce((draft) => {
-        draft.name = self.actions.state(null, [State.Operation.Update]);
+        draft.name = self.actions.state(null, [State.Op.Update]);
       });
 
         const name = await fetch(/* ... */);
@@ -132,7 +132,7 @@ export default create.view<Module>((self) => {
       {self.validate.name.pending() && <p>Switching profiles&hellip;</p>}
 
       <button
-        disabled={self.validate.name.is(State.Operation.Update)}
+        disabled={self.validate.name.is(State.Op.Update)}
         onClick={() => self.actions.dispatch([Events.Name])}
       >
         Switch profile

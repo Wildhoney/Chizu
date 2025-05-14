@@ -22,7 +22,7 @@ export default function Form({ self }: Props): ReactElement {
         disabled={!self.model.task}
         onClick={() => self.actions.dispatch([Events.Add])}
       >
-        {/* {self.validate.tasks.is(State.Operation.Updating) ? (
+        {/* {self.validate.tasks.is(State.Op.Updating) ? (
           <>
             Adding task&hellip; <LoaderPinwheel size={20} />
           </>
