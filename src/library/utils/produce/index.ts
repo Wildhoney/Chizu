@@ -1,6 +1,6 @@
 import { Models } from "../../module/renderer/model/utils.ts";
 import { ModuleDefinition, Process } from "../../types/index.ts";
-import { Stateful, config } from "./utils.ts";
+import { Annotation, config } from "./utils.ts";
 import get from "lodash/get";
 import traverse, { TraverseContext } from "traverse";
 
@@ -22,7 +22,7 @@ export function update<M extends ModuleDefinition["Model"]>(
 ): Models<M> {
   function stateless(model: M): M {
     return traverse(model).forEach(function (this: TraverseContext): void {
-      if (this.node instanceof Stateful) {
+      if (this.node instanceof Annotation) {
         this.update(this.node.value);
       }
     });
@@ -30,7 +30,7 @@ export function update<M extends ModuleDefinition["Model"]>(
 
   function stateful(model: M): M {
     return traverse(model).forEach(function (this: TraverseContext): void {
-      if (this.node instanceof Stateful) {
+      if (this.node instanceof Annotation) {
         const object = typeof this.node.value === "object";
 
         const path = [
@@ -38,7 +38,7 @@ export function update<M extends ModuleDefinition["Model"]>(
           config.states,
         ];
 
-        const states: Stateful<M>[] = get(models.stateful, path) ?? [];
+        const states: Annotation<M>[] = get(models.stateful, path) ?? [];
         const state = this.node.attach(process);
 
         if (object) {
@@ -78,12 +78,12 @@ export function cleanup<M extends ModuleDefinition["Model"]>(
   const stateful = traverse(models.stateful).forEach(function (
     this: TraverseContext,
   ): void {
-    if (this.node instanceof Stateful) {
+    if (this.node instanceof Annotation) {
       return;
     }
 
     if (this.node && this.node[config.states]) {
-      const states: Stateful<M>[] = this.node[config.states];
+      const states: Annotation<M>[] = this.node[config.states];
 
       this.update(
         {

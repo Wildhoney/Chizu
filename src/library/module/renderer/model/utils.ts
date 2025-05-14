@@ -1,5 +1,5 @@
 import { Draft, ModuleDefinition, Op } from "../../../types/index.ts";
-import { Stateful, config } from "../../../utils/produce/utils.ts";
+import { Annotation, config } from "../../../utils/produce/utils.ts";
 import { Validatable } from "./types.ts";
 import get from "lodash/get";
 
@@ -71,11 +71,11 @@ function validatable<M extends ModuleDefinition["Model"]>(
 function read<M extends ModuleDefinition["Model"]>(
   stateful: M,
   properties: string[],
-): null | Stateful<M>[] {
+): null | Annotation<M>[] {
   const value = get(stateful, properties);
   const path = typeof value === "object" ? properties : properties.slice(0, -1);
   const object = path.length === 0 ? stateful : get(stateful, path);
-  const states: Stateful<M>[] = object?.[config.states] ?? [];
+  const states: Annotation<M>[] = object?.[config.states] ?? [];
 
   return states.length > 0 ? states : null;
 }

@@ -8,7 +8,7 @@ export default create.controller<Module>((self) => {
   return {
     async *[Lifecycle.Mount]() {
       yield self.actions.produce((draft) => {
-        draft.tasks = self.actions.state([], [State.Op.Replace]);
+        draft.tasks = self.actions.annotate([], [State.Op.Replace]);
       });
 
       await utils.sleep(1_000);
@@ -35,7 +35,7 @@ export default create.controller<Module>((self) => {
 
       yield self.actions.produce((draft) => {
         draft.task = null;
-        draft.tasks.push(self.actions.state(task, [State.Op.Add]));
+        draft.tasks.push(self.actions.annotate(task, [State.Op.Add]));
       });
 
       await utils.sleep(10_000);
@@ -74,7 +74,7 @@ export default create.controller<Module>((self) => {
 
       yield self.actions.produce((draft) => {
         const task = self.model.tasks[index];
-        draft.tasks[index] = self.actions.state(task, [State.Op.Remove]);
+        draft.tasks[index] = self.actions.annotate(task, [State.Op.Remove]);
       });
 
       await utils.sleep(10_000);

@@ -6,7 +6,7 @@ import {
   Process,
 } from "../../../types/index.ts";
 import { update } from "../../../utils/produce/index.ts";
-import { state } from "../../../utils/produce/utils.ts";
+import { annotate } from "../../../utils/produce/utils.ts";
 import { Validatable } from "../model/types.ts";
 import { Models } from "../model/utils.ts";
 import { Props, UseActions } from "./types.ts";
@@ -24,8 +24,8 @@ export default function useActions<M extends ModuleDefinition>(
         queue: [],
         events: props.options.props as Events<M["Props"]>,
         actions: {
-          state<T>(value: T, operations: (Op | Draft<T>)[]): T {
-            return state(value, operations);
+          annotate<T>(value: T, operations: (Op | Draft<T>)[]): T {
+            return annotate(value, operations);
           },
           produce<M extends ModuleDefinition>(ƒ: (model: M["Model"]) => void) {
             return (

@@ -13,7 +13,7 @@ import {
 } from "../types/index.ts";
 
 export type ControllerActions<M extends ModuleDefinition> = {
-  state<T>(value: T, operations?: (Op | Draft<T>)[]): T;
+  annotate<T>(value: T, operations?: (Op | Draft<T>)[]): T;
   produce(
     ƒ: (model: M["Model"]) => void,
   ): (models: Models<M["Model"]>, process: Symbol) => Models<M["Model"]>;

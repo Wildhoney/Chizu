@@ -108,7 +108,7 @@ export default create.controller<Module>((self) => {
   return {
     *[Events.Name]() {
       yield self.actions.produce((draft) => {
-        draft.name = self.actions.state(null, [State.Op.Update]);
+        draft.name = self.actions.annotate(null, [State.Op.Update]);
       });
 
         const name = await fetch(/* ... */);

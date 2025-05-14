@@ -9,7 +9,7 @@ export const config = {
 
 config.immer.setAutoFreeze(false);
 
-export class Stateful<M> {
+export class Annotation<M> {
   process: null | Process;
 
   constructor(
@@ -20,12 +20,12 @@ export class Stateful<M> {
     this.process = null;
   }
 
-  public attach(process: Process): Stateful<M> {
+  public attach(process: Process): Annotation<M> {
     this.process = process;
     return this;
   }
 }
 
-export function state<M>(value: M, operations: State[] = []): M {
-  return new Stateful(value, operations) as M;
+export function annotate<M>(value: M, operations: State[] = []): M {
+  return new Annotation(value, operations) as M;
 }

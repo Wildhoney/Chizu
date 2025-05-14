@@ -1,7 +1,7 @@
 import { cleanup, update } from ".";
 import { Models } from "../../module/renderer/model/utils.ts";
 import { Process, State } from "../../types/index.ts";
-import { Stateful, config, state } from "./utils.ts";
+import { Annotation, annotate, config } from "./utils.ts";
 import { describe, expect, it } from "@jest/globals";
 
 const process: Process = Symbol("process");
@@ -39,9 +39,9 @@ describe("update", () => {
     const models = new Models(model);
 
     const a = update(models, process, (draft) => {
-      draft.name.first = state("Maria", [State.Op.Update]);
-      draft.location = state({ area: "Watford" }, [State.Op.Replace]);
-      draft.children.push(state({ name: "Phoebe" }, [State.Op.Add]));
+      draft.name.first = annotate("Maria", [State.Op.Update]);
+      draft.location = annotate({ area: "Watford" }, [State.Op.Replace]);
+      draft.children.push(annotate({ name: "Phoebe" }, [State.Op.Add]));
     });
 
     expect(a.stateless).toEqual({
@@ -51,11 +51,11 @@ describe("update", () => {
     });
 
     expect(a.stateful).toEqual({
-      name: { first: "Maria", [config.states]: [expect.any(Stateful)] },
-      location: { area: "Watford", [config.states]: [expect.any(Stateful)] },
+      name: { first: "Maria", [config.states]: [expect.any(Annotation)] },
+      location: { area: "Watford", [config.states]: [expect.any(Annotation)] },
       children: [
         { name: "Imogen" },
-        { name: "Phoebe", [config.states]: [expect.any(Stateful)] },
+        { name: "Phoebe", [config.states]: [expect.any(Annotation)] },
       ],
     });
   });
@@ -64,23 +64,23 @@ describe("update", () => {
     const models = new Models(model);
 
     const a = update(models, process, (draft) => {
-      draft.location = state({ area: "Horsham" }, [State.Op.Update]);
+      draft.location = annotate({ area: "Horsham" }, [State.Op.Update]);
     });
 
     expect(a.stateful.location).toEqual({
       area: "Horsham",
-      [config.states]: [expect.any(Stateful)],
+      [config.states]: [expect.any(Annotation)],
     });
     expect(a.validatable.location.is(State.Op.Update)).toBe(true);
     expect(a.validatable.location.is(State.Op.Replace)).toBe(false);
 
     const b = update(a, process, (draft) => {
-      draft.location = state({ area: "Watford" }, [State.Op.Replace]);
+      draft.location = annotate({ area: "Watford" }, [State.Op.Replace]);
     });
 
     expect(b.stateful.location).toEqual({
       area: "Watford",
-      [config.states]: [expect.any(Stateful), expect.any(Stateful)],
+      [config.states]: [expect.any(Annotation), expect.any(Annotation)],
     });
     expect(b.validatable.location.is(State.Op.Update)).toBe(true);
     expect(b.validatable.location.is(State.Op.Replace)).toBe(true);
@@ -93,9 +93,9 @@ describe("cleanup", () => {
 
     const a = cleanup(
       update(models, process, (draft) => {
-        draft.name.first = state("Maria", [State.Op.Update]);
-        draft.location = state({ area: "Watford" }, [State.Op.Replace]);
-        draft.children.push(state({ name: "Phoebe" }, [State.Op.Add]));
+        draft.name.first = annotate("Maria", [State.Op.Update]);
+        draft.location = annotate({ area: "Watford" }, [State.Op.Replace]);
+        draft.children.push(annotate({ name: "Phoebe" }, [State.Op.Add]));
       }),
       process,
     );
@@ -113,12 +113,12 @@ describe("validatable", () => {
     const models = new Models(model);
 
     const a = update(models, process, (draft) => {
-      draft.name.first = state("Maria", [State.Op.Update]);
-      draft.location = state({ area: "Watford" }, [
+      draft.name.first = annotate("Maria", [State.Op.Update]);
+      draft.location = annotate({ area: "Watford" }, [
         State.Op.Replace,
         State.Draft("Maybe Watford"),
       ]);
-      draft.children.push(state({ name: "Phoebe" }, [State.Op.Add]));
+      draft.children.push(annotate({ name: "Phoebe" }, [State.Op.Add]));
     });
 
     expect(a.validatable.name.first.pending()).toBe(true);
