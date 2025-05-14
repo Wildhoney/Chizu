@@ -22,6 +22,11 @@ export function update<M extends ModuleDefinition["Model"]>(
 ): Models<M> {
   function stateless(model: M): M {
     return traverse(model).forEach(function (this: TraverseContext): void {
+      if (this.key === config.annotations) {
+        this.block();
+        return;
+      }
+
       if (this.node instanceof Annotation) {
         this.update(this.node.value);
       }
@@ -30,27 +35,33 @@ export function update<M extends ModuleDefinition["Model"]>(
 
   function stateful(model: M): M {
     return traverse(model).forEach(function (this: TraverseContext): void {
+      if (this.key === config.annotations) {
+        this.block();
+        return;
+      }
+
       if (this.node instanceof Annotation) {
         const object = typeof this.node.value === "object";
 
         const path = [
           ...(object ? this.path : this.path.slice(0, -1)),
-          config.states,
+          config.annotations,
         ];
 
-        const states: Annotation<M>[] = get(models.stateful, path) ?? [];
+        const annotations: Annotation<M>[] = get(models.stateful, path) ?? [];
         const state = this.node.attach(process);
 
         if (object) {
           this.update(
             {
               ...this.node.value,
-              [config.states]: [state, ...states],
+              [config.annotations]: [state, ...annotations],
             },
             true,
           );
         } else {
-          if (this.parent) this.parent.node[config.states] = [state, ...states];
+          if (this.parent)
+            this.parent.node[config.annotations] = [state, ...annotations];
           this.update(this.node.value, true);
         }
       }
@@ -78,17 +89,20 @@ export function cleanup<M extends ModuleDefinition["Model"]>(
   const stateful = traverse(models.stateful).forEach(function (
     this: TraverseContext,
   ): void {
-    if (this.node instanceof Annotation) {
+    if (this.key === config.annotations) {
+      this.block();
       return;
     }
 
-    if (this.node && this.node[config.states]) {
-      const states: Annotation<M>[] = this.node[config.states];
+    if (this.node && this.node[config.annotations]) {
+      const annotations: Annotation<M>[] = this.node[config.annotations];
 
       this.update(
         {
           ...this.node,
-          [config.states]: states.filter((state) => state.process !== process),
+          [config.annotations]: annotations.filter(
+            (state) => state.process !== process,
+          ),
         },
         true,
       );

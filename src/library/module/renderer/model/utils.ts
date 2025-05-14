@@ -75,7 +75,7 @@ function read<M extends ModuleDefinition["Model"]>(
   const value = get(stateful, properties);
   const path = typeof value === "object" ? properties : properties.slice(0, -1);
   const object = path.length === 0 ? stateful : get(stateful, path);
-  const states: Annotation<M>[] = object?.[config.states] ?? [];
+  const annotations: Annotation<M>[] = object?.[config.annotations] ?? [];
 
-  return states.length > 0 ? states : null;
+  return annotations.length > 0 ? annotations : null;
 }

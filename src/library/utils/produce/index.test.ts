@@ -51,11 +51,14 @@ describe("update", () => {
     });
 
     expect(a.stateful).toEqual({
-      name: { first: "Maria", [config.states]: [expect.any(Annotation)] },
-      location: { area: "Watford", [config.states]: [expect.any(Annotation)] },
+      name: { first: "Maria", [config.annotations]: [expect.any(Annotation)] },
+      location: {
+        area: "Watford",
+        [config.annotations]: [expect.any(Annotation)],
+      },
       children: [
         { name: "Imogen" },
-        { name: "Phoebe", [config.states]: [expect.any(Annotation)] },
+        { name: "Phoebe", [config.annotations]: [expect.any(Annotation)] },
       ],
     });
   });
@@ -64,23 +67,43 @@ describe("update", () => {
     const models = new Models(model);
 
     const a = update(models, process, (draft) => {
+      draft.name.first = annotate("Maria", [State.Op.Update]);
       draft.location = annotate({ area: "Horsham" }, [State.Op.Update]);
+      draft.children.push(annotate({ name: "Phoebe" }, [State.Op.Add]));
     });
 
-    expect(a.stateful.location).toEqual({
-      area: "Horsham",
-      [config.states]: [expect.any(Annotation)],
+    expect(a.stateful).toEqual({
+      name: { first: "Maria", [config.annotations]: [expect.any(Annotation)] },
+      location: {
+        area: "Horsham",
+        [config.annotations]: [expect.any(Annotation)],
+      },
+      children: [
+        { name: "Imogen" },
+        { name: "Phoebe", [config.annotations]: [expect.any(Annotation)] },
+      ],
     });
     expect(a.validatable.location.is(State.Op.Update)).toBe(true);
     expect(a.validatable.location.is(State.Op.Replace)).toBe(false);
 
     const b = update(a, process, (draft) => {
+      draft.name.first = annotate("Adam", [State.Op.Update]);
       draft.location = annotate({ area: "Watford" }, [State.Op.Replace]);
     });
 
-    expect(b.stateful.location).toEqual({
-      area: "Watford",
-      [config.states]: [expect.any(Annotation), expect.any(Annotation)],
+    expect(b.stateful).toEqual({
+      name: {
+        first: "Adam",
+        [config.annotations]: [expect.any(Annotation), expect.any(Annotation)],
+      },
+      location: {
+        area: "Watford",
+        [config.annotations]: [expect.any(Annotation), expect.any(Annotation)],
+      },
+      children: [
+        { name: "Imogen" },
+        { name: "Phoebe", [config.annotations]: [expect.any(Annotation)] },
+      ],
     });
     expect(b.validatable.location.is(State.Op.Update)).toBe(true);
     expect(b.validatable.location.is(State.Op.Replace)).toBe(true);
@@ -101,9 +124,12 @@ describe("cleanup", () => {
     );
 
     expect(a.stateful).toEqual({
-      name: { first: "Maria", [config.states]: [] },
-      location: { area: "Watford", [config.states]: [] },
-      children: [{ name: "Imogen" }, { name: "Phoebe", [config.states]: [] }],
+      name: { first: "Maria", [config.annotations]: [] },
+      location: { area: "Watford", [config.annotations]: [] },
+      children: [
+        { name: "Imogen" },
+        { name: "Phoebe", [config.annotations]: [] },
+      ],
     });
   });
 });

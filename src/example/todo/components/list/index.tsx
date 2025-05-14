@@ -43,8 +43,7 @@ export default function List({ self }: Props): ReactElement {
               )}
             >
               {task.summary}
-              {self.validate.tasks[index].is(State.Op.Add) && "Adding..."}
-              {self.validate.tasks[index].pending() && "Adding..."}
+              {self.validate.tasks[index].is(State.Op.Remove) && "Removing..."}
             </div>
 
             <div className={styles.date}>

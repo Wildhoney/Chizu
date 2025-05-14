@@ -26,8 +26,10 @@ export default create.controller<Module>((self) => {
     },
 
     async *[Events.Add]() {
+      const id = utils.pk();
+
       const task: Task = {
-        id: utils.pk(),
+        id,
         summary: String(self.model.task),
         date: new Date(),
         completed: false,
@@ -38,10 +40,10 @@ export default create.controller<Module>((self) => {
         draft.tasks.push(self.actions.annotate(task, [State.Op.Add]));
       });
 
-      await utils.sleep(10_000);
+      await utils.sleep(3_000);
 
       const pk = await db.todos.put({ ...task, id: undefined });
-      const index = self.model.tasks.findIndex((task) => task.id === task.id);
+      const index = self.model.tasks.findIndex((task) => task.id === id);
 
       return self.actions.produce((draft) => {
         draft.tasks[index] = { ...task, id: pk };
@@ -49,9 +51,8 @@ export default create.controller<Module>((self) => {
     },
 
     async *[Events.Completed](taskId) {
-      const index = self.model.tasks.findIndex((task) => task.id === taskId);
-
       yield self.actions.produce((draft) => {
+        const index = self.model.tasks.findIndex((task) => task.id === taskId);
         const task = self.model.tasks[index];
         draft.tasks[index] = { ...task, completed: !task.completed };
       });
@@ -65,23 +66,23 @@ export default create.controller<Module>((self) => {
       const row = await db.todos.get(taskId);
 
       return self.actions.produce((draft) => {
+        const index = self.model.tasks.findIndex((task) => task.id === taskId);
         if (row) draft.tasks[index] = row;
       });
     },
 
     async *[Events.Remove](taskId) {
-      const index = self.model.tasks.findIndex((task) => task.id === taskId);
-
       yield self.actions.produce((draft) => {
+        const index = self.model.tasks.findIndex((task) => task.id === taskId);
         const task = self.model.tasks[index];
         draft.tasks[index] = self.actions.annotate(task, [State.Op.Remove]);
       });
 
       await utils.sleep(10_000);
-
       await db.todos.delete(taskId);
 
       return self.actions.produce((draft) => {
+        const index = self.model.tasks.findIndex((task) => task.id === taskId);
         draft.tasks.splice(index, 1);
       });
     },
