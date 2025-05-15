@@ -27,6 +27,7 @@ test:
 	make browser
 
 deploy:
+	yarn --force
 	make build
 	npx commit-and-tag-version
 	npm publish
