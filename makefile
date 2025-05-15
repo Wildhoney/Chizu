@@ -28,5 +28,5 @@ test:
 
 deploy:
 	make build
-	npx standard-version
+	npx commit-and-tag-version
 	npm publish
