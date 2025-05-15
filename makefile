@@ -30,3 +30,5 @@ deploy:
 	make build
 	npx commit-and-tag-version
 	npm publish
+	git push
+	git push --tags
