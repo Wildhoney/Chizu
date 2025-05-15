@@ -27,9 +27,6 @@ test:
 	make browser
 
 deploy:
-	npm version minor
-	git push
-	git push --tags
+	make build
+	npx standard-version
 	npm publish
-	gh release create v$(shell node -p "require('./package.json').version") --title "v$(shell node -p "require('./package.json').version")" --generate-notes
-	gh release upload v$(shell node -p "require('./package.json').version") dist/* --clobber
