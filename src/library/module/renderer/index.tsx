@@ -8,6 +8,7 @@ import useLifecycles from "./lifecycles/index.ts";
 import useLogger from "./logger/index.ts";
 import useModel from "./model/index.ts";
 import useQueue from "./queue/index.ts";
+import { Router, useRouter } from "./router/index.tsx";
 import { Props } from "./types.ts";
 import useUpdate from "./update/index.ts";
 import { ReactElement } from "react";
@@ -20,6 +21,7 @@ export default function renderer<M extends ModuleDefinition>({
   const update = useUpdate();
   const queue = useQueue();
   const elements = useElements();
+  const router = useRouter();
 
   const model = useModel({ options });
   const logger = useLogger({ options, elements });
@@ -33,7 +35,7 @@ export default function renderer<M extends ModuleDefinition>({
     queue,
   });
 
-  const actions = useActions<M>({ app, options, model, dispatchers });
+  const actions = useActions<M>({ app, options, model, dispatchers, router });
 
   useController({ options, dispatchers, actions });
   useLifecycles({ options, dispatchers, elements });
@@ -43,7 +45,12 @@ export default function renderer<M extends ModuleDefinition>({
 
     return React.createElement(options.name, {
       ref: elements.customElement,
-      children: options.view(actions.view),
+      children: (
+        <>
+          <Router using={router} />
+          {options.view(actions.view)}
+        </>
+      ),
     });
   }, [update.hash]);
 }

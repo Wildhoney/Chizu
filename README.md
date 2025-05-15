@@ -12,7 +12,7 @@ Strongly typed React framework using generators and efficiently updated views al
 
 ## Benefits
 
-- Thoughtful event-driven architecture superset of [React](https://react.dev/).
+- Finely tuned and thoughtful event-driven architecture superset of [React](https://react.dev/).
 - Super efficient with views only re-rendering when absolutely necessary.
 - Built-in support for [optimistic updates](https://medium.com/@kyledeguzmanx/what-are-optimistic-updates-483662c3e171) within components.
 - Mostly standard JavaScript without quirky rules and exceptions.

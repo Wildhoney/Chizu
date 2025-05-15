@@ -9,6 +9,7 @@ import { update } from "../../../utils/produce/index.ts";
 import { annotate } from "../../../utils/produce/utils.ts";
 import { Validatable } from "../model/types.ts";
 import { Models } from "../model/utils.ts";
+import * as Router from "../router/types.ts";
 import { Props, UseActions } from "./types.ts";
 import * as React from "react";
 
@@ -20,6 +21,9 @@ export default function useActions<M extends ModuleDefinition>(
       controller: {
         get model() {
           return props.model.current.stateful as Readonly<M["Model"]>;
+        },
+        get router() {
+          return props.router.current;
         },
         queue: [],
         events: props.options.props as Events<M["Props"]>,
@@ -50,6 +54,9 @@ export default function useActions<M extends ModuleDefinition>(
           return props.model.current.validatable as Validatable<
             Readonly<M["Model"]>
           >;
+        },
+        get router() {
+          return props.router.current as Readonly<Router.Context>;
         },
         events: props.options.props as Events<M["Props"]>,
         actions: {
