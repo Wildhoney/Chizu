@@ -19,16 +19,23 @@ export default defineConfig({
     },
     rollupOptions: {
       external(id) {
-        return ["react", "eventemitter3"].some(
-          (pkg) => id === pkg || id.startsWith(pkg + "/"),
-        );
+        return [
+          "eventemitter3",
+          "immer",
+          "lodash",
+          "react",
+          "react-router-dom",
+          "traverse",
+        ].some((pkg) => id === pkg || id.startsWith(pkg + "/"));
       },
       output: {
         globals: {
-          react: "React",
           eventemitter3: "EventEmitter3",
-          "react-dom/client": "ReactDOM",
-          "react/jsx-runtime": "jsxRuntime",
+          immer: "Immer",
+          lodash: "_",
+          react: "React",
+          "react-router-dom": "ReactRouterDOM",
+          traverse: "Traverse",
         },
       },
     },
