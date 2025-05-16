@@ -4,13 +4,13 @@ import List from "./components/list/index.tsx";
 import * as styles from "./styles.ts";
 import { Module } from "./types.ts";
 
-export default create.view<Module>((self) => {
+export default create.view<Module>((module) => {
   return (
     <>
       <section className={styles.container}>
         <div className={styles.boundary}>
-          <Field self={self} />
-          <List self={self} />
+          <Field module={module} />
+          <List module={module} />
         </div>
       </section>
     </>

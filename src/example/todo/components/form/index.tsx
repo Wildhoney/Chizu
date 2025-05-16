@@ -4,25 +4,25 @@ import { Props } from "./types";
 import { CirclePlus } from "lucide-react";
 import { ReactElement } from "react";
 
-export default function Form({ self }: Props): ReactElement {
+export default function Form({ module }: Props): ReactElement {
   return (
     <section className={styles.container}>
       <input
         type="text"
         placeholder="What needs to be done?"
         className={styles.input}
-        value={self.model.task ?? ""}
+        value={module.model.task ?? ""}
         onChange={(event) =>
-          self.actions.dispatch([Events.Task, event.currentTarget.value])
+          module.actions.dispatch([Events.Task, event.currentTarget.value])
         }
       />
 
       <button
         className={styles.button}
-        disabled={!self.model.task}
-        onClick={() => self.actions.dispatch([Events.Add])}
+        disabled={!module.model.task}
+        onClick={() => module.actions.dispatch([Events.Add])}
       >
-        {/* {self.validate.tasks.is(State.Op.Updating) ? (
+        {/* {module.validate.tasks.is(State.Op.Updating) ? (
           <>
             Adding task&hellip; <LoaderPinwheel size={20} />
           </>

@@ -12,10 +12,6 @@ export type UseOptions<M extends ModuleDefinition> = Options<M> & {
   props: M["Props"];
 };
 
-export type Head<T extends any[]> = T extends [infer First, ...any[]]
-  ? First
-  : never;
+export type Head<T extends any[]> = T extends [infer X, ...any[]] ? X : never;
 
-export type Tail<T extends any[]> = T extends [any, ...infer Rest]
-  ? Rest
-  : never;
+export type Tail<T extends any[]> = T extends [any, ...infer XS] ? XS : never;

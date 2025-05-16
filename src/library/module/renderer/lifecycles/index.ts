@@ -8,8 +8,16 @@ export default function useLifecycles<M extends ModuleDefinition>(
   const invoked = React.useRef<boolean>(false);
 
   React.useLayoutEffect((): void => {
-    props.dispatchers.dispatch(Lifecycle.Derive, [props.options.props]);
-  }, [props.options.props]);
+    props.dispatchers.dispatch(Lifecycle.Derive, [
+      props.options.props,
+      props.router.current,
+    ]);
+  }, [
+    props.options.props,
+    props.router.current?.location,
+    props.router.current?.params,
+    props.router.current?.search?.[0],
+  ]);
 
   React.useLayoutEffect(() => {
     if (invoked.current) {
@@ -19,7 +27,7 @@ export default function useLifecycles<M extends ModuleDefinition>(
     invoked.current = true;
 
     props.dispatchers.dispatch(Lifecycle.Mount, []);
-    props.dispatchers.dispatch(Lifecycle.Tree, [
+    props.dispatchers.dispatch(Lifecycle.Node, [
       props.elements.customElement.current,
     ]);
 

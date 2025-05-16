@@ -5,7 +5,7 @@ import { ViewDefinition } from "../view/types.ts";
 export type ElementName = string;
 
 export type Options<M extends ModuleDefinition> = {
-  model: M["Model"];
+  model?: M["Model"];
   view: ViewDefinition<M>;
-  controller: ControllerDefinition<M>;
+  controller?: ControllerDefinition<M>;
 };

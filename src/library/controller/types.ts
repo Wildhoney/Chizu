@@ -1,15 +1,17 @@
 import { EventError } from "../module/renderer/dispatchers/utils.ts";
 import { Models } from "../module/renderer/model/utils.ts";
+import * as Router from "../module/renderer/router/types.ts";
 import { Head } from "../module/renderer/types.ts";
 import {
   Actions,
+  Attributes,
   Draft,
-  Events,
+  Handlers,
   Lifecycle,
   ModuleDefinition,
   Op,
+  Query,
   Queue,
-  Values,
 } from "../types/index.ts";
 
 export type ControllerActions<M extends ModuleDefinition> = {
@@ -17,19 +19,29 @@ export type ControllerActions<M extends ModuleDefinition> = {
   produce(
     ƒ: (model: M["Model"]) => void,
   ): (models: Models<M["Model"]>, process: Symbol) => Models<M["Model"]>;
-  dispatch(event: M["Actions"]): Promise<void>;
+  dispatch(action: M["Actions"]): Promise<void>;
 };
 
 export type ControllerArgs<M extends ModuleDefinition> = Readonly<{
   model: Readonly<M["Model"]>;
   queue: Readonly<Queue<M["Actions"]>>;
-  events: Readonly<Events<M["Props"]>>;
+  router: M["Query"] extends NonNullable<Query>
+    ? Readonly<Router.Context<M["Query"]>>
+    : null;
   actions: Readonly<ControllerActions<M>>;
+  handlers: Readonly<Handlers<M["Props"]>>;
+  attributes: Readonly<Attributes<M["Props"]>>;
 }>;
 
 export type ActionEvent<M extends ModuleDefinition> = (
   ...args: M["Actions"][number]
 ) => ActionGenerator<M>;
+
+type ActionEvents<M extends ModuleDefinition> = {
+  [K in Head<M["Actions"]>]: (
+    payload: Payload<M["Actions"], K>,
+  ) => ActionGenerator<M>;
+};
 
 export type ActionGenerator<M extends ModuleDefinition> = AsyncGenerator<
   (models: Models<M["Model"]>, process: Symbol) => Models<M["Model"]>,
@@ -43,16 +55,13 @@ export type ControllerDefinition<M extends ModuleDefinition> = (
 
 export type ControllerInstance<M extends ModuleDefinition> = {
   [Lifecycle.Mount]?(): ActionGenerator<M>;
-  [Lifecycle.Derive]?(props: Values<M["Props"]>): ActionGenerator<M>;
-  [Lifecycle.Tree]?(tree: HTMLElement): ActionGenerator<M>;
+  [Lifecycle.Derive]?(
+    attributes: Attributes<M["Props"]>,
+    routes: null | Router.Context<M["Query"]>,
+  ): ActionGenerator<M>;
+  [Lifecycle.Node]?(tree: HTMLElement): ActionGenerator<M>;
   [Lifecycle.Error]?(error: Error | EventError): ActionGenerator<M>;
   [Lifecycle.Unmount]?(): ActionGenerator<M>;
-} & Partial<Handlers<M>>;
-
-type Handlers<M extends ModuleDefinition> = {
-  [K in Head<M["Actions"]>]: (
-    payload: Payload<M["Actions"], K>,
-  ) => ActionGenerator<M>;
-};
+} & Partial<ActionEvents<M>>;
 
 type Payload<A extends Actions, K> = A extends [K, infer P] ? P : never;

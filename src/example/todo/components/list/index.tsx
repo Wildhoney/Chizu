@@ -6,11 +6,11 @@ import dayjs from "dayjs";
 import { LoaderPinwheel, Trash2 } from "lucide-react";
 import { ReactElement } from "react";
 
-export default function List({ self }: Props): ReactElement {
-  if (self.model.tasks.length === 0) {
+export default function List({ module }: Props): ReactElement {
+  if (module.model.tasks.length === 0) {
     return (
       <div className={styles.empty}>
-        {self.validate.tasks.draft() ? (
+        {module.validate.tasks.draft() ? (
           <>Please wait&hellip;</>
         ) : (
           "You have no tasks yet."
@@ -21,29 +21,30 @@ export default function List({ self }: Props): ReactElement {
 
   return (
     <ul className={styles.container}>
-      {self.model.tasks.map((task, index) => (
+      {module.model.tasks.map((task, index) => (
         <li key={String(task.id)} className={styles.row}>
           <input
             id={String(task.id)}
             disabled={
               !utils.pk(task.id) ||
-              self.validate.tasks[index].completed.is(State.Op.Add)
+              module.validate.tasks[index].completed.is(State.Op.Add)
             }
             type="checkbox"
             checked={task.completed}
             onChange={() =>
-              task.id && self.actions.dispatch([Events.Completed, task.id])
+              task.id && module.actions.dispatch([Events.Completed, task.id])
             }
           />
 
           <label htmlFor={String(task.id)} className={styles.task}>
             <div
               className={styles.details(
-                self.validate.tasks[index].is(State.Op.Add),
+                module.validate.tasks[index].is(State.Op.Add),
               )}
             >
               {task.summary}
-              {self.validate.tasks[index].is(State.Op.Remove) && "Removing..."}
+              {module.validate.tasks[index].is(State.Op.Remove) &&
+                "Removing..."}
             </div>
 
             <div className={styles.date}>
@@ -55,13 +56,13 @@ export default function List({ self }: Props): ReactElement {
             className={styles.button}
             disabled={
               !utils.pk(task.id) ||
-              self.validate.tasks[index].is(State.Op.Remove)
+              module.validate.tasks[index].is(State.Op.Remove)
             }
             onClick={() =>
-              task.id && self.actions.dispatch([Events.Remove, task.id])
+              task.id && module.actions.dispatch([Events.Remove, task.id])
             }
           >
-            {self.validate.tasks[index].is(State.Op.Remove) ? (
+            {module.validate.tasks[index].is(State.Op.Remove) ? (
               <LoaderPinwheel size={20} />
             ) : (
               <Trash2 size={20} />

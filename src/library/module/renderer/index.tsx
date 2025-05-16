@@ -38,7 +38,7 @@ export default function renderer<M extends ModuleDefinition>({
   const actions = useActions<M>({ app, options, model, dispatchers, router });
 
   useController({ options, dispatchers, actions });
-  useLifecycles({ options, dispatchers, elements });
+  useLifecycles({ options, dispatchers, elements, router });
 
   return React.useMemo(() => {
     logger.output({});
@@ -46,10 +46,7 @@ export default function renderer<M extends ModuleDefinition>({
     return React.createElement(options.name, {
       ref: elements.customElement,
       children: (
-        <>
-          <Router using={router} />
-          {options.view(actions.view)}
-        </>
+        <Router using={router}>{() => options.view(actions.view)}</Router>
       ),
     });
   }, [update.hash]);

@@ -30,10 +30,10 @@ Controllers are responsible for mutating the state of the view. In the below exa
 <kbd>Controller</kbd>
 
 ```tsx
-export default create.controller<Module>((self) => {
+export default create.controller<Module>((module) => {
   return {
     async *[Events.Name](name) {
-      return self.actions.produce((draft) => {
+      return module.actions.produce((draft) => {
         draft.name = name;
       });
     },
@@ -44,13 +44,13 @@ export default create.controller<Module>((self) => {
 <kbd>View</kbd>
 
 ```tsx
-export default create.view<Module>((self) => {
+export default create.view<Module>((module) => {
   return (
     <>
-      <p>Hey {self.model.name}</p>
+      <p>Hey {module.model.name}</p>
 
       <button
-        onClick={() => self.actions.dispatch([Events.Name, randomName()])}
+        onClick={() => module.actions.dispatch([Events.Name, randomName()])}
       >
         Switch profile
       </button>
@@ -64,16 +64,16 @@ Fetching the name from an external source using an `actions.io` causes the contr
 <kbd>Controller</kbd>
 
 ```tsx
-export default create.controller<Module>((self) => {
+export default create.controller<Module>((module) => {
   return {
     async *[Events.Name]() {
-      yield self.actions.produce((draft) => {
+      yield module.actions.produce((draft) => {
         draft.name = null;
       });
 
       const name = await fetch(/* ... */);
 
-      return self.actions.produce((draft) => {
+      return module.actions.produce((draft) => {
         draft.name = name;
       });
     },
@@ -84,12 +84,12 @@ export default create.controller<Module>((self) => {
 <kbd>View</kbd>
 
 ```tsx
-export default create.view<Module>((self) => {
+export default create.view<Module>((module) => {
   return (
     <>
-      <p>Hey {self.model.name}</p>
+      <p>Hey {module.model.name}</p>
 
-      <button onClick={() => self.actions.dispatch([Events.Name])}>
+      <button onClick={() => module.actions.dispatch([Events.Name])}>
         Switch profile
       </button>
     </>
@@ -97,20 +97,20 @@ export default create.view<Module>((self) => {
 });
 ```
 
-<!-- In the above example the name is fetched asynchronously &ndash; however there is no feedback to the user, we can improve that by using the `self.actions.state` and `self.validate` helpers: -->
+<!-- In the above example the name is fetched asynchronously &ndash; however there is no feedback to the user, we can improve that by using the `module.actions.state` and `module.validate` helpers: -->
 
 <kbd>Controller</kbd>
 
 ```tsx
-export default create.controller<Module>((self) => {
+export default create.controller<Module>((module) => {
   return {
     async *[Events.Name]() {
-      yield self.actions.produce((draft) => {
-        draft.name = self.actions.annotate(null, [State.Op.Update]);
+      yield module.actions.produce((draft) => {
+        draft.name = module.actions.annotate(null, [State.Op.Update]);
       });
 
       const name = await fetch(/* ... */);
-      return self.actions.produce((draft) => {
+      return module.actions.produce((draft) => {
         draft.name = name;
       });
     },
@@ -121,16 +121,16 @@ export default create.controller<Module>((self) => {
 <kbd>View</kbd>
 
 ```tsx
-export default create.view<Module>((self) => {
+export default create.view<Module>((module) => {
   return (
     <>
-      <p>Hey {self.model.name}</p>
+      <p>Hey {module.model.name}</p>
 
-      {self.validate.name.pending() && <p>Switching profiles&hellip;</p>}
+      {module.validate.name.pending() && <p>Switching profiles&hellip;</p>}
 
       <button
-        disabled={self.validate.name.is(State.Op.Update)}
-        onClick={() => self.actions.dispatch([Events.Name])}
+        disabled={module.validate.name.is(State.Op.Update)}
+        onClick={() => module.actions.dispatch([Events.Name])}
       >
         Switch profile
       </button>
@@ -157,10 +157,10 @@ export const enum Errors {
 <kbd>Controller</kbd>
 
 ```tsx
-export default create.controller<Module>((self) => {
+export default create.controller<Module>((module) => {
   return {
     *[Events.Name]() {
-      yield self.actions.produce((draft) => {
+      yield module.actions.produce((draft) => {
         draft.name = null;
       });
 
@@ -168,7 +168,7 @@ export default create.controller<Module>((self) => {
 
       if (!name) throw new EventError(Errors.UserValidation);
 
-      return self.actions.produce((draft) => {
+      return module.actions.produce((draft) => {
         draft.name = name;
       });
     },
@@ -181,22 +181,22 @@ However showing a toast message is not always relevant, you may want a more deta
 <kbd>Controller</kbd>
 
 ```tsx
-export default create.controller<Module>((self) => {
+export default create.controller<Module>((module) => {
   return {
     async *[Events.Name]() {
-      yield self.actions.produce((draft) => {
+      yield module.actions.produce((draft) => {
         draft.name = Maybe.of(null);
       });
 
       const name = await fetch(/* ... */);
 
       if (!name) {
-        return self.actions.produce((draft) => {
+        return module.actions.produce((draft) => {
           draft.name = Maybe.of(new EventError(Errors.UserValidation));
         });
       }
 
-      return self.actions.produce((draft) => {
+      return module.actions.produce((draft) => {
         draft.name = Maybe.of(name);
       });
     },

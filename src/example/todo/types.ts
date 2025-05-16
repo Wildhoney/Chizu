@@ -30,4 +30,8 @@ export type Actions =
   | [Events.Completed, Pk<Id>]
   | [Events.Remove, Pk<Id>];
 
-export type Module = Create.Module<Model, Actions>;
+export type Module = Create.Module<{
+  Model: Model;
+  Actions: Actions;
+  Query: "name";
+}>;

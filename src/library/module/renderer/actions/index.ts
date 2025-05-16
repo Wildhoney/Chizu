@@ -1,6 +1,7 @@
 import {
+  Attributes,
   Draft,
-  Events,
+  Handlers,
   ModuleDefinition,
   Op,
   Process,
@@ -23,10 +24,13 @@ export default function useActions<M extends ModuleDefinition>(
           return props.model.current.stateful as Readonly<M["Model"]>;
         },
         get router() {
-          return props.router.current;
+          return props.router.current as M["Query"] extends string
+            ? Readonly<Router.Context<M["Query"]>>
+            : null;
         },
         queue: [],
-        events: props.options.props as Events<M["Props"]>,
+        handlers: props.options.props as Handlers<M["Props"]>,
+        attributes: props.options.props as Attributes<M["Props"]>,
         actions: {
           annotate<T>(value: T, operations: (Op | Draft<T>)[]): T {
             return annotate(value, operations);
@@ -55,10 +59,8 @@ export default function useActions<M extends ModuleDefinition>(
             Readonly<M["Model"]>
           >;
         },
-        get router() {
-          return props.router.current as Readonly<Router.Context>;
-        },
-        events: props.options.props as Events<M["Props"]>,
+        handlers: props.options.props as Handlers<M["Props"]>,
+        attributes: props.options.props as Attributes<M["Props"]>,
         actions: {
           dispatch([action, ...data]) {
             const task = Promise.withResolvers<void>();
