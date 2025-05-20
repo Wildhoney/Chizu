@@ -43,11 +43,13 @@ type ActionEvents<M extends ModuleDefinition> = {
   ) => ActionGenerator<M>;
 };
 
-export type ActionGenerator<M extends ModuleDefinition> = AsyncGenerator<
-  (models: Models<M["Model"]>, process: Symbol) => Models<M["Model"]>,
-  (models: Models<M["Model"]>, process: Symbol) => Models<M["Model"]>,
-  unknown
->;
+export type ActionGenerator<M extends ModuleDefinition> =
+  | ((models: Models<M["Model"]>, process: Symbol) => Models<M["Model"]>)
+  | AsyncGenerator<
+      (models: Models<M["Model"]>, process: Symbol) => Models<M["Model"]>,
+      (models: Models<M["Model"]>, process: Symbol) => Models<M["Model"]>,
+      unknown
+    >;
 
 export type ControllerDefinition<M extends ModuleDefinition> = (
   controller: ControllerArgs<M>,

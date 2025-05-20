@@ -24,7 +24,7 @@ export default (function Controller(module) {
       }
     },
 
-    async *[Events.Task](task) {
+    [Events.Task](task) {
       return module.actions.produce((draft) => {
         draft.task = task;
       });

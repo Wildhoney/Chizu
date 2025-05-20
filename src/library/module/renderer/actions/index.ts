@@ -44,7 +44,7 @@ export default function useActions<M extends ModuleDefinition>(
             };
           },
           dispatch([action, ...data]) {
-            if (!action) return Promise.reject();
+            if (action == null) return Promise.reject();
             const task = Promise.withResolvers<void>();
             props.dispatchers.dispatch(action, data, task);
             return task.promise;
@@ -64,7 +64,7 @@ export default function useActions<M extends ModuleDefinition>(
         attributes: props.options.props as Attributes<M["Props"]>,
         actions: {
           dispatch([action, ...data]) {
-            if (!action) return Promise.reject();
+            if (action == null) return Promise.reject();
             const task = Promise.withResolvers<void>();
             props.dispatchers.dispatch(action, data, task);
             return task.promise;

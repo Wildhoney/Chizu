@@ -22,6 +22,14 @@ export function useDispatcher<M extends ModuleDefinition>(
       const process = Symbol("process");
       const generator = ƒ(...payload);
 
+      if (typeof generator === "function") {
+        const models = generator(props.model.current, process);
+        props.model.current = cleanup(models, process);
+        props.update.rerender();
+
+        return void task.resolve();
+      }
+
       while (true) {
         const { value, done } = await generator.next();
 
