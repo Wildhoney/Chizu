@@ -37,7 +37,7 @@ export enum Lifecycle {
 }
 
 export type Model = Record<string, any>;
-export type Actions = [ActionName] | [ActionName, ...ActionPayload];
+export type Actions = [] | [ActionName] | [ActionName, ...ActionPayload];
 export type Props = Record<string, unknown>;
 export type Query = null | string;
 

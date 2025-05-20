@@ -1,6 +1,5 @@
 import { UseApp } from "../../../app/types.ts";
 import { ModuleDefinition } from "../../../types/index.ts";
-import { UseLogger } from "../logger/types.ts";
 import { UseModel } from "../model/types.ts";
 import { UseQueue } from "../queue/types.ts";
 import { UseOptions } from "../types.ts";
@@ -12,7 +11,6 @@ export type Props<M extends ModuleDefinition> = {
   options: UseOptions<M>;
   update: UseUpdate;
   model: UseModel;
-  logger: UseLogger;
   queue: UseQueue;
 };
 

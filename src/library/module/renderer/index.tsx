@@ -5,7 +5,6 @@ import useController from "./controller/index.ts";
 import useDispatchers from "./dispatchers/index.ts";
 import useElements from "./elements/index.ts";
 import useLifecycles from "./lifecycles/index.ts";
-import useLogger from "./logger/index.ts";
 import useModel from "./model/index.ts";
 import useQueue from "./queue/index.ts";
 import { Router, useRouter } from "./router/index.tsx";
@@ -22,27 +21,14 @@ export default function renderer<M extends ModuleDefinition>({
   const queue = useQueue();
   const elements = useElements();
   const router = useRouter();
-
   const model = useModel({ options });
-  const logger = useLogger({ options, elements });
-
-  const dispatchers = useDispatchers({
-    app,
-    options,
-    update,
-    model,
-    logger,
-    queue,
-  });
-
+  const dispatchers = useDispatchers({ app, options, update, model, queue });
   const actions = useActions<M>({ app, options, model, dispatchers, router });
 
   useController({ options, dispatchers, actions });
   useLifecycles({ options, dispatchers, elements, router });
 
   return React.useMemo(() => {
-    logger.output({});
-
     return React.createElement(options.name, {
       ref: elements.customElement,
       children: (

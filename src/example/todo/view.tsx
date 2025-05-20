@@ -1,10 +1,10 @@
-import { create } from "../../library/index.ts";
+import { View } from "../../library/index.ts";
 import Field from "./components/form/index.tsx";
 import List from "./components/list/index.tsx";
 import * as styles from "./styles.ts";
 import { Module } from "./types.ts";
 
-export default create.view<Module>((module) => {
+export default (function Todo(module) {
   return (
     <>
       <section className={styles.container}>
@@ -15,4 +15,4 @@ export default create.view<Module>((module) => {
       </section>
     </>
   );
-});
+} as View<Module>);
