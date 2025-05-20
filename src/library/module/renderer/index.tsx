@@ -31,6 +31,7 @@ export default function renderer<M extends ModuleDefinition>({
   return React.useMemo(() => {
     return React.createElement(options.name, {
       ref: elements.customElement,
+      style: { display: "contents" },
       children: (
         <Router using={router}>{() => options.view(actions.view)}</Router>
       ),
