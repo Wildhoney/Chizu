@@ -30,7 +30,7 @@ Controllers are responsible for mutating the state of the view. In the below exa
 <kbd>Controller</kbd>
 
 ```tsx
-export default create.controller<Module>((module) => {
+export default (function ProfileController(module) {
   return {
     async *[Events.Name](name) {
       return module.actions.produce((draft) => {
@@ -38,13 +38,13 @@ export default create.controller<Module>((module) => {
       });
     },
   };
-});
+} as Controller<Module>);
 ```
 
 <kbd>View</kbd>
 
 ```tsx
-export default create.view<Module>((module) => {
+export default (function ProfileView(module) {
   return (
     <>
       <p>Hey {module.model.name}</p>
@@ -56,7 +56,7 @@ export default create.view<Module>((module) => {
       </button>
     </>
   );
-});
+} as View<Module>);
 ```
 
 Fetching the name from an external source using an `actions.io` causes the controller event (`Events.Name`) and associated view to be invoked twice &ndash; once with a record of mutations to display a pending state, and then again with the model once it's been mutated.
@@ -64,7 +64,7 @@ Fetching the name from an external source using an `actions.io` causes the contr
 <kbd>Controller</kbd>
 
 ```tsx
-export default create.controller<Module>((module) => {
+export default (function ProfileController(module) {
   return {
     async *[Events.Name]() {
       yield module.actions.produce((draft) => {
@@ -78,13 +78,13 @@ export default create.controller<Module>((module) => {
       });
     },
   };
-});
+} as Controller<Module>);
 ```
 
 <kbd>View</kbd>
 
 ```tsx
-export default create.view<Module>((module) => {
+export default (function ProfileView(module) {
   return (
     <>
       <p>Hey {module.model.name}</p>
@@ -94,7 +94,7 @@ export default create.view<Module>((module) => {
       </button>
     </>
   );
-});
+} as View<Module>);
 ```
 
 <!-- In the above example the name is fetched asynchronously &ndash; however there is no feedback to the user, we can improve that by using the `module.actions.state` and `module.validate` helpers: -->
@@ -102,7 +102,7 @@ export default create.view<Module>((module) => {
 <kbd>Controller</kbd>
 
 ```tsx
-export default create.controller<Module>((module) => {
+export default (function ProfileController(module) {
   return {
     async *[Events.Name]() {
       yield module.actions.produce((draft) => {
@@ -115,13 +115,13 @@ export default create.controller<Module>((module) => {
       });
     },
   };
-});
+} as Controller<Module>);
 ```
 
 <kbd>View</kbd>
 
 ```tsx
-export default create.view<Module>((module) => {
+export default (function ProfileView(module) {
   return (
     <>
       <p>Hey {module.model.name}</p>
@@ -136,7 +136,7 @@ export default create.view<Module>((module) => {
       </button>
     </>
   );
-});
+} as View<Module>);
 ```
 
 ## Handling Errors
@@ -157,7 +157,7 @@ export const enum Errors {
 <kbd>Controller</kbd>
 
 ```tsx
-export default create.controller<Module>((module) => {
+export default (function ProfileController(module) {
   return {
     *[Events.Name]() {
       yield module.actions.produce((draft) => {
@@ -173,7 +173,7 @@ export default create.controller<Module>((module) => {
       });
     },
   };
-});
+}) as Controller<Module>;
 ```
 
 However showing a toast message is not always relevant, you may want a more detailed error message such as a user not found message &ndash; although you could introduce another property for such errors in your model, you could mark the property as fallible by giving it a `Maybe` type because it then keeps everything nicely associated with the `name` property rather than creating another property:
@@ -181,7 +181,7 @@ However showing a toast message is not always relevant, you may want a more deta
 <kbd>Controller</kbd>
 
 ```tsx
-export default create.controller<Module>((module) => {
+export default (function ProfileView(module) {
   return {
     async *[Events.Name]() {
       yield module.actions.produce((draft) => {
@@ -201,5 +201,5 @@ export default create.controller<Module>((module) => {
       });
     },
   };
-});
+} as View<Module>);
 ```

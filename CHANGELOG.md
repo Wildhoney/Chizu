@@ -4,10 +4,9 @@ All notable changes to this project will be documented in this file. See [commit
 
 ## [0.2.4](https://github.com/Wildhoney/Marea/compare/v0.2.3...v0.2.4) (2025-05-20)
 
-
 ### Features
 
-* improved the approach to typings ([e1b9785](https://github.com/Wildhoney/Marea/commit/e1b978549503917ce994893562d9afd6c4d66955))
+- improved the approach to typings ([e1b9785](https://github.com/Wildhoney/Marea/commit/e1b978549503917ce994893562d9afd6c4d66955))
 
 ## [0.2.3](https://github.com/Wildhoney/Marea/compare/v0.2.2...v0.2.3) (2025-05-16)
 
