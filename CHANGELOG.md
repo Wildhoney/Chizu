@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [0.2.7](https://github.com/Wildhoney/Marea/compare/v0.2.6...v0.2.7) (2025-05-21)
+
+
+### Features
+
+* removed handlers and attributes and instead use props directly ([2c16900](https://github.com/Wildhoney/Marea/commit/2c1690081b3e06437851e6bad4671899da2ca8e6))
+* removed passing props and routes to derive handler ([ebe5f3c](https://github.com/Wildhoney/Marea/commit/ebe5f3c1c9f0901c0a98444346de6aeb087fbce4))
+
 ## [0.2.6](https://github.com/Wildhoney/Marea/compare/v0.2.5...v0.2.6) (2025-05-20)
 
 ### Features
