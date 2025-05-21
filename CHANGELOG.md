@@ -4,10 +4,9 @@ All notable changes to this project will be documented in this file. See [commit
 
 ## [0.2.6](https://github.com/Wildhoney/Marea/compare/v0.2.5...v0.2.6) (2025-05-20)
 
-
 ### Features
 
-* allow controller functions not to be async generators ([c647edc](https://github.com/Wildhoney/Marea/commit/c647edc92f0bb8be1a8ecf753079e6d4a7e6c454))
+- allow controller functions not to be async generators ([c647edc](https://github.com/Wildhoney/Marea/commit/c647edc92f0bb8be1a8ecf753079e6d4a7e6c454))
 
 ## [0.2.5](https://github.com/Wildhoney/Marea/compare/v0.2.4...v0.2.5) (2025-05-20)
 

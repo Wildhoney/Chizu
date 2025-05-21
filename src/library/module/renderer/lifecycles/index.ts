@@ -8,10 +8,7 @@ export default function useLifecycles<M extends ModuleDefinition>(
   const invoked = React.useRef<boolean>(false);
 
   React.useLayoutEffect((): void => {
-    props.dispatchers.dispatch(Lifecycle.Derive, [
-      props.options.props,
-      props.router.current,
-    ]);
+    props.dispatchers.dispatch(Lifecycle.Derive, []);
   }, [
     props.options.props,
     props.router.current?.location,
