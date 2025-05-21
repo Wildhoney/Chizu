@@ -1,11 +1,4 @@
-import {
-  Attributes,
-  Draft,
-  Handlers,
-  ModuleDefinition,
-  Op,
-  Process,
-} from "../../../types/index.ts";
+import { Draft, ModuleDefinition, Op, Process } from "../../../types/index.ts";
 import { update } from "../../../utils/produce/index.ts";
 import { annotate } from "../../../utils/produce/utils.ts";
 import { Validatable } from "../model/types.ts";
@@ -29,8 +22,7 @@ export default function useActions<M extends ModuleDefinition>(
             : null;
         },
         queue: [],
-        handlers: props.options.props as Handlers<M["Props"]>,
-        attributes: props.options.props as Attributes<M["Props"]>,
+        props: props.options.props as Readonly<M["Props"]>,
         actions: {
           annotate<T>(value: T, operations: (Op | Draft<T>)[]): T {
             return annotate(value, operations);
@@ -60,8 +52,7 @@ export default function useActions<M extends ModuleDefinition>(
             Readonly<M["Model"]>
           >;
         },
-        handlers: props.options.props as Handlers<M["Props"]>,
-        attributes: props.options.props as Attributes<M["Props"]>,
+        props: props.options.props as Readonly<M["Props"]>,
         actions: {
           dispatch([action, ...data]) {
             if (action == null) return Promise.reject();

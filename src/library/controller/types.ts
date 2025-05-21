@@ -4,9 +4,7 @@ import * as Router from "../module/renderer/router/types.ts";
 import { Head } from "../module/renderer/types.ts";
 import {
   Actions,
-  Attributes,
   Draft,
-  Handlers,
   Lifecycle,
   ModuleDefinition,
   Op,
@@ -29,8 +27,7 @@ export type ControllerArgs<M extends ModuleDefinition> = Readonly<{
     ? Readonly<Router.Context<M["Query"]>>
     : null;
   actions: Readonly<ControllerActions<M>>;
-  handlers: Readonly<Handlers<M["Props"]>>;
-  attributes: Readonly<Attributes<M["Props"]>>;
+  props: Readonly<M["Props"]>;
 }>;
 
 export type ActionEvent<M extends ModuleDefinition> = (
@@ -57,10 +54,7 @@ export type ControllerDefinition<M extends ModuleDefinition> = (
 
 export type ControllerInstance<M extends ModuleDefinition> = {
   [Lifecycle.Mount]?(): ActionGenerator<M>;
-  [Lifecycle.Derive]?(
-    attributes: Attributes<M["Props"]>,
-    routes: null | Router.Context<M["Query"]>,
-  ): ActionGenerator<M>;
+  [Lifecycle.Derive]?(): ActionGenerator<M>;
   [Lifecycle.Node]?(tree: HTMLElement): ActionGenerator<M>;
   [Lifecycle.Error]?(error: Error | EventError): ActionGenerator<M>;
   [Lifecycle.Unmount]?(): ActionGenerator<M>;

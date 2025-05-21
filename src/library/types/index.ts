@@ -62,24 +62,6 @@ export type ModuleDefinition = {
   Query: Query;
 };
 
-type Fns<P extends Props> = {
-  [K in keyof P]: P[K] extends (...args: any[]) => any ? P[K] : never;
-};
-
-type NonFns<P extends Props> = {
-  [K in keyof P]: P[K] extends (...args: any[]) => any ? never : P[K];
-};
-
-export type Handlers<P extends Props> = {
-  [K in keyof Fns<P> as Fns<P>[K] extends never ? never : K]: Fns<P>[K];
-};
-
-export type Attributes<P extends Props> = {
-  [K in keyof NonFns<P> as NonFns<P>[K] extends never
-    ? never
-    : K]: NonFns<P>[K];
-};
-
 export type Pk<T> = undefined | Symbol | T;
 
 export type Queue<A extends ModuleDefinition["Actions"]> = {
