@@ -13,3 +13,7 @@ export function pk<T>(id?: Pk<T>): boolean | Symbol {
 export function isEventError(error: Error | EventError): error is EventError {
   return error instanceof EventError;
 }
+
+export function hash<T>(x: T): string {
+  return JSON.stringify(x);
+}

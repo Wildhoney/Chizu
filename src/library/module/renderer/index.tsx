@@ -1,4 +1,5 @@
 import { useApp } from "../../app/index.tsx";
+import { useOptimisedMemo } from "../../hooks/index.ts";
 import { ModuleDefinition } from "../../types/index.ts";
 import useActions from "./actions/index.ts";
 import useController from "./controller/index.ts";
@@ -28,7 +29,7 @@ export default function renderer<M extends ModuleDefinition>({
   useController({ options, dispatchers, actions });
   useLifecycles({ options, dispatchers, elements, router });
 
-  return React.useMemo(() => {
+  return useOptimisedMemo(() => {
     return React.createElement(options.name, {
       ref: elements.customElement,
       style: { display: "contents" },

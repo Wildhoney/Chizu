@@ -1,3 +1,4 @@
+import { useOptimisedMemo } from "../../../hooks/index.ts";
 import { Draft, ModuleDefinition, Op, Process } from "../../../types/index.ts";
 import { update } from "../../../utils/produce/index.ts";
 import { annotate } from "../../../utils/produce/utils.ts";
@@ -5,12 +6,11 @@ import { Validatable } from "../model/types.ts";
 import { Models } from "../model/utils.ts";
 import * as Router from "../router/types.ts";
 import { Props, UseActions } from "./types.ts";
-import * as React from "react";
 
 export default function useActions<M extends ModuleDefinition>(
   props: Props<M>,
 ): UseActions<M> {
-  return React.useMemo(
+  return useOptimisedMemo(
     () => ({
       controller: {
         get model() {

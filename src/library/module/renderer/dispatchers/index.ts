@@ -1,11 +1,11 @@
 import { useApp } from "../../../app/index.tsx";
 import { ActionEvent } from "../../../controller/types.ts";
+import { useOptimisedMemo } from "../../../hooks/index.ts";
 import { ModuleDefinition, Task } from "../../../types/index.ts";
 import { Head, Tail } from "../types.ts";
 import { Props } from "./types.ts";
 import { isBroadcast, useDispatcher } from "./utils.ts";
 import EventEmitter from "eventemitter3";
-import * as React from "react";
 
 /**
  * @param props {Props<M>}
@@ -17,7 +17,7 @@ export default function useDispatchers<M extends ModuleDefinition>(
   const app = useApp();
   const dispatcher = useDispatcher(props);
 
-  return React.useMemo(() => {
+  return useOptimisedMemo(() => {
     const unicast = new EventEmitter();
     const broadcast = app.appEmitter;
 

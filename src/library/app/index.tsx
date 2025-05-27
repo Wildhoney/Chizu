@@ -1,3 +1,4 @@
+import { useOptimisedMemo } from "../hooks/index.ts";
 import { AppContext } from "./types.ts";
 import EventEmitter from "eventemitter3";
 import * as React from "react";
@@ -12,7 +13,7 @@ export function useApp() {
 
 export default function app(Tree: React.ComponentType): React.ComponentType {
   return () => {
-    const context = React.useMemo(
+    const context = useOptimisedMemo(
       () => ({
         appEmitter: new EventEmitter(),
       }),

@@ -1,13 +1,11 @@
+import { useOptimisedEffect } from "../../../hooks/index.ts";
 import { Lifecycle, ModuleDefinition } from "../../../types/index.ts";
 import { Props } from "./types.ts";
-import * as React from "react";
 
 export default function useLifecycles<M extends ModuleDefinition>(
   props: Props<M>,
 ) {
-  const invoked = React.useRef<boolean>(false);
-
-  React.useLayoutEffect((): void => {
+  useOptimisedEffect((): void => {
     props.dispatchers.dispatch(Lifecycle.Derive, []);
   }, [
     props.options.props,
@@ -16,13 +14,7 @@ export default function useLifecycles<M extends ModuleDefinition>(
     props.router.current?.search?.[0],
   ]);
 
-  React.useLayoutEffect(() => {
-    if (invoked.current) {
-      return;
-    }
-
-    invoked.current = true;
-
+  useOptimisedEffect((): (() => void) => {
     props.dispatchers.dispatch(Lifecycle.Mount, []);
     props.dispatchers.dispatch(Lifecycle.Node, [
       props.elements.customElement.current,
