@@ -4,10 +4,9 @@ All notable changes to this project will be documented in this file. See [commit
 
 ## [0.2.8](https://github.com/Wildhoney/Marea/compare/v0.2.7...v0.2.8) (2025-05-27)
 
-
 ### Features
 
-* introduced optimised versions of useLayoutEffect and useMemo to prevent strict mode quirkiness ([6f9cf13](https://github.com/Wildhoney/Marea/commit/6f9cf138f9c857681ae3e37296a407ae622c2851))
+- introduced optimised versions of useLayoutEffect and useMemo to prevent strict mode quirkiness ([6f9cf13](https://github.com/Wildhoney/Marea/commit/6f9cf138f9c857681ae3e37296a407ae622c2851))
 
 ## [0.2.7](https://github.com/Wildhoney/Marea/compare/v0.2.6...v0.2.7) (2025-05-21)
 

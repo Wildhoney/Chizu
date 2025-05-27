@@ -20,10 +20,14 @@ export function useDispatcher<M extends ModuleDefinition>(
 
       // const abort = new AbortController();
       const process = Symbol("process");
-      const generator = ƒ(...payload);
+      const action = ƒ(...payload);
 
-      if (typeof generator === "function") {
-        const models = generator(props.model.current, process);
+      if (action == null) {
+        return void task.resolve();
+      }
+
+      if (typeof action === "function") {
+        const models = action(props.model.current, process);
         props.model.current = cleanup(models, process);
         props.update.rerender();
 
@@ -31,7 +35,7 @@ export function useDispatcher<M extends ModuleDefinition>(
       }
 
       while (true) {
-        const { value, done } = await generator.next();
+        const { value, done } = await action.next();
 
         if (done) {
           const models = value(props.model.current, process);
