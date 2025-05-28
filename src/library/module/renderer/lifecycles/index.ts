@@ -7,7 +7,6 @@ export default function useLifecycles<M extends ModuleDefinition>(
 ) {
   useOptimisedEffect((): void => {
     props.dispatchers.dispatch(Lifecycle.Derive, []);
-    props.update.rerender();
   }, [
     props.options.props,
     props.router.current?.location,

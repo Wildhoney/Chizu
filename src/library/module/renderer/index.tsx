@@ -7,6 +7,7 @@ import useDispatchers from "./dispatchers/index.ts";
 import useElements from "./elements/index.ts";
 import useLifecycles from "./lifecycles/index.ts";
 import useModel from "./model/index.ts";
+import useProps from "./props/index.ts";
 import useQueue from "./queue/index.ts";
 import { Router, useRouter } from "./router/index.tsx";
 import { Props } from "./types.ts";
@@ -22,9 +23,18 @@ export default function renderer<M extends ModuleDefinition>({
   const queue = useQueue();
   const elements = useElements();
   const router = useRouter();
+  const props = useProps({ options, update });
   const model = useModel({ options });
   const dispatchers = useDispatchers({ app, options, update, model, queue });
-  const actions = useActions<M>({ app, options, model, dispatchers, router });
+
+  const actions = useActions<M>({
+    app,
+    options,
+    model,
+    dispatchers,
+    router,
+    props,
+  });
 
   useController({ options, dispatchers, actions });
   useLifecycles({ options, dispatchers, elements, router, update });

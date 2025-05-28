@@ -17,7 +17,7 @@ export default function useActions<M extends ModuleDefinition>(
           return props.model.current.stateful as Readonly<M["Model"]>;
         },
         get props() {
-          return props.options.props as Readonly<M["Props"]>;
+          return props.props.current as Readonly<M["Props"]>;
         },
         get router() {
           return props.router.current as M["Query"] extends string
@@ -50,7 +50,7 @@ export default function useActions<M extends ModuleDefinition>(
           return props.model.current.stateless as Readonly<M["Model"]>;
         },
         get props() {
-          return props.options.props as Readonly<M["Props"]>;
+          return props.props.current as Readonly<M["Props"]>;
         },
         get validate() {
           return props.model.current.validatable as Validatable<
