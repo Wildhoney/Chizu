@@ -27,7 +27,7 @@ export default function renderer<M extends ModuleDefinition>({
   const actions = useActions<M>({ app, options, model, dispatchers, router });
 
   useController({ options, dispatchers, actions });
-  useLifecycles({ options, dispatchers, elements, router });
+  useLifecycles({ options, dispatchers, elements, router, update });
 
   return useOptimisedMemo(() => {
     return React.createElement(options.name, {

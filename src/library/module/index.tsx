@@ -1,5 +1,6 @@
 import renderer from "../module/renderer/index.tsx";
 import { ModuleDefinition } from "../types/index.ts";
+import { hash } from "../utils/index.ts";
 import { ElementName, Options } from "./types.ts";
 import * as React from "react";
 
@@ -16,7 +17,7 @@ export default function module<M extends ModuleDefinition>(
             props,
           },
         }),
-      (a, b) => JSON.stringify(a) === JSON.stringify(b),
+      (a, b) => hash(a) === hash(b),
     );
   };
 }
