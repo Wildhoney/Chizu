@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [0.2.10](https://github.com/Wildhoney/Marea/compare/v0.2.9...v0.2.10) (2025-05-28)
+
+
+### Bug Fixes
+
+* rerendering the tree on prop changes ([d185694](https://github.com/Wildhoney/Marea/commit/d1856945b61d235eaf6a804692faac2f46f74d6e))
+
 ## [0.2.9](https://github.com/Wildhoney/Marea/compare/v0.2.8...v0.2.9) (2025-05-28)
 
 ## [0.2.8](https://github.com/Wildhoney/Marea/compare/v0.2.7...v0.2.8) (2025-05-27)
