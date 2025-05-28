@@ -4,10 +4,9 @@ All notable changes to this project will be documented in this file. See [commit
 
 ## [0.2.10](https://github.com/Wildhoney/Marea/compare/v0.2.9...v0.2.10) (2025-05-28)
 
-
 ### Bug Fixes
 
-* rerendering the tree on prop changes ([d185694](https://github.com/Wildhoney/Marea/commit/d1856945b61d235eaf6a804692faac2f46f74d6e))
+- rerendering the tree on prop changes ([d185694](https://github.com/Wildhoney/Marea/commit/d1856945b61d235eaf6a804692faac2f46f74d6e))
 
 ## [0.2.9](https://github.com/Wildhoney/Marea/compare/v0.2.8...v0.2.9) (2025-05-28)
 

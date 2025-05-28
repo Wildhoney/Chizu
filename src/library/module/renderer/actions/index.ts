@@ -16,13 +16,15 @@ export default function useActions<M extends ModuleDefinition>(
         get model() {
           return props.model.current.stateful as Readonly<M["Model"]>;
         },
+        get props() {
+          return props.options.props as Readonly<M["Props"]>;
+        },
         get router() {
           return props.router.current as M["Query"] extends string
             ? Readonly<Router.Context<M["Query"]>>
             : null;
         },
         queue: [],
-        props: props.options.props as Readonly<M["Props"]>,
         actions: {
           annotate<T>(value: T, operations: (Op | Draft<T>)[]): T {
             return annotate(value, operations);
@@ -47,12 +49,14 @@ export default function useActions<M extends ModuleDefinition>(
         get model() {
           return props.model.current.stateless as Readonly<M["Model"]>;
         },
+        get props() {
+          return props.options.props as Readonly<M["Props"]>;
+        },
         get validate() {
           return props.model.current.validatable as Validatable<
             Readonly<M["Model"]>
           >;
         },
-        props: props.options.props as Readonly<M["Props"]>,
         actions: {
           dispatch([action, ...data]) {
             if (action == null) return Promise.reject();
