@@ -24,7 +24,6 @@ export default defineConfig({
           "immer",
           "lodash",
           "react",
-          "react-router-dom",
           "traverse",
         ].some((pkg) => id === pkg || id.startsWith(pkg + "/"));
       },
@@ -34,7 +33,6 @@ export default defineConfig({
           immer: "Immer",
           lodash: "_",
           react: "React",
-          "react-router-dom": "ReactRouterDOM",
           traverse: "Traverse",
         },
       },
