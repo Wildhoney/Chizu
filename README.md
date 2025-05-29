@@ -30,7 +30,7 @@ Actions are responsible for mutating the state of the view. In the below example
 ```tsx
 export default (function Actions(module) {
   return {
-    async *[Events.Name](name) {
+    [Events.Name](name) {
       return module.actions.produce((draft) => {
         draft.name = name;
       });
