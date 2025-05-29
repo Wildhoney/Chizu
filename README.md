@@ -104,7 +104,7 @@ export default (function Actions(module) {
   return {
     async *[Events.Name]() {
       yield module.actions.produce((draft) => {
-        draft.name = module.actions.annotate(null, [State.Op.Update]);
+        draft.name = module.actions.annotate(null);
       });
 
       const name = await fetch(/* ... */);
