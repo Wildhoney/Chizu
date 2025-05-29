@@ -1,4 +1,4 @@
-import { useApp } from "../../context/index.tsx";
+import { useBroadcast } from "../../broadcast/index.tsx";
 import { useOptimisedMemo } from "../../hooks/index.ts";
 import { ModuleDefinition } from "../../types/index.ts";
 import { hash } from "../../utils/index.ts";
@@ -17,13 +17,19 @@ import * as React from "react";
 export default function renderer<M extends ModuleDefinition>({
   options,
 }: Props<M>): ReactElement {
-  const app = useApp();
   const update = useUpdate();
   const queue = useQueue();
   const elements = useElements();
+  const broadcast = useBroadcast();
   const model = useModel({ options });
-  const dispatchers = useDispatchers({ app, options, update, model, queue });
-  const actions = useActions<M>({ app, options, model, dispatchers });
+  const dispatchers = useDispatchers({
+    broadcast,
+    options,
+    update,
+    model,
+    queue,
+  });
+  const actions = useActions<M>({ broadcast, options, model, dispatchers });
 
   useController({ options, dispatchers, actions });
   useLifecycles({ options, dispatchers, elements, update });

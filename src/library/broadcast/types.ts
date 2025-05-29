@@ -1,13 +1,13 @@
 import EventEmitter from "eventemitter3";
 import * as React from "react";
 
-export type AppOptions = React.ComponentType;
+export type BroadcastOptions = React.ComponentType;
 
-export type AppContext = {
+export type BroadcastContext = {
   appEmitter: EventEmitter;
 };
 
-export type UseApp = AppContext;
+export type UseBroadcast = BroadcastContext;
 
 export type Props = {
   children: React.ReactNode;

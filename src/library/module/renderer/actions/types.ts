@@ -1,4 +1,4 @@
-import { UseApp } from "../../../context/types.ts";
+import { UseBroadcast } from "../../../broadcast/types.ts";
 import { ControllerArgs } from "../../../controller/types.ts";
 import { ModuleDefinition } from "../../../types/index.ts";
 import { ViewArgs } from "../../../view/types.ts";
@@ -7,7 +7,7 @@ import { UseDispatchers } from "../dispatchers/types.ts";
 import { UseModel } from "../model/types.ts";
 
 export type Props<M extends ModuleDefinition> = {
-  app: UseApp;
+  broadcast: UseBroadcast;
   options: UseOptions<M>;
   model: UseModel;
   dispatchers: UseDispatchers;

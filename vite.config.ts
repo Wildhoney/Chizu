@@ -19,13 +19,9 @@ export default defineConfig({
     },
     rollupOptions: {
       external(id) {
-        return [
-          "eventemitter3",
-          "immer",
-          "lodash",
-          "react",
-          "traverse",
-        ].some((pkg) => id === pkg || id.startsWith(pkg + "/"));
+        return ["eventemitter3", "immer", "lodash", "react", "traverse"].some(
+          (pkg) => id === pkg || id.startsWith(pkg + "/"),
+        );
       },
       output: {
         globals: {
