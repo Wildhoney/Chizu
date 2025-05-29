@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [0.2.13](https://github.com/Wildhoney/Marea/compare/v0.2.12...v0.2.13) (2025-05-29)
+
+
+### Features
+
+* changed the syntax of the associated views ([07c099c](https://github.com/Wildhoney/Marea/commit/07c099c8840f5c6e109bb6e8ec2eac8b2e0c437d))
+
 ## [0.2.12](https://github.com/Wildhoney/Marea/compare/v0.2.11...v0.2.12) (2025-05-28)
 
 ### Features
