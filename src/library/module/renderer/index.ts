@@ -1,15 +1,14 @@
-import { useApp } from "../../app/index.tsx";
+import { useApp } from "../../context/index.tsx";
 import { useOptimisedMemo } from "../../hooks/index.ts";
 import { ModuleDefinition } from "../../types/index.ts";
+import { hash } from "../../utils/index.ts";
 import useActions from "./actions/index.ts";
 import useController from "./controller/index.ts";
 import useDispatchers from "./dispatchers/index.ts";
 import useElements from "./elements/index.ts";
 import useLifecycles from "./lifecycles/index.ts";
 import useModel from "./model/index.ts";
-import useProps from "./props/index.ts";
 import useQueue from "./queue/index.ts";
-import { Router, useRouter } from "./router/index.tsx";
 import { Props } from "./types.ts";
 import useUpdate from "./update/index.ts";
 import { ReactElement } from "react";
@@ -22,30 +21,18 @@ export default function renderer<M extends ModuleDefinition>({
   const update = useUpdate();
   const queue = useQueue();
   const elements = useElements();
-  const router = useRouter();
-  const props = useProps({ options, update });
   const model = useModel({ options });
   const dispatchers = useDispatchers({ app, options, update, model, queue });
-
-  const actions = useActions<M>({
-    app,
-    options,
-    model,
-    dispatchers,
-    router,
-    props,
-  });
+  const actions = useActions<M>({ app, options, model, dispatchers });
 
   useController({ options, dispatchers, actions });
-  useLifecycles({ options, dispatchers, elements, router, update });
+  useLifecycles({ options, dispatchers, elements, update });
 
   return useOptimisedMemo(() => {
-    return React.createElement(options.name, {
+    return React.createElement("x-chizu", {
       ref: elements.customElement,
       style: { display: "contents" },
-      children: (
-        <Router using={router}>{() => options.view(actions.view)}</Router>
-      ),
+      children: options.children(actions.view),
     });
-  }, [update.hash]);
+  }, [update.hash, hash(options.using.props)]);
 }

@@ -8,3 +8,7 @@ export type AppContext = {
 };
 
 export type UseApp = AppContext;
+
+export type Props = {
+  children: React.ReactNode;
+};

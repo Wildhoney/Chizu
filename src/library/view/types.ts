@@ -10,7 +10,6 @@ export type ViewArgs<M extends ModuleDefinition> = Readonly<{
   model: Readonly<M["Model"]>;
   validate: Readonly<Validatable<M["Model"]>>;
   actions: Readonly<ViewActions<M>>;
-  props: Readonly<M["Props"]>;
 }>;
 
 export type ViewDefinition<M extends ModuleDefinition> = (

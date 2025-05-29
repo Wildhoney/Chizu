@@ -4,10 +4,9 @@ All notable changes to this project will be documented in this file. See [commit
 
 ## [0.2.12](https://github.com/Wildhoney/Marea/compare/v0.2.11...v0.2.12) (2025-05-28)
 
-
 ### Features
 
-* added use props hook with props accessor ([4ac08e7](https://github.com/Wildhoney/Marea/commit/4ac08e7d57b2f40127031491c915d6dc2427454d))
+- added use props hook with props accessor ([4ac08e7](https://github.com/Wildhoney/Marea/commit/4ac08e7d57b2f40127031491c915d6dc2427454d))
 
 ## [0.2.11](https://github.com/Wildhoney/Marea/compare/v0.2.10...v0.2.11) (2025-05-28)
 

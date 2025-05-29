@@ -1,8 +1,8 @@
-import { Controller, Lifecycle, State, utils } from "../../library/index.ts";
+import { Actions, Lifecycle, State, utils } from "../../library/index.ts";
 import { Events, Module, Task } from "./types.ts";
 import { Db } from "./utils.ts";
 
-export default (function Controller(module) {
+export default (function Actions(module) {
   const db = new Db();
 
   return {
@@ -112,4 +112,4 @@ export default (function Controller(module) {
       }
     },
   };
-} as Controller<Module>);
+} as Actions<Module>);

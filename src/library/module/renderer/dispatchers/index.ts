@@ -1,4 +1,4 @@
-import { useApp } from "../../../app/index.tsx";
+import { useApp } from "../../../context/index.tsx";
 import { ActionEvent } from "../../../controller/types.ts";
 import { useOptimisedMemo } from "../../../hooks/index.ts";
 import { ModuleDefinition, Task } from "../../../types/index.ts";

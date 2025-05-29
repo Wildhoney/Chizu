@@ -1,6 +1,5 @@
 import { EventError } from "../module/renderer/dispatchers/utils.ts";
 import { Models } from "../module/renderer/model/utils.ts";
-import * as Router from "../module/renderer/router/types.ts";
 import { Head } from "../module/renderer/types.ts";
 import {
   Actions,
@@ -8,7 +7,6 @@ import {
   Lifecycle,
   ModuleDefinition,
   Op,
-  Query,
   Queue,
 } from "../types/index.ts";
 
@@ -23,11 +21,7 @@ export type ControllerActions<M extends ModuleDefinition> = {
 export type ControllerArgs<M extends ModuleDefinition> = Readonly<{
   model: Readonly<M["Model"]>;
   queue: Readonly<Queue<M["Actions"]>>;
-  router: M["Query"] extends NonNullable<Query>
-    ? Readonly<Router.Context<M["Query"]>>
-    : null;
   actions: Readonly<ControllerActions<M>>;
-  props: Readonly<M["Props"]>;
 }>;
 
 export type ActionEvent<M extends ModuleDefinition> = (

@@ -1,4 +1,4 @@
-import { Create, Pk } from "../../library/index.ts";
+import { Pk, Typed } from "../../library/index.ts";
 import { DistributedActions } from "../types.ts";
 
 type Id = number;
@@ -30,8 +30,4 @@ export type Actions =
   | [Events.Completed, Pk<Id>]
   | [Events.Remove, Pk<Id>];
 
-export type Module = Create.Module<{
-  Model: Model;
-  Actions: Actions;
-  Query: "name";
-}>;
+export type Module = Typed.Module<Model, Actions>;

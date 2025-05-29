@@ -39,27 +39,21 @@ export enum Lifecycle {
 export type Model = Record<string, any>;
 export type Actions = [] | [ActionName] | [ActionName, ...ActionPayload];
 export type Props = Record<string, unknown>;
-export type Query = null | string;
 
 export type Module<
-  T extends {
-    Model?: Model;
-    Actions?: Actions;
-    Props?: Props;
-    Query?: Query;
-  } = {},
+  M extends Model,
+  A extends Actions = [],
+  P extends Props = {},
 > = {
-  Model: T["Model"] extends Model ? T["Model"] : {};
-  Actions: T["Actions"] extends Actions ? T["Actions"] : [];
-  Props: T["Props"] extends Props ? T["Props"] : {};
-  Query: T["Query"] extends Query ? T["Query"] : null;
+  Model: M;
+  Actions: A;
+  Props: P;
 };
 
 export type ModuleDefinition = {
   Model: Model;
   Actions: Actions;
   Props: Props;
-  Query: Query;
 };
 
 export type Pk<T> = undefined | Symbol | T;

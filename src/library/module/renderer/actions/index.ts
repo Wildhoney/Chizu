@@ -4,7 +4,6 @@ import { update } from "../../../utils/produce/index.ts";
 import { annotate } from "../../../utils/produce/utils.ts";
 import { Validatable } from "../model/types.ts";
 import { Models } from "../model/utils.ts";
-import * as Router from "../router/types.ts";
 import { Props, UseActions } from "./types.ts";
 
 export default function useActions<M extends ModuleDefinition>(
@@ -15,14 +14,6 @@ export default function useActions<M extends ModuleDefinition>(
       controller: {
         get model() {
           return props.model.current.stateful as Readonly<M["Model"]>;
-        },
-        get props() {
-          return props.props.current as Readonly<M["Props"]>;
-        },
-        get router() {
-          return props.router.current as M["Query"] extends string
-            ? Readonly<Router.Context<M["Query"]>>
-            : null;
         },
         queue: [],
         actions: {
@@ -48,9 +39,6 @@ export default function useActions<M extends ModuleDefinition>(
       view: {
         get model() {
           return props.model.current.stateless as Readonly<M["Model"]>;
-        },
-        get props() {
-          return props.props.current as Readonly<M["Props"]>;
         },
         get validate() {
           return props.model.current.validatable as Validatable<
