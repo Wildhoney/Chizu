@@ -12,15 +12,13 @@ export function useBroadcast() {
   return React.useContext(Context);
 }
 
-export function BroadcastProvider({ children }: Props): React.ComponentType {
-  return () => {
-    const context = useOptimisedMemo(
-      () => ({
-        appEmitter: new EventEmitter(),
-      }),
-      [],
-    );
+export function BroadcastProvider({ children }: Props): React.ReactNode {
+  const context = useOptimisedMemo(
+    () => ({
+      appEmitter: new EventEmitter(),
+    }),
+    [],
+  );
 
-    return <Context.Provider value={context}>{children}</Context.Provider>;
-  };
+  return <Context.Provider value={context}>{children}</Context.Provider>;
 }
