@@ -10,7 +10,7 @@ export default function List({ module }: Props): ReactElement {
   if (module.model.tasks.length === 0) {
     return (
       <div className={styles.empty}>
-        {module.validate.tasks.draft() ? (
+        {module.validate.tasks.pending() ? (
           <>Please wait&hellip;</>
         ) : (
           "You have no tasks yet."

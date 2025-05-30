@@ -11,12 +11,12 @@ import useModel from "./model/index.ts";
 import useQueue from "./queue/index.ts";
 import { Props } from "./types.ts";
 import useUpdate from "./update/index.ts";
-import { ReactElement } from "react";
 import * as React from "react";
+import { Context } from "./utils.ts";
 
 export default function renderer<M extends ModuleDefinition>({
   options,
-}: Props<M>): ReactElement {
+}: Props<M>): React.ReactNode {
   const update = useUpdate();
   const queue = useQueue();
   const elements = useElements();
@@ -36,10 +36,14 @@ export default function renderer<M extends ModuleDefinition>({
 
   return useOptimisedMemo(() => {
     // eslint-disable-next-line react/no-children-prop
-    return React.createElement("x-chizu", {
-      ref: elements.customElement,
-      style: { display: "contents" },
-      children: options.children(actions.view),
+    return React.createElement(Context.Provider, {
+      value: actions.view,
+      // eslint-disable-next-line react/no-children-prop
+      children: React.createElement("x-chizu", {
+        ref: elements.customElement,
+        style: { display: "contents" },
+        children: options.children(actions.view),
+      }),
     });
   }, [update.hash, hash(options.using.props)]);
 }

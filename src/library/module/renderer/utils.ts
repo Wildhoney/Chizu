@@ -2,7 +2,9 @@ import * as React from "react";
 import { ModuleDefinition } from "../../types";
 import { ViewArgs } from "../../view/types";
 
-export const Context = React.createContext(null);
+export const Context = React.createContext(
+  null,
+) as React.Context<ViewArgs<ModuleDefinition> | null>;
 
 export function useModule<M extends ModuleDefinition>() {
   const context = React.useContext(Context);
