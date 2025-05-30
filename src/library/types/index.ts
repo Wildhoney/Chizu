@@ -33,7 +33,7 @@ export enum Lifecycle {
   Mount = "lifecycle/mount",
   Node = "lifecycle/node",
   Derive = "lifecycle/derive",
-  Error = "distributed/lifecycle/error",
+  Error = "lifecycle/error",
   Unmount = "lifecycle/unmount",
 }
 

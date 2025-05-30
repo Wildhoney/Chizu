@@ -37,6 +37,7 @@ export default function useActions<M extends ModuleDefinition>(
         },
       },
       view: {
+        error: false,
         get model() {
           return props.model.current.stateless as Readonly<M["Model"]>;
         },
@@ -46,6 +47,8 @@ export default function useActions<M extends ModuleDefinition>(
           >;
         },
         actions: {
+          retry: () => {},
+          remount: () => {},
           dispatch([action, ...data]) {
             if (action == null) return Promise.reject();
             const task = Promise.withResolvers<void>();

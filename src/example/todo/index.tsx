@@ -12,10 +12,20 @@ export default function Todo(): React.ReactElement {
     <Tree<Module> using={{ model, actions }}>
       {(module) => (
         <section className={styles.container}>
-          <div className={styles.boundary}>
-            <Field module={module} />
-            <List module={module} />
-          </div>
+          {module.error && (
+            <>
+              Hmm!
+              <button onClick={module.actions.retry}>Retry&hellip;</button>
+              <button onClick={module.actions.remount}>Remount&hellip;</button>
+            </>
+          )}
+
+          {!module.error && (
+            <div className={styles.boundary}>
+              <Field module={module} />
+              <List module={module} />
+            </div>
+          )}
         </section>
       )}
     </Tree>

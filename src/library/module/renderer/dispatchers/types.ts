@@ -1,3 +1,4 @@
+import EventEmitter from "eventemitter3";
 import { UseBroadcast } from "../../../broadcast/types.ts";
 import { ModuleDefinition } from "../../../types/index.ts";
 import { UseOptions } from "../../types.ts";
@@ -16,7 +17,9 @@ export type Props<M extends ModuleDefinition> = {
 
 export type UseDispatchers = ReturnType<typeof useDispatchers>;
 
-export type UseDispatchHandlerProps<M extends ModuleDefinition> = Props<M>;
+export type UseDispatchHandlerProps<M extends ModuleDefinition> = Props<M> & {
+  unicast: EventEmitter;
+};
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type Fn = (...args: any[]) => void;

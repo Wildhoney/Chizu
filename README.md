@@ -143,7 +143,7 @@ export default function ProfileView(props: Props): React.ReactElement {
 
 ## Error handling
 
-Actions can throw errors directly or in any of their associated `yield` actions &ndash; all unhandled errors are automatically caught and broadcast using the `Lifecycle.Error` action &ndash; you can render these [in a toast](https://github.com/fkhadra/react-toastify#readme) or similar UI.
+Actions can throw errors directly or in any of their associated `yield` actions &ndash; all unhandled errors are automatically caught and dispatched using the `Lifecycle.Error` action &ndash; you can render these [in a toast](https://github.com/fkhadra/react-toastify#readme) or similar UI.
 
 You can also customise these errors a little further with your own error `enum` which describes the error type:
 
@@ -166,7 +166,7 @@ export default <Actions<Module>>function Actions(module) {
 
       const name = await fetch(/* ... */);
 
-      if (!name) throw new EventError(Errors.UserValidation);
+      if (!name) throw new ActionError(Errors.UserValidation);
 
       return module.actions.produce((draft) => {
         draft.name = name;
@@ -190,7 +190,7 @@ export default <Actions<Module>>function Actions(module) {
 
       if (!name) {
         return module.actions.produce((draft) => {
-          draft.name = Maybe.of(new EventError(Errors.UserValidation));
+          draft.name = Maybe.of(new ActionError(Errors.UserValidation));
         });
       }
 

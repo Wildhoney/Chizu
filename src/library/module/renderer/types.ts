@@ -1,10 +1,15 @@
 import { ModuleDefinition } from "../../types/index.ts";
 import { UseOptions } from "../types.ts";
 
+import * as React from "react";
 export type ElementName = string;
 
+export type Remount = React.ActionDispatch<[]>;
+
 export type Props<M extends ModuleDefinition> = {
-  options: UseOptions<M>;
+  options: UseOptions<M> & {
+    remount: Remount;
+  };
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

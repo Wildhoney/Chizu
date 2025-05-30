@@ -13,8 +13,10 @@ import { Props } from "./types.ts";
 import useUpdate from "./update/index.ts";
 import * as React from "react";
 import { Context } from "./utils.ts";
+import ErrorBoundary from "../../errors/index.ts";
+import { ViewArgs } from "../../view/types.ts";
 
-export default function renderer<M extends ModuleDefinition>({
+export default function Renderer<M extends ModuleDefinition>({
   options,
 }: Props<M>): React.ReactNode {
   const update = useUpdate();
@@ -36,14 +38,30 @@ export default function renderer<M extends ModuleDefinition>({
 
   return useOptimisedMemo(() => {
     // eslint-disable-next-line react/no-children-prop
-    return React.createElement(Context.Provider, {
-      value: actions.view,
-      // eslint-disable-next-line react/no-children-prop
-      children: React.createElement("x-chizu", {
-        ref: elements.customElement,
-        style: { display: "contents" },
-        children: options.children(actions.view),
-      }),
+    return React.createElement(ErrorBoundary, {
+      module: actions.view,
+      children(props) {
+        const args = <ViewArgs<M>>{
+          ...actions.view,
+          error: props.error,
+          actions: {
+            ...actions.view.actions,
+            retry: props.retry,
+            remount: options.remount,
+          },
+        };
+
+        // eslint-disable-next-line react/no-children-prop
+        return React.createElement(Context.Provider, {
+          value: args,
+          // eslint-disable-next-line react/no-children-prop
+          children: React.createElement("x-chizu", {
+            ref: elements.customElement,
+            style: { display: "contents" },
+            children: options.children(args),
+          }),
+        });
+      },
     });
   }, [update.hash, hash(options.using.props)]);
 }

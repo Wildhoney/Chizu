@@ -1,10 +1,11 @@
 import { useBroadcast } from "../../../broadcast/index.tsx";
+import { isBroadcast } from "../../../broadcast/utils.ts";
 import { ActionEvent } from "../../../controller/types.ts";
 import { useOptimisedMemo } from "../../../hooks/index.ts";
 import { ModuleDefinition, Task } from "../../../types/index.ts";
 import { Head, Tail } from "../types.ts";
 import { Props } from "./types.ts";
-import { isBroadcast, useDispatcher } from "./utils.ts";
+import { useDispatcher } from "./utils.ts";
 import EventEmitter from "eventemitter3";
 
 /**
@@ -15,11 +16,10 @@ export default function useDispatchers<M extends ModuleDefinition>(
   props: Props<M>,
 ) {
   const broadcast = useBroadcast();
-  const dispatcher = useDispatcher(props);
+  const unicast = useOptimisedMemo(() => new EventEmitter(), []);
+  const dispatcher = useDispatcher({ ...props, unicast });
 
   return useOptimisedMemo(() => {
-    const unicast = new EventEmitter();
-
     return {
       attach<F extends ActionEvent<M>>(action: Head<M["Actions"]>, ƒ: F) {
         const name = String(action);
