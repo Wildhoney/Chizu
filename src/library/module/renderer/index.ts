@@ -35,6 +35,7 @@ export default function renderer<M extends ModuleDefinition>({
   useLifecycles({ options, dispatchers, elements, update });
 
   return useOptimisedMemo(() => {
+    // eslint-disable-next-line react/no-children-prop
     return React.createElement("x-chizu", {
       ref: elements.customElement,
       style: { display: "contents" },

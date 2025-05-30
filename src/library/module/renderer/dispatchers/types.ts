@@ -18,4 +18,5 @@ export type UseDispatchers = ReturnType<typeof useDispatchers>;
 
 export type UseDispatchHandlerProps<M extends ModuleDefinition> = Props<M>;
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type Fn = (...args: any[]) => void;

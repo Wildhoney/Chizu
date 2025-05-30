@@ -26,6 +26,7 @@ export class State {
 
 export type ActionName = Lifecycle | symbol | string | number;
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type ActionPayload = [any, ...any[]];
 
 export enum Lifecycle {
@@ -36,6 +37,7 @@ export enum Lifecycle {
   Unmount = "lifecycle/unmount",
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type Model = Record<string, any>;
 export type Actions = [] | [ActionName] | [ActionName, ...ActionPayload];
 export type Props = Record<string, unknown>;
@@ -43,7 +45,7 @@ export type Props = Record<string, unknown>;
 export type Module<
   M extends Model,
   A extends Actions = [],
-  P extends Props = {},
+  P extends Props = Record<string, never>,
 > = {
   Model: M;
   Actions: A;
@@ -56,7 +58,7 @@ export type ModuleDefinition = {
   Props: Props;
 };
 
-export type Pk<T> = undefined | Symbol | T;
+export type Pk<T> = undefined | symbol | T;
 
 export type Queue<A extends ModuleDefinition["Actions"]> = {
   name: Head<A>;
@@ -67,6 +69,6 @@ export type Queue<A extends ModuleDefinition["Actions"]> = {
 
 export type Task = PromiseWithResolvers<void>;
 
-export type Process = Symbol;
+export type Process = symbol;
 
 export type Op = number;

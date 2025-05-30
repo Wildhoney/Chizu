@@ -22,9 +22,11 @@ preview:
 fmt:
 	npx prettier --write .
 
+lint:
+	npx eslint --fix src/
+
 test:
 	make unit
-	make browser
 
 deploy:
 	yarn --force

@@ -28,7 +28,7 @@ Strongly typed React framework using generators and efficiently updated views al
 Actions are responsible for mutating the state of the view. In the below example the `name` is dispatched from the view to the actions, the state is updated and the view is rendered with the updated value.
 
 ```tsx
-export default (function Actions(module) {
+export default <Actions<Module>>function Actions(module) {
   return {
     [Events.Name](name) {
       return module.actions.produce((draft) => {
@@ -36,7 +36,7 @@ export default (function Actions(module) {
       });
     },
   };
-} as Actions<Module>);
+};
 ```
 
 ```tsx
@@ -62,7 +62,7 @@ export default function Profile(props: Props): React.ReactElement {
 You can perform asynchronous operations in the action which will cause the associated view to render a second time:
 
 ```tsx
-export default (function Actions(module) {
+export default <Actions<Module>>function Actions(module) {
   return {
     async *[Events.Name]() {
       yield module.actions.produce((draft) => {
@@ -76,7 +76,7 @@ export default (function Actions(module) {
       });
     },
   };
-} as Actions<Module>);
+};
 ```
 
 ```tsx
@@ -100,7 +100,7 @@ export default function Profile(props: Props): React.ReactElement {
 However in the above example where the name is fetched asynchronously, there is no feedback to the user &ndash; we can improve that significantly by using the `module.actions.annotate` and `module.validate` helpers:
 
 ```tsx
-export default (function Actions(module) {
+export default <Actions<Module>>function Actions(module) {
   return {
     async *[Events.Name]() {
       yield module.actions.produce((draft) => {
@@ -113,7 +113,7 @@ export default (function Actions(module) {
       });
     },
   };
-} as Actions<Module>);
+};
 ```
 
 ```tsx
@@ -155,7 +155,7 @@ export const enum Errors {
 ```
 
 ```tsx
-export default (function Actions(module) {
+export default <Actions<Module>>function Actions(module) {
   return {
     *[Events.Name]() {
       yield module.actions.produce((draft) => {
@@ -171,13 +171,13 @@ export default (function Actions(module) {
       });
     },
   };
-}) as Actions<Module>;
+};
 ```
 
 However showing a toast message is not always relevant, you may want a more detailed error message such as a user not found message &ndash; although you could introduce another property for such errors in your model, you could mark the property as fallible by giving it a `Maybe` type because it then keeps everything nicely associated with the `name` property rather than creating another property:
 
 ```tsx
-export default (function Actions(module) {
+export default <Actions<Module>>function Actions(module) {
   return {
     async *[Events.Name]() {
       yield module.actions.produce((draft) => {
@@ -197,5 +197,5 @@ export default (function Actions(module) {
       });
     },
   };
-} as Actions<Module>);
+};
 ```

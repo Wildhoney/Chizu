@@ -14,7 +14,7 @@ export type ControllerActions<M extends ModuleDefinition> = {
   annotate<T>(value: T, operations?: (Op | Draft<T>)[]): T;
   produce(
     ƒ: (model: M["Model"]) => void,
-  ): (models: Models<M["Model"]>, process: Symbol) => Models<M["Model"]>;
+  ): (models: Models<M["Model"]>, process: symbol) => Models<M["Model"]>;
   dispatch(action: M["Actions"]): Promise<void>;
 };
 
@@ -36,10 +36,10 @@ type ActionEvents<M extends ModuleDefinition> = {
 
 export type ActionGenerator<M extends ModuleDefinition> =
   | void
-  | ((models: Models<M["Model"]>, process: Symbol) => Models<M["Model"]>)
+  | ((models: Models<M["Model"]>, process: symbol) => Models<M["Model"]>)
   | AsyncGenerator<
-      (models: Models<M["Model"]>, process: Symbol) => Models<M["Model"]>,
-      (models: Models<M["Model"]>, process: Symbol) => Models<M["Model"]>,
+      (models: Models<M["Model"]>, process: symbol) => Models<M["Model"]>,
+      (models: Models<M["Model"]>, process: symbol) => Models<M["Model"]>,
       unknown
     >;
 

@@ -2,12 +2,12 @@ import { Actions, Lifecycle, State, utils } from "../../library/index.ts";
 import { Events, Module, Task } from "./types.ts";
 import { Db } from "./utils.ts";
 
-export default (function Actions(module) {
+export default <Actions<Module>>function Actions(module) {
   const db = new Db();
 
   return {
     async *[Lifecycle.Mount]() {
-      Draft: {
+      {
         yield module.actions.produce((draft) => {
           draft.tasks = module.actions.annotate([], [State.Op.Replace]);
         });
@@ -15,7 +15,7 @@ export default (function Actions(module) {
 
       await utils.sleep(1_000);
 
-      Read: {
+      {
         const tasks = await db.todos.toArray();
 
         return module.actions.produce((draft) => {
@@ -39,7 +39,7 @@ export default (function Actions(module) {
         completed: false,
       };
 
-      Draft: {
+      {
         yield module.actions.produce((draft) => {
           draft.task = null;
           draft.tasks.push(module.actions.annotate(task, [State.Op.Add]));
@@ -48,7 +48,7 @@ export default (function Actions(module) {
 
       await utils.sleep(3_000);
 
-      Create: {
+      {
         const pk = await db.todos.put({ ...task, id: undefined });
         const index = module.model.tasks.findIndex((task) => task.id === id);
 
@@ -59,7 +59,7 @@ export default (function Actions(module) {
     },
 
     async *[Events.Completed](taskId) {
-      Draft: {
+      {
         yield module.actions.produce((draft) => {
           const index = module.model.tasks.findIndex(
             (task) => task.id === taskId,
@@ -71,7 +71,7 @@ export default (function Actions(module) {
 
       await utils.sleep(10_000);
 
-      Update: {
+      {
         const task = await db.todos.get(taskId);
         await db.todos.update(taskId, {
           completed: !task?.completed,
@@ -88,7 +88,7 @@ export default (function Actions(module) {
     },
 
     async *[Events.Remove](taskId) {
-      Draft: {
+      {
         yield module.actions.produce((draft) => {
           const index = module.model.tasks.findIndex(
             (task) => task.id === taskId,
@@ -100,7 +100,7 @@ export default (function Actions(module) {
 
       await utils.sleep(10_000);
 
-      Delete: {
+      {
         await db.todos.delete(taskId);
 
         return module.actions.produce((draft) => {
@@ -112,4 +112,4 @@ export default (function Actions(module) {
       }
     },
   };
-} as Actions<Module>);
+};
