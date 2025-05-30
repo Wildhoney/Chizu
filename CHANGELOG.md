@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [0.2.18](https://github.com/Wildhoney/Marea/compare/v0.2.17...v0.2.18) (2025-05-30)
+
+
+### Bug Fixes
+
+* added module context ([dacf6fa](https://github.com/Wildhoney/Marea/commit/dacf6fa13d09e332a8e441dddc2696e98c0f8ddb))
+
 ## [0.2.17](https://github.com/Wildhoney/Marea/compare/v0.2.16...v0.2.17) (2025-05-30)
 
 ### Features
