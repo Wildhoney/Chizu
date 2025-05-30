@@ -8,7 +8,9 @@ Strongly typed React framework using generators and efficiently updated views al
 
 1. [Benefits](#benefits)
 1. [Getting started](#getting-started)
-1. [Handling errors](#handling-errors)
+1. [Error handling](#error-handling)
+1. [Distributed events](#distributed-events)
+1. [Module context](#module-context)
 
 ## Benefits
 
@@ -139,7 +141,7 @@ export default function ProfileView(props: Props): React.ReactElement {
 }
 ```
 
-## Handling Errors
+## Error handling
 
 Actions can throw errors directly or in any of their associated `yield` actions &ndash; all unhandled errors are automatically caught and broadcast using the `Lifecycle.Error` action &ndash; you can render these [in a toast](https://github.com/fkhadra/react-toastify#readme) or similar UI.
 
@@ -198,4 +200,34 @@ export default <Actions<Module>>function Actions(module) {
     },
   };
 };
+```
+
+## Distributed events
+
+Actions can communicate with other mounted actions using the `DistributedActions` approach. You can configure the enum and union type in the root of your application:
+
+```ts
+export enum DistributedEvents {
+  SignedOut = "distributed/signed-out",
+}
+
+export type DistributedActions = [DistributedEvents.SignedOut];
+```
+
+Note that you must prefix the enum name with `distributed` for it to behave as a distributed event, otherwise it'll be considered a module event only. Once you have the distributed events you simply need to augment the module actions union with the `DistributedActions` and use it as you do other actions:
+
+```ts
+export type Actions = DistributedActions | [Events.Task, string]; // etc...
+```
+
+## Module context
+
+In the eventuality that you have a component but don't want associated actions, models, etc&hellip; but want to still fire events either the closest module or a distributed event, you can use the `useModule` hook:
+
+```ts
+const module = useModule<Module>();
+
+// ...
+
+module.actions.dispatch([Event.Task, "My task that needs to be done."]);
 ```

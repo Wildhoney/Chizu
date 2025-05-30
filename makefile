@@ -16,6 +16,12 @@ dev:
 build:
 	npx vite build
 
+checks:
+	make fmt
+	make lint
+	make typecheck
+	make unit
+
 preview:
 	npx vite preview
 

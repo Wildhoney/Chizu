@@ -1,5 +1,4 @@
 import { Pk, Typed } from "../../library/index.ts";
-import { DistributedActions } from "../types.ts";
 
 type Id = number;
 
@@ -24,7 +23,6 @@ export const enum Events {
 }
 
 export type Actions =
-  | DistributedActions
   | [Events.Task, string]
   | [Events.Add]
   | [Events.Completed, Pk<Id>]

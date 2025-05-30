@@ -22,7 +22,7 @@
     "dist"
   ],
   "scripts": {
-    "release": "make prettier && make lint"
+    "release": "make checks"
   },
   "devDependencies": {
     "@babel/preset-env": "^7.27.2",
