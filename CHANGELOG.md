@@ -4,10 +4,9 @@ All notable changes to this project will be documented in this file. See [commit
 
 ## [0.2.19](https://github.com/Wildhoney/Marea/compare/v0.2.18...v0.2.19) (2025-05-30)
 
-
 ### Features
 
-* improved the error handling significantly ([910fae0](https://github.com/Wildhoney/Marea/commit/910fae069772ebb763f2eea1bb793b3ba3c685e7))
+- improved the error handling significantly ([910fae0](https://github.com/Wildhoney/Marea/commit/910fae069772ebb763f2eea1bb793b3ba3c685e7))
 
 ## [0.2.18](https://github.com/Wildhoney/Marea/compare/v0.2.17...v0.2.18) (2025-05-30)
 
