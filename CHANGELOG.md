@@ -2,6 +2,8 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [0.2.20](https://github.com/Wildhoney/Marea/compare/v0.2.19...v0.2.20) (2025-05-30)
+
 ## [0.2.19](https://github.com/Wildhoney/Marea/compare/v0.2.18...v0.2.19) (2025-05-30)
 
 ### Features
