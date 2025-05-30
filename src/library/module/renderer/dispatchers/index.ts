@@ -1,5 +1,5 @@
 import { useBroadcast } from "../../../broadcast/index.tsx";
-import { isBroadcast } from "../../../broadcast/utils.ts";
+import { isBroadcastAction } from "../../../broadcast/utils.ts";
 import { ActionEvent } from "../../../controller/types.ts";
 import { useOptimisedMemo } from "../../../hooks/index.ts";
 import { ModuleDefinition, Task } from "../../../types/index.ts";
@@ -24,7 +24,7 @@ export default function useDispatchers<M extends ModuleDefinition>(
       attach<F extends ActionEvent<M>>(action: Head<M["Actions"]>, ƒ: F) {
         const name = String(action);
 
-        isBroadcast(name)
+        isBroadcastAction(name)
           ? broadcast.appEmitter.on(name, dispatcher(action, ƒ))
           : unicast.on(name, dispatcher(action, ƒ));
       },
@@ -35,7 +35,7 @@ export default function useDispatchers<M extends ModuleDefinition>(
       ) {
         const name = String(action);
 
-        isBroadcast(name)
+        isBroadcastAction(name)
           ? broadcast.appEmitter.emit(name, task, data)
           : unicast.emit(name, task, data);
       },

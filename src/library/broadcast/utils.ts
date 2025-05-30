@@ -4,6 +4,6 @@
  * @param name {string}
  * @returns {boolean}
  */
-export function isBroadcast(name: string): boolean {
+export function isBroadcastAction(name: string): boolean {
   return name.startsWith("distributed");
 }
