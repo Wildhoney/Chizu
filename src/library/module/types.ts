@@ -10,7 +10,3 @@ export type UseOptions<M extends ModuleDefinition> = {
   };
   children(module: ViewArgs<M>): React.ReactNode;
 };
-
-export type RootProps = {
-  children: React.ReactNode;
-};
