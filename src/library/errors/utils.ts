@@ -1,13 +1,9 @@
-export function isActionError(
-  error: Error | ActionError | ComponentError,
-): error is ActionError {
-  return error instanceof ActionError;
+export function isActionError(error: Error | UserError): error is UserError {
+  return error instanceof UserError;
 }
 
-export function isComponentError(
-  error: Error | ActionError | ComponentError,
-): error is ComponentError {
-  return error instanceof ComponentError;
+export function isUserError(error: Error | UserError): error is UserError {
+  return error instanceof UserError;
 }
 
 /**
@@ -15,16 +11,10 @@ export function isComponentError(
  *
  * @function intoError
  * @param error {unknown} - The error to convert to a known error type.
- * @returns {Error | ActionError | ComponentError}
+ * @returns {Error | UserError}
  */
-export function intoError(
-  error: unknown,
-): Error | ActionError | ComponentError {
-  if (
-    error instanceof ActionError ||
-    error instanceof ComponentError ||
-    error instanceof Error
-  ) {
+export function intoError(error: unknown): Error | UserError {
+  if (error instanceof UserError || error instanceof Error) {
     return error;
   }
 
@@ -32,14 +22,12 @@ export function intoError(
 }
 
 /**
- * Custom error class for action errors.
- *
- * @class ActionError
+ * @class UserError
  * @extends Error
  * @param type {string} - The type of the error.
  * @param message {string} - The error message.
  */
-export class ActionError extends Error {
+export class UserError extends Error {
   #type: number | string | symbol;
   #message: null | string;
 
@@ -51,27 +39,6 @@ export class ActionError extends Error {
 
   get type(): number | string | symbol {
     return this.#type;
-  }
-
-  get message(): string {
-    return this.#message || "";
-  }
-}
-
-/**
- * Custom error class for component errors.
- *
- * @class ComponentError
- * @extends Error
- * @param type {string} - The type of the error.
- * @param message {string} - The error message.
- */
-export class ComponentError extends Error {
-  #message: null | string;
-
-  constructor(message: null | string = null) {
-    super(String(message));
-    this.#message = message;
   }
 
   get message(): string {

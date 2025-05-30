@@ -21,7 +21,6 @@ export default class ErrorBoundary<
 
   render() {
     const retry = (): void => this.setState({ errored: false });
-
     return this.props.children({ error: this.state.errored, retry });
   }
 }
