@@ -4,10 +4,9 @@ All notable changes to this project will be documented in this file. See [commit
 
 ## [0.2.17](https://github.com/Wildhoney/Marea/compare/v0.2.16...v0.2.17) (2025-05-30)
 
-
 ### Features
 
-* added useModule for use within a module tree ([58d0409](https://github.com/Wildhoney/Marea/commit/58d0409172551952f945d1f6f1260103090cc311))
+- added useModule for use within a module tree ([58d0409](https://github.com/Wildhoney/Marea/commit/58d0409172551952f945d1f6f1260103090cc311))
 
 ## [0.2.16](https://github.com/Wildhoney/Marea/compare/v0.2.15...v0.2.16) (2025-05-29)
 
