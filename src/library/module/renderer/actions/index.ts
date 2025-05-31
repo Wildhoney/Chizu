@@ -1,5 +1,6 @@
 import { useOptimisedMemo } from "../../../hooks/index.ts";
 import { Draft, ModuleDefinition, Op, Process } from "../../../types/index.ts";
+import { Meta } from "../../../utils/index.ts";
 import { update } from "../../../utils/produce/index.ts";
 import { annotate } from "../../../utils/produce/utils.ts";
 import { Validatable } from "../model/types.ts";
@@ -37,7 +38,6 @@ export default function useActions<M extends ModuleDefinition>(
         },
       },
       view: {
-        error: false,
         get model() {
           return props.model.current.stateless as Readonly<M["Model"]>;
         },
@@ -47,8 +47,9 @@ export default function useActions<M extends ModuleDefinition>(
           >;
         },
         actions: {
-          retry: () => {},
-          remount: () => {},
+          corrupt() {
+            return props.model.current.stateless[Meta.Error];
+          },
           dispatch([action, ...data]) {
             if (action == null) return Promise.reject();
             const task = Promise.withResolvers<void>();

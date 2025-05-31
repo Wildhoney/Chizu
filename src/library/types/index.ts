@@ -38,7 +38,7 @@ export enum Lifecycle {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type Model = Record<string, any>;
+export type Model = Record<symbol | string, any>;
 export type Actions = [] | [ActionName] | [ActionName, ...ActionPayload];
 export type Props = Record<string, unknown>;
 

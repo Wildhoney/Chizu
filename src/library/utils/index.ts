@@ -12,3 +12,7 @@ export function pk<T>(id?: Pk<T>): boolean | symbol {
 export function hash<T>(x: T): string {
   return JSON.stringify(x);
 }
+
+export const Meta = {
+  Error: Symbol("meta/error"),
+};

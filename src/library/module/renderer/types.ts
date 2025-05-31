@@ -7,9 +7,7 @@ export type ElementName = string;
 export type Remount = React.ActionDispatch<[]>;
 
 export type Props<M extends ModuleDefinition> = {
-  options: UseOptions<M> & {
-    remount: Remount;
-  };
+  options: UseOptions<M>;
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

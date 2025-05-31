@@ -2,6 +2,7 @@ import { ControllerDefinition } from "./controller/types.ts";
 import { ViewArgs, ViewDefinition } from "./view/types.ts";
 
 export { Lifecycle, State } from "./types/index.ts";
+export { Meta } from "./utils/index.ts";
 export * as utils from "./utils/index.ts";
 export { default as Tree } from "./module/index.tsx";
 export { BroadcastProvider } from "./broadcast/index.tsx";

@@ -12,9 +12,8 @@ import useQueue from "./queue/index.ts";
 import { Props } from "./types.ts";
 import useUpdate from "./update/index.ts";
 import * as React from "react";
-import { Context } from "./utils.ts";
-import ErrorBoundary from "../../errors/index.ts";
-import { ViewArgs } from "../../view/types.ts";
+import { Context, config } from "./utils.ts";
+import ErrorBoundary from "../../errors/index.tsx";
 
 export default function Renderer<M extends ModuleDefinition>({
   options,
@@ -39,26 +38,18 @@ export default function Renderer<M extends ModuleDefinition>({
   return useOptimisedMemo(() => {
     // eslint-disable-next-line react/no-children-prop
     return React.createElement(ErrorBoundary, {
+      model,
+      dispatchers,
       module: actions.view,
-      children(props) {
-        const args = <ViewArgs<M>>{
-          ...actions.view,
-          error: props.error,
-          actions: {
-            ...actions.view.actions,
-            retry: props.retry,
-            remount: options.remount,
-          },
-        };
-
+      children(): React.ReactNode {
         // eslint-disable-next-line react/no-children-prop
         return React.createElement(Context.Provider, {
-          value: args,
+          value: actions.view,
           // eslint-disable-next-line react/no-children-prop
-          children: React.createElement("x-chizu", {
+          children: React.createElement(config.elementName, {
             ref: elements.customElement,
             style: { display: "contents" },
-            children: options.children(args),
+            children: options.children(actions.view),
           }),
         });
       },

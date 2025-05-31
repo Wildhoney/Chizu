@@ -2,6 +2,10 @@ import * as React from "react";
 import { ModuleDefinition } from "../../types";
 import { ViewArgs } from "../../view/types";
 
+export const config = {
+  elementName: "x-chizu",
+};
+
 export const Context = React.createContext(
   null,
 ) as React.Context<ViewArgs<ModuleDefinition> | null>;
