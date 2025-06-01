@@ -4,11 +4,10 @@ All notable changes to this project will be documented in this file. See [commit
 
 ## [0.2.21](https://github.com/Wildhoney/Marea/compare/v0.2.20...v0.2.21) (2025-06-01)
 
-
 ### Features
 
-* added concept of render channels ([c9f56d0](https://github.com/Wildhoney/Marea/commit/c9f56d01b86d14d9256c26f0661b8c326226b871))
-* moved reporting of view errors into the associated model ([c3538cb](https://github.com/Wildhoney/Marea/commit/c3538cbea081a154d3f45cdec74d0455f377f3b4))
+- added concept of render channels ([c9f56d0](https://github.com/Wildhoney/Marea/commit/c9f56d01b86d14d9256c26f0661b8c326226b871))
+- moved reporting of view errors into the associated model ([c3538cb](https://github.com/Wildhoney/Marea/commit/c3538cbea081a154d3f45cdec74d0455f377f3b4))
 
 ## [0.2.20](https://github.com/Wildhoney/Marea/compare/v0.2.19...v0.2.20) (2025-05-30)
 
