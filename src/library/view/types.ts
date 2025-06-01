@@ -1,14 +1,16 @@
 import { Validatable } from "../module/renderer/model/types.ts";
-import { ModuleDefinition } from "../types/index.ts";
+import { Channel, ModuleDefinition } from "../types/index.ts";
 import * as React from "react";
 
 export type ViewActions<M extends ModuleDefinition> = {
-  corrupt(): boolean;
   dispatch(action: M["Actions"]): Promise<void>;
 };
 
 export type ViewArgs<M extends ModuleDefinition> = Readonly<{
   model: Readonly<M["Model"]>;
+  channel: {
+    is(channel: Channel): boolean;
+  };
   validate: Readonly<Validatable<M["Model"]>>;
   actions: Readonly<ViewActions<M>>;
 }>;

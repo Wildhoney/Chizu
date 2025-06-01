@@ -5,6 +5,7 @@ import {
   Actions,
   Draft,
   Lifecycle,
+  Meta,
   ModuleDefinition,
   Op,
   Queue,
@@ -13,7 +14,7 @@ import {
 export type ControllerActions<M extends ModuleDefinition> = {
   annotate<T>(value: T, operations?: (Op | Draft<T>)[]): T;
   produce(
-    ƒ: (model: M["Model"]) => void,
+    ƒ: (model: M["Model"], meta: Meta) => void,
   ): (models: Models<M["Model"]>, process: symbol) => Models<M["Model"]>;
   dispatch(action: M["Actions"]): Promise<void>;
 };

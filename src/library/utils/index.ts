@@ -13,6 +13,4 @@ export function hash<T>(x: T): string {
   return JSON.stringify(x);
 }
 
-export const Meta = {
-  Error: Symbol("meta/error"),
-};
+export const meta = Symbol("meta");

@@ -1,11 +1,12 @@
 import { Process, State } from "../../types/index.ts";
-import { Immer } from "immer";
+import { enablePatches, Immer } from "immer";
 
 export const config = {
   immer: new Immer(),
   annotations: Symbol("annotations") as unknown as string,
 };
 
+enablePatches();
 config.immer.setAutoFreeze(false);
 
 export class Annotation<M> {

@@ -1,4 +1,10 @@
-import { Actions, Lifecycle, State, utils } from "../../library/index.ts";
+import {
+  Actions,
+  Channel,
+  Lifecycle,
+  State,
+  utils,
+} from "../../library/index.ts";
 import { Events, Module, Task } from "./types.ts";
 import { Db } from "./utils.ts";
 
@@ -110,6 +116,13 @@ export default <Actions<Module>>function Actions(module) {
           draft.tasks.splice(index, 1);
         });
       }
+    },
+
+    [Events.Recover]() {
+      return module.actions.produce((draft, meta) => {
+        draft.task = "Hey!";
+        meta.channel = Channel.Default;
+      });
     },
   };
 };

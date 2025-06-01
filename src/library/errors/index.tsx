@@ -1,34 +1,30 @@
 import * as React from "react";
-import { Props, State } from "./types.ts";
-import { Lifecycle, ModuleDefinition } from "../types/index.ts";
-import { intoError } from "./utils.ts";
-import { Meta } from "../utils/index.ts";
+import type { Props } from "./types.ts";
+import { Channel, Lifecycle, ModuleDefinition } from "../types/index.ts";
+import { Child, intoError } from "./utils.ts";
+import { update } from "../utils/produce/index.ts";
 
 export default class ErrorBoundary<
   M extends ModuleDefinition,
-> extends React.Component<Props<M>, State> {
+> extends React.Component<Props<M>> {
   constructor(props: Props<M>) {
     super(props);
     this.state = { error: null };
   }
 
-  static getDerivedStateFromError(error: unknown): Partial<State> {
-    return { error: intoError(error) };
-  }
+  componentDidCatch(error: unknown) {
+    const process = Symbol("process");
+    const models = update(this.props.model.current, process, (_, meta) => {
+      meta.channel = Channel.Error;
+    });
 
-  componentDidUpdate(_: Props<M>, previous: State) {
-    if (this.state.error && !previous.error) {
-      this.setState({ error: null });
-    }
+    this.props.model.current = models;
+    this.props.update.rerender();
+
+    this.props.dispatchers.dispatch(Lifecycle.Error, [intoError(error)]);
   }
 
   render() {
-    if (this.state.error) {
-      this.props.model.current.stateful[Meta.Error] = true;
-      this.props.model.current.stateless[Meta.Error] = true;
-      this.props.dispatchers.dispatch(Lifecycle.Error, [this.state.error]);
-    }
-
-    return this.props.children();
+    return <Child>{this.props.children}</Child>;
   }
 }

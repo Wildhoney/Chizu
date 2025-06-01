@@ -1,6 +1,13 @@
 import { useOptimisedMemo } from "../../../hooks/index.ts";
-import { Draft, ModuleDefinition, Op, Process } from "../../../types/index.ts";
-import { Meta } from "../../../utils/index.ts";
+import {
+  Channel,
+  Draft,
+  Meta,
+  ModuleDefinition,
+  Op,
+  Process,
+} from "../../../types/index.ts";
+import { meta } from "../../../utils/index.ts";
 import { update } from "../../../utils/produce/index.ts";
 import { annotate } from "../../../utils/produce/utils.ts";
 import { Validatable } from "../model/types.ts";
@@ -21,7 +28,9 @@ export default function useActions<M extends ModuleDefinition>(
           annotate<T>(value: T, operations: (Op | Draft<T>)[]): T {
             return annotate(value, operations);
           },
-          produce<M extends ModuleDefinition>(ƒ: (model: M["Model"]) => void) {
+          produce<M extends ModuleDefinition>(
+            ƒ: (model: M["Model"], meta: Meta) => void,
+          ) {
             return (
               models: Models<M["Model"]>,
               process: Process,
@@ -46,10 +55,12 @@ export default function useActions<M extends ModuleDefinition>(
             Readonly<M["Model"]>
           >;
         },
-        actions: {
-          corrupt() {
-            return props.model.current.stateless[Meta.Error];
+        channel: {
+          is(channel: Channel): boolean {
+            return props.model.current.stateless[meta].channel === channel;
           },
+        },
+        actions: {
           dispatch([action, ...data]) {
             if (action == null) return Promise.reject();
             const task = Promise.withResolvers<void>();

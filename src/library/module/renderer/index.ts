@@ -40,6 +40,7 @@ export default function Renderer<M extends ModuleDefinition>({
     return React.createElement(ErrorBoundary, {
       model,
       dispatchers,
+      update,
       module: actions.view,
       children(): React.ReactNode {
         // eslint-disable-next-line react/no-children-prop

@@ -8,7 +8,7 @@ Strongly typed React framework using generators and efficiently updated views al
 
 1. [Benefits](#benefits)
 1. [Getting started](#getting-started)
-1. [Error handling](#error-handling)
+1. [Handling errors](#handling-errors)
 1. [Distributed events](#distributed-events)
 1. [Module context](#module-context)
 
@@ -141,20 +141,9 @@ export default function ProfileView(props: Props): React.ReactElement {
 }
 ```
 
-## Error handling
+## Handling errors
 
-Actions can throw errors directly or in any of their associated `yield` actions &ndash; all unhandled errors are automatically caught and dispatched using the `Lifecycle.Error` action &ndash; you can render these [in a toast](https://github.com/fkhadra/react-toastify#readme) or similar UI.
-
-You can also customise these errors a little further with your own error `enum` which describes the error type:
-
-<kbd>Types</kbd>
-
-```ts
-export const enum Errors {
-  UserValidation,
-  IncorrectPassword,
-}
-```
+Most errors are likely to occur in the actions because the views should be free of side effects. First and foremost it's recommended that errors be encoded into your corresponding module using a library such as [`neverthrow`[(https://github.com/supermacro/neverthrow)] &ndash; that way you can effectively identify which properties are fallible and render the DOM accordingly:
 
 ```tsx
 export default <Actions<Module>>function Actions(module) {
@@ -166,9 +155,30 @@ export default <Actions<Module>>function Actions(module) {
 
       const name = await fetch(/* ... */);
 
-      if (!name) throw new ActionError(Errors.UserValidation);
-
       return module.actions.produce((draft) => {
+        draft.name = name ? Result.Just(name) : Result.Nothing();
+      });
+    },
+  };
+};
+```
+
+However in eventualities where an error has not been caught in an action then the `Lifecycle.Error` is the next best thing &ndash; use it to display a toast message and log it your chosen error log service.
+
+Additionally when rendering an error may be thrown which prevents the DOM from updating as you'd expect &ndash; perhaps a side effect has delivered an unexpected data structure. In those cases again `Lifecycle.Error` is your friend. When such an error is thrown the component channel will be switched to `Channel.Error` which you detect using `module.channel.is(Channel.Error)` and switch to an alternative markup that _should_ render, within that you could display a button to attempt recovery &ndash; simply call an action again and update the meta to switch the channel back to `Channel.Default`:
+
+```tsx
+export default <Actions<Module>>function Actions(module) {
+  return {
+    *[Events.Recover]() {
+      yield module.actions.produce((draft) => {
+        draft.name = null;
+      });
+
+      const name = await fetch(/* ... */);
+
+      return module.actions.produce((draft, meta) => {
+        meta.channel = Channel.Default;
         draft.name = name;
       });
     },
@@ -176,31 +186,7 @@ export default <Actions<Module>>function Actions(module) {
 };
 ```
 
-However showing a toast message is not always relevant, you may want a more detailed error message such as a user not found message &ndash; although you could introduce another property for such errors in your model, you could mark the property as fallible by giving it a `Maybe` type because it then keeps everything nicely associated with the `name` property rather than creating another property:
-
-```tsx
-export default <Actions<Module>>function Actions(module) {
-  return {
-    async *[Events.Name]() {
-      yield module.actions.produce((draft) => {
-        draft.name = Maybe.of(null);
-      });
-
-      const name = await fetch(/* ... */);
-
-      if (!name) {
-        return module.actions.produce((draft) => {
-          draft.name = Maybe.of(new ActionError(Errors.UserValidation));
-        });
-      }
-
-      return module.actions.produce((draft) => {
-        draft.name = Maybe.of(name);
-      });
-    },
-  };
-};
-```
+If the component again throws an error after attempting recovery, it will simply switch back to the `Channel.Error` again.
 
 ## Distributed events
 

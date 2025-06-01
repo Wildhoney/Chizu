@@ -72,3 +72,12 @@ export type Task = PromiseWithResolvers<void>;
 export type Process = symbol;
 
 export type Op = number;
+
+export enum Channel {
+  Default,
+  Error,
+}
+
+export type Meta = {
+  channel: Channel;
+};

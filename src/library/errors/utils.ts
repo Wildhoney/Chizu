@@ -1,3 +1,6 @@
+import { ModuleDefinition } from "../types/index.ts";
+import { Props } from "./types.ts";
+
 export function isActionError(error: Error | UserError): error is UserError {
   return error instanceof UserError;
 }
@@ -44,4 +47,10 @@ export class UserError extends Error {
   get message(): string {
     return this.#message || "";
   }
+}
+
+export function Child<M extends ModuleDefinition>({
+  children,
+}: Pick<Props<M>, "children">): React.ReactNode {
+  return children();
 }

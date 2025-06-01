@@ -1,5 +1,6 @@
 import { Models } from "../../module/renderer/model/utils.ts";
-import { ModuleDefinition, Process } from "../../types/index.ts";
+import { Meta, ModuleDefinition, Process } from "../../types/index.ts";
+import { meta } from "../index.ts";
 import { Annotation, config } from "./utils.ts";
 import get from "lodash/get";
 import traverse, { TraverseContext } from "traverse";
@@ -18,7 +19,7 @@ import traverse, { TraverseContext } from "traverse";
 export function update<M extends ModuleDefinition["Model"]>(
   models: Models<M>,
   process: Process,
-  ƒ: (model: M) => void,
+  ƒ: (draft: M, meta: Meta) => void,
 ): Models<M> {
   function stateless(model: M): M {
     return traverse(model).forEach(function (this: TraverseContext): void {
@@ -68,9 +69,11 @@ export function update<M extends ModuleDefinition["Model"]>(
     });
   }
 
+  const handler = (model: M): void => ƒ(model, model[meta]);
+
   return new Models<M>(
-    stateless(config.immer.produce(models.stateless, ƒ)),
-    stateful(config.immer.produce(models.stateful, ƒ)),
+    stateless(config.immer.produce(models.stateless, handler)),
+    stateful(config.immer.produce(models.stateful, handler)),
   );
 }
 

@@ -20,12 +20,14 @@ export const enum Events {
   Add,
   Completed,
   Remove,
+  Recover,
 }
 
 export type Actions =
   | [Events.Task, string]
   | [Events.Add]
   | [Events.Completed, Pk<Id>]
-  | [Events.Remove, Pk<Id>];
+  | [Events.Remove, Pk<Id>]
+  | [Events.Recover];
 
 export type Module = Typed.Module<Model, Actions>;
