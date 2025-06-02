@@ -1,4 +1,4 @@
-import { UserError } from "../errors/utils.ts";
+import { TypedError } from "../errors/utils.ts";
 import { Models } from "../module/renderer/model/utils.ts";
 import { Head } from "../module/renderer/types.ts";
 import {
@@ -52,7 +52,7 @@ export type ControllerInstance<M extends ModuleDefinition> = {
   [Lifecycle.Mount]?(): ActionGenerator<M>;
   [Lifecycle.Derive]?(): ActionGenerator<M>;
   [Lifecycle.Node]?(tree: HTMLElement): ActionGenerator<M>;
-  [Lifecycle.Error]?(error: Error | UserError): ActionGenerator<M>;
+  [Lifecycle.Error]?(error: Error | TypedError): ActionGenerator<M>;
   [Lifecycle.Unmount]?(): ActionGenerator<M>;
 } & Partial<ActionEvents<M>>;
 

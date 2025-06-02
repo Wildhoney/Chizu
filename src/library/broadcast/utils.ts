@@ -1,5 +1,5 @@
 /**
- * Check if the name is a broadcast event.
+ * Check if the name is a broadcast action.
  *
  * @param name {string}
  * @returns {boolean}

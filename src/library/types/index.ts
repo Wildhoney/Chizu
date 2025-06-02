@@ -42,7 +42,7 @@ export type Model = Record<symbol | string, any>;
 export type Actions = [] | [ActionName] | [ActionName, ...ActionPayload];
 export type Props = Record<string, unknown>;
 
-export type Module<
+export type Schema<
   M extends Model,
   A extends Actions = [],
   P extends Props = Record<string, never>,
@@ -73,11 +73,11 @@ export type Process = symbol;
 
 export type Op = number;
 
-export enum Channel {
+export enum Boundary {
   Default,
   Error,
 }
 
 export type Meta = {
-  channel: Channel;
+  boundary: Boundary;
 };

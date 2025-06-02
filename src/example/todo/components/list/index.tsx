@@ -1,5 +1,5 @@
 import { State, utils } from "../../../../library/index.ts";
-import { Events } from "../../types.ts";
+import { Action } from "../../types.ts";
 import * as styles from "./styles.ts";
 import { Props } from "./types.ts";
 import dayjs from "dayjs";
@@ -32,7 +32,7 @@ export default function List({ module }: Props): ReactElement {
             type="checkbox"
             checked={task.completed}
             onChange={() =>
-              task.id && module.actions.dispatch([Events.Completed, task.id])
+              task.id && module.actions.dispatch([Action.Completed, task.id])
             }
           />
 
@@ -59,7 +59,7 @@ export default function List({ module }: Props): ReactElement {
               module.validate.tasks[index].is(State.Op.Remove)
             }
             onClick={() =>
-              task.id && module.actions.dispatch([Events.Remove, task.id])
+              task.id && module.actions.dispatch([Action.Remove, task.id])
             }
           >
             {module.validate.tasks[index].is(State.Op.Remove) ? (

@@ -1,6 +1,6 @@
 import { cleanup, update } from ".";
 import { Models } from "../../module/renderer/model/utils.ts";
-import { Channel, Process, State } from "../../types/index.ts";
+import { Boundary, Process, State } from "../../types/index.ts";
 import { meta } from "../index.ts";
 import { Annotation, annotate, config } from "./utils.ts";
 import { describe, expect, it } from "@jest/globals";
@@ -8,7 +8,7 @@ import { describe, expect, it } from "@jest/globals";
 const process: Process = Symbol("process");
 
 const model = {
-  [meta]: { channel: Channel.Default },
+  [meta]: { boundary: Boundary.Default },
   name: { first: "Adam" },
   location: { area: "Brighton" },
   children: [{ name: "Imogen" }],

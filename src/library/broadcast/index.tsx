@@ -12,7 +12,15 @@ export function useBroadcast() {
   return React.useContext(Context);
 }
 
-export function BroadcastProvider({ children }: Props): React.ReactNode {
+/**
+ * Note: only needed if you want to create a new broadcast context, useful for
+ * libraries that want to provide their own broadcast context without intefering
+ * with the app's broadcast context.
+ *
+ * @param param0 - { children }: Props
+ * @returns {React.ReactNode}
+ */
+export function Broadcaster({ children }: Props): React.ReactNode {
   const context = useOptimisedMemo(
     () => ({
       appEmitter: new EventEmitter(),

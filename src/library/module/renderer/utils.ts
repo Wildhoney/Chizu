@@ -10,8 +10,9 @@ export const Context = React.createContext(
   null,
 ) as React.Context<ViewArgs<ModuleDefinition> | null>;
 
-export function useModule<M extends ModuleDefinition>() {
+export function useScoped<M extends ModuleDefinition>() {
   const context = React.useContext(Context);
-  if (!context) throw new Error("useModule must be used within a module.");
+  if (!context)
+    throw new Error("useScoped is not being used within a scoped module.");
   return context as ViewArgs<M>;
 }

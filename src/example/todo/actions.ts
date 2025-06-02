@@ -1,5 +1,5 @@
 import { Actions, Lifecycle, State, utils } from "../../library/index.ts";
-import { Events, Module, Task } from "./types.ts";
+import { Action, Module, Task } from "./types.ts";
 import { Db } from "./utils.ts";
 
 export default <Actions<Module>>function Actions(module) {
@@ -24,13 +24,13 @@ export default <Actions<Module>>function Actions(module) {
       }
     },
 
-    [Events.Task](task) {
+    [Action.Task](task) {
       return module.actions.produce((draft) => {
         draft.task = task;
       });
     },
 
-    async *[Events.Add]() {
+    async *[Action.Add]() {
       const id = utils.pk();
       const task: Task = {
         id,
@@ -58,7 +58,7 @@ export default <Actions<Module>>function Actions(module) {
       }
     },
 
-    async *[Events.Completed](taskId) {
+    async *[Action.Completed](taskId) {
       {
         yield module.actions.produce((draft) => {
           const index = module.model.tasks.findIndex(
@@ -87,7 +87,7 @@ export default <Actions<Module>>function Actions(module) {
       }
     },
 
-    async *[Events.Remove](taskId) {
+    async *[Action.Remove](taskId) {
       {
         yield module.actions.produce((draft) => {
           const index = module.model.tasks.findIndex(

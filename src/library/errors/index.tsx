@@ -1,6 +1,6 @@
 import * as React from "react";
 import type { Props } from "./types.ts";
-import { Channel, Lifecycle, ModuleDefinition } from "../types/index.ts";
+import { Boundary, Lifecycle, ModuleDefinition } from "../types/index.ts";
 import { Child, intoError } from "./utils.ts";
 import { update } from "../utils/produce/index.ts";
 
@@ -15,7 +15,7 @@ export default class ErrorBoundary<
   componentDidCatch(error: unknown) {
     const process = Symbol("process");
     const models = update(this.props.model.current, process, (_, meta) => {
-      meta.channel = Channel.Error;
+      meta.boundary = Boundary.Error;
     });
 
     this.props.model.current = models;

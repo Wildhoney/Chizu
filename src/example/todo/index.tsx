@@ -1,4 +1,4 @@
-import { Tree } from "../../library/index.ts";
+import { Scope } from "../../library/index.ts";
 import actions from "./actions.ts";
 import Field from "./components/form/index.tsx";
 import List from "./components/list/index.tsx";
@@ -9,7 +9,7 @@ import * as React from "react";
 
 export default function Todo(): React.ReactElement {
   return (
-    <Tree<Module> using={{ model, actions }}>
+    <Scope<Module> using={{ model, actions }}>
       {(module) => (
         <section className={styles.container}>
           <div className={styles.boundary}>
@@ -18,6 +18,6 @@ export default function Todo(): React.ReactElement {
           </div>
         </section>
       )}
-    </Tree>
+    </Scope>
   );
 }

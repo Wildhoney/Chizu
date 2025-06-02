@@ -1,4 +1,4 @@
-import { Pk, Typed } from "../../library/index.ts";
+import { Pk, Schema } from "../../library/index.ts";
 
 type Id = number;
 
@@ -15,7 +15,7 @@ export type Model = {
   tasks: Task[];
 };
 
-export const enum Events {
+export const enum Action {
   Task,
   Add,
   Completed,
@@ -23,9 +23,9 @@ export const enum Events {
 }
 
 export type Actions =
-  | [Events.Task, string]
-  | [Events.Add]
-  | [Events.Completed, Pk<Id>]
-  | [Events.Remove, Pk<Id>];
+  | [Action.Task, string]
+  | [Action.Add]
+  | [Action.Completed, Pk<Id>]
+  | [Action.Remove, Pk<Id>];
 
-export type Module = Typed.Module<Model, Actions>;
+export type Module = Schema<Model, Actions>;

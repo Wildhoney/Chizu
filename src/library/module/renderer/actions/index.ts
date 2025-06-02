@@ -1,6 +1,6 @@
 import { useOptimisedMemo } from "../../../hooks/index.ts";
 import {
-  Channel,
+  Boundary,
   Draft,
   Meta,
   ModuleDefinition,
@@ -55,9 +55,9 @@ export default function useActions<M extends ModuleDefinition>(
             Readonly<M["Model"]>
           >;
         },
-        channel: {
-          is(channel: Channel): boolean {
-            return props.model.current.stateless[meta].channel === channel;
+        boundary: {
+          is(boundary: Boundary): boolean {
+            return props.model.current.stateless[meta].boundary === boundary;
           },
         },
         actions: {

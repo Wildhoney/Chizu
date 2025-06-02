@@ -1,5 +1,5 @@
 import { Validatable } from "../module/renderer/model/types.ts";
-import { Channel, ModuleDefinition } from "../types/index.ts";
+import { Boundary, ModuleDefinition } from "../types/index.ts";
 import * as React from "react";
 
 export type ViewActions<M extends ModuleDefinition> = {
@@ -8,8 +8,8 @@ export type ViewActions<M extends ModuleDefinition> = {
 
 export type ViewArgs<M extends ModuleDefinition> = Readonly<{
   model: Readonly<M["Model"]>;
-  channel: {
-    is(channel: Channel): boolean;
+  boundary: {
+    is(boundary: Boundary): boolean;
   };
   validate: Readonly<Validatable<M["Model"]>>;
   actions: Readonly<ViewActions<M>>;

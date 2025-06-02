@@ -1,12 +1,14 @@
 import { ModuleDefinition } from "../types/index.ts";
 import { Props } from "./types.ts";
 
-export function isActionError(error: Error | UserError): error is UserError {
-  return error instanceof UserError;
-}
-
-export function isUserError(error: Error | UserError): error is UserError {
-  return error instanceof UserError;
+/**
+ *  Check if the error is an instance of TypedError.
+ *
+ * @param error {Error | TypedError}
+ * @returns {boolean}
+ */
+export function isTypedError(error: Error | TypedError): error is TypedError {
+  return error instanceof TypedError;
 }
 
 /**
@@ -14,10 +16,10 @@ export function isUserError(error: Error | UserError): error is UserError {
  *
  * @function intoError
  * @param error {unknown} - The error to convert to a known error type.
- * @returns {Error | UserError}
+ * @returns {Error | TypedError}
  */
-export function intoError(error: unknown): Error | UserError {
-  if (error instanceof UserError || error instanceof Error) {
+export function intoError(error: unknown): Error | TypedError {
+  if (error instanceof TypedError || error instanceof Error) {
     return error;
   }
 
@@ -25,12 +27,12 @@ export function intoError(error: unknown): Error | UserError {
 }
 
 /**
- * @class UserError
+ * @class TypedError
  * @extends Error
  * @param type {string} - The type of the error.
  * @param message {string} - The error message.
  */
-export class UserError extends Error {
+export class TypedError extends Error {
   #type: number | string | symbol;
   #message: null | string;
 

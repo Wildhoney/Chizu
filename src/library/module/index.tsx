@@ -4,10 +4,10 @@ import { hash } from "../utils/index.ts";
 import { UseOptions } from "./types.ts";
 import * as React from "react";
 
-function Tree<M extends ModuleDefinition>(
+function Scope<M extends ModuleDefinition>(
   options: UseOptions<M>,
 ): React.ReactNode {
   return <Renderer<M> options={options} />;
 }
 
-export default React.memo(Tree, (a, b) => hash(a) === hash(b)) as typeof Tree;
+export default React.memo(Scope, (a, b) => hash(a) === hash(b)) as typeof Scope;

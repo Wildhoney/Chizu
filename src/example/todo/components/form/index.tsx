@@ -1,4 +1,4 @@
-import { Events } from "../../types";
+import { Action } from "../../types";
 import * as styles from "./styles.ts";
 import { Props } from "./types";
 import { CirclePlus } from "lucide-react";
@@ -13,14 +13,14 @@ export default function Form({ module }: Props): ReactElement {
         className={styles.input}
         value={module.model.task ?? ""}
         onChange={(event) =>
-          module.actions.dispatch([Events.Task, event.currentTarget.value])
+          module.actions.dispatch([Action.Task, event.currentTarget.value])
         }
       />
 
       <button
         className={styles.button}
         disabled={!module.model.task}
-        onClick={() => module.actions.dispatch([Events.Add])}
+        onClick={() => module.actions.dispatch([Action.Add])}
       >
         {/* {module.validate.tasks.is(State.Op.Updating) ? (
           <>
