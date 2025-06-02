@@ -9,7 +9,7 @@ Strongly typed React framework using generators and efficiently updated views al
 1. [Benefits](#benefits)
 1. [Getting started](#getting-started)
 1. [Handling errors](#handling-errors)
-1. [Distributed events](#distributed-events)
+1. [Distributed actions](#distributed-actions)
 1. [Module context](#module-context)
 
 ## Benefits
@@ -32,7 +32,7 @@ Actions are responsible for mutating the state of the view. In the below example
 ```tsx
 export default <Actions<Module>>function Actions(module) {
   return {
-    [Events.Name](name) {
+    [Action.Name](name) {
       return module.actions.produce((draft) => {
         draft.name = name;
       });
@@ -44,13 +44,13 @@ export default <Actions<Module>>function Actions(module) {
 ```tsx
 export default function Profile(props: Props): React.ReactElement {
   return (
-    <Tree<Module> using={{ model, actions, props }}>
+    <Scope<Module> using={{ model, actions, props }}>
       {(module) => (
         <>
           <p>Hey {module.model.name}</p>
 
           <button
-            onClick={() => module.actions.dispatch([Events.Name, randomName()])}
+            onClick={() => module.actions.dispatch([Action.Name, randomName()])}
           >
             Switch profile
           </button>
@@ -66,7 +66,7 @@ You can perform asynchronous operations in the action which will cause the assoc
 ```tsx
 export default <Actions<Module>>function Actions(module) {
   return {
-    async *[Events.Name]() {
+    async *[Action.Name]() {
       yield module.actions.produce((draft) => {
         draft.name = null;
       });
@@ -84,12 +84,12 @@ export default <Actions<Module>>function Actions(module) {
 ```tsx
 export default function Profile(props: Props): React.ReactElement {
   return (
-    <Tree<Module> using={{ model, actions, props }}>
+    <Scope<Module> using={{ model, actions, props }}>
       {(module) => (
         <>
           <p>Hey {module.model.name}</p>
 
-          <button onClick={() => module.actions.dispatch([Events.Name])}>
+          <button onClick={() => module.actions.dispatch([Action.Name])}>
             Switch profile
           </button>
         </>
@@ -104,7 +104,7 @@ However in the above example where the name is fetched asynchronously, there is 
 ```tsx
 export default <Actions<Module>>function Actions(module) {
   return {
-    async *[Events.Name]() {
+    async *[Action.Name]() {
       yield module.actions.produce((draft) => {
         draft.name = module.actions.annotate(null);
       });
@@ -121,7 +121,7 @@ export default <Actions<Module>>function Actions(module) {
 ```tsx
 export default function ProfileView(props: Props): React.ReactElement {
   return (
-    <Tree<Module> using={{ module, actions, props }}>
+    <Scope<Module> using={{ module, actions, props }}>
       {(module) => (
         <>
           <p>Hey {module.model.name}</p>
@@ -130,7 +130,7 @@ export default function ProfileView(props: Props): React.ReactElement {
 
           <button
             disabled={module.validate.name.is(State.Op.Update)}
-            onClick={() => module.actions.dispatch([Events.Name])}
+            onClick={() => module.actions.dispatch([Action.Name])}
           >
             Switch profile
           </button>
@@ -148,7 +148,7 @@ Most errors are likely to occur in the actions because the views should be free 
 ```tsx
 export default <Actions<Module>>function Actions(module) {
   return {
-    *[Events.Name]() {
+    *[Action.Name]() {
       yield module.actions.produce((draft) => {
         draft.name = null;
       });
@@ -165,12 +165,12 @@ export default <Actions<Module>>function Actions(module) {
 
 However in eventualities where an error has not been caught in an action then the `Lifecycle.Error` is the next best thing &ndash; use it to display a toast message and log it your chosen error log service.
 
-Additionally when rendering an error may be thrown which prevents the DOM from updating as you'd expect &ndash; perhaps a side effect has delivered an unexpected data structure. In those cases again `Lifecycle.Error` is your friend. When such an error is thrown the component channel will be switched to `Channel.Error` which you detect using `module.channel.is(Channel.Error)` and switch to an alternative markup that _should_ render, within that you could display a button to attempt recovery &ndash; simply call an action again and update the meta to switch the channel back to `Channel.Default`:
+Additionally when rendering an error may be thrown which prevents the DOM from updating as you'd expect &ndash; perhaps a side effect has delivered an unexpected data structure. In those cases again `Lifecycle.Error` is your friend. When such an error is thrown the component boundary will be switched to `Boundary.Error` which you detect using `module.boundary.is(Boundary.Error)` and switch to an alternative markup that _should_ render, within that you could display a button to attempt recovery &ndash; simply call an action again and update the meta to switch the boundary back to `Boundary.Default`:
 
 ```tsx
 export default <Actions<Module>>function Actions(module) {
   return {
-    *[Events.Recover]() {
+    *[Action.Recover]() {
       yield module.actions.produce((draft) => {
         draft.name = null;
       });
@@ -178,7 +178,7 @@ export default <Actions<Module>>function Actions(module) {
       const name = await fetch(/* ... */);
 
       return module.actions.produce((draft, meta) => {
-        meta.channel = Channel.Default;
+        meta.boundary = Boundary.Default;
         draft.name = name;
       });
     },
@@ -186,34 +186,42 @@ export default <Actions<Module>>function Actions(module) {
 };
 ```
 
-If the component again throws an error after attempting recovery, it will simply switch back to the `Channel.Error` again.
+If the component again throws an error after attempting recovery, it will simply switch back to the `Boundary.Error` again.
 
-## Distributed events
+## Distributed actions
 
 Actions can communicate with other mounted actions using the `DistributedActions` approach. You can configure the enum and union type in the root of your application:
 
 ```ts
-export enum DistributedEvents {
+export enum DistributedAction {
   SignedOut = "distributed/signed-out",
 }
 
-export type DistributedActions = [DistributedEvents.SignedOut];
+export type DistributedActions = [DistributedAction.SignedOut];
 ```
 
-Note that you must prefix the enum name with `distributed` for it to behave as a distributed event, otherwise it'll be considered a module event only. Once you have the distributed events you simply need to augment the module actions union with the `DistributedActions` and use it as you do other actions:
+Note that you must prefix the enum name with `distributed` for it to behave as a distributed event, otherwise it'll be considered a module event only. Once you have the distributed actions you simply need to augment the module actions union with the `DistributedActions` and use it as you do other actions:
 
 ```ts
-export type Actions = DistributedActions | [Events.Task, string]; // etc...
+export type Actions = DistributedActions | [Action.Task, string]; // etc...
 ```
 
 ## Module context
 
-In the eventuality that you have a component but don't want associated actions, models, etc&hellip; but want to still fire events either the closest module or a distributed event, you can use the `useModule` hook:
+In the eventuality that you have a component but don't want associated actions, models, etc&hellip; but want to still fire actions either the closest module or a distributed action, you can use the `useScoped` hook:
 
 ```ts
-const module = useModule<Module>();
+const module = useScoped<Module>();
 
 // ...
 
-module.actions.dispatch([Event.Task, "My task that needs to be done."]);
+module.actions.dispatch([Action.Task, "My task that needs to be done."]);
+```
+
+Alternatively you can pass the current module as a prop to your components using the `Scoped` helper:
+
+```ts
+export type Props = {
+  module: Scoped<Module>;
+};
 ```
