@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [0.2.23](https://github.com/Wildhoney/Marea/compare/v0.2.22...v0.2.23) (2025-06-03)
+
+
+### Features
+
+* added ability to retrieve context values within actions ([92f7f75](https://github.com/Wildhoney/Marea/commit/92f7f75ffcb13b4ef2058f85ef769d37d4025478))
+
 ## [0.2.22](https://github.com/Wildhoney/Marea/compare/v0.2.21...v0.2.22) (2025-06-02)
 
 ## [0.2.21](https://github.com/Wildhoney/Marea/compare/v0.2.20...v0.2.21) (2025-06-01)
