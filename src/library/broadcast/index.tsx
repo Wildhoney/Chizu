@@ -5,7 +5,7 @@ import EventEmitter from "eventemitter3";
 import * as React from "react";
 
 const Context = React.createContext<BroadcastContext>({
-  appEmitter: new EventEmitter(),
+  instance: new EventEmitter(),
 });
 
 export function useBroadcast() {
@@ -23,7 +23,7 @@ export function useBroadcast() {
 export function Broadcaster({ children }: Props): React.ReactNode {
   const context = useOptimisedMemo(
     () => ({
-      appEmitter: new EventEmitter(),
+      instance: new EventEmitter(),
     }),
     [],
   );

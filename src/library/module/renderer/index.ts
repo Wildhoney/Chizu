@@ -14,6 +14,7 @@ import useUpdate from "./update/index.ts";
 import * as React from "react";
 import { Context, config } from "./utils.ts";
 import ErrorBoundary from "../../errors/index.tsx";
+import useContext from "../../context/index.ts";
 
 export default function Renderer<M extends ModuleDefinition>({
   options,
@@ -22,6 +23,7 @@ export default function Renderer<M extends ModuleDefinition>({
   const queue = useQueue();
   const elements = useElements();
   const broadcast = useBroadcast();
+  const context = useContext();
   const model = useModel({ options });
   const dispatchers = useDispatchers({
     broadcast,
@@ -30,7 +32,13 @@ export default function Renderer<M extends ModuleDefinition>({
     model,
     queue,
   });
-  const actions = useActions<M>({ broadcast, options, model, dispatchers });
+  const actions = useActions<M>({
+    broadcast,
+    options,
+    model,
+    dispatchers,
+    context,
+  });
 
   useController({ options, dispatchers, actions });
   useLifecycles({ options, dispatchers, elements, update });
@@ -55,5 +63,5 @@ export default function Renderer<M extends ModuleDefinition>({
         });
       },
     });
-  }, [update.hash, hash(options.using.props)]);
+  }, [update.hash, hash(options.using.props), hash(context.registry)]);
 }

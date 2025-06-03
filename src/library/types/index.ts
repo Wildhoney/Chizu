@@ -41,6 +41,7 @@ export enum Lifecycle {
 export type Model = Record<symbol | string, any>;
 export type Actions = [] | [ActionName] | [ActionName, ...ActionPayload];
 export type Props = Record<string, unknown>;
+export type Context = Props;
 
 export type Schema<
   M extends Model,

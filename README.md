@@ -10,7 +10,8 @@ Strongly typed React framework using generators and efficiently updated views al
 1. [Getting started](#getting-started)
 1. [Handling errors](#handling-errors)
 1. [Distributed actions](#distributed-actions)
-1. [Module context](#module-context)
+1. [Module dispatch](#module-dispatch)
+1. [Associated context](#associated-context)
 
 ## Benefits
 
@@ -56,7 +57,7 @@ export default function Profile(props: Props): React.ReactElement {
           </button>
         </>
       )}
-    </Tree>
+    </Scope>
   );
 }
 ```
@@ -94,7 +95,7 @@ export default function Profile(props: Props): React.ReactElement {
           </button>
         </>
       )}
-    </Tree>
+    </Scope>
   );
 }
 ```
@@ -136,7 +137,7 @@ export default function ProfileView(props: Props): React.ReactElement {
           </button>
         </>
       )}
-    </Tree>
+    </Scope>
   );
 }
 ```
@@ -206,7 +207,7 @@ Note that you must prefix the enum name with `distributed` for it to behave as a
 export type Actions = DistributedActions | [Action.Task, string]; // etc...
 ```
 
-## Module context
+## Module dispatch
 
 In the eventuality that you have a component but don't want associated actions, models, etc&hellip; but want to still fire actions either the closest module or a distributed action, you can use the `useScoped` hook:
 
@@ -223,5 +224,25 @@ Alternatively you can pass the current module as a prop to your components using
 ```ts
 export type Props = {
   module: Scoped<Module>;
+};
+```
+
+## Associated context
+
+In many cases you'll still want to retrieve contextual values from within actions &ndash; which you can do by using the `module.actions.context` function:
+
+```tsx
+export default <Actions<Module>>function Actions(module) {
+  const context = module.actions.context({
+    name: NameContext
+  });
+
+  return {
+    [Action.Name](name) {
+      return module.actions.produce((draft) => {
+        draft.name = context.name;
+      });
+    },
+  };
 };
 ```

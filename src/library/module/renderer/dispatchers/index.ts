@@ -25,7 +25,7 @@ export default function useDispatchers<M extends ModuleDefinition>(
         const name = String(action);
 
         isBroadcastAction(name)
-          ? broadcast.appEmitter.on(name, dispatcher(action, ƒ))
+          ? broadcast.instance.on(name, dispatcher(action, ƒ))
           : unicast.on(name, dispatcher(action, ƒ));
       },
       dispatch(
@@ -36,7 +36,7 @@ export default function useDispatchers<M extends ModuleDefinition>(
         const name = String(action);
 
         isBroadcastAction(name)
-          ? broadcast.appEmitter.emit(name, task, data)
+          ? broadcast.instance.emit(name, task, data)
           : unicast.emit(name, task, data);
       },
     };
