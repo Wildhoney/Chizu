@@ -40,7 +40,9 @@ type ActionEvents<M extends ModuleDefinition> = {
 
 export type ActionGenerator<M extends ModuleDefinition> =
   | void
+  | Promise<void>
   | ((models: Models<M["Model"]>, process: symbol) => Models<M["Model"]>)
+  | Promise<(models: Models<M["Model"]>, process: symbol) => Models<M["Model"]>>
   | AsyncGenerator<
       (models: Models<M["Model"]>, process: symbol) => Models<M["Model"]>,
       (models: Models<M["Model"]>, process: symbol) => Models<M["Model"]>,
