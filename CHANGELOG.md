@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [0.2.24](https://github.com/Wildhoney/Marea/compare/v0.2.23...v0.2.24) (2025-06-05)
+
+
+### Features
+
+* added passive flag ([7406bea](https://github.com/Wildhoney/Marea/commit/7406bea5ef4359cc163dce8e4fa22942b0ae4d52))
+
+
+### Bug Fixes
+
+* typings for the context values ([a13f43b](https://github.com/Wildhoney/Marea/commit/a13f43b5fc2c102535507783f71703f414f54019))
+
 ## [0.2.23](https://github.com/Wildhoney/Marea/compare/v0.2.22...v0.2.23) (2025-06-03)
 
 ### Features
