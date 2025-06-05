@@ -8,5 +8,6 @@ export type UseOptions<M extends ModuleDefinition> = {
     actions: ControllerDefinition<M>;
     props?: M["Props"];
   };
+  passive?: boolean;
   children(module: ViewArgs<M>): React.ReactNode;
 };
