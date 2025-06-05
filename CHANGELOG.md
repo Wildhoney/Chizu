@@ -4,10 +4,9 @@ All notable changes to this project will be documented in this file. See [commit
 
 ## [0.2.25](https://github.com/Wildhoney/Marea/compare/v0.2.24...v0.2.25) (2025-06-05)
 
-
 ### Features
 
-* allowed other return types in actions ([9dd2be8](https://github.com/Wildhoney/Marea/commit/9dd2be86ce456a3d8a852766513103d440ce6585))
+- allowed other return types in actions ([9dd2be8](https://github.com/Wildhoney/Marea/commit/9dd2be86ce456a3d8a852766513103d440ce6585))
 
 ## [0.2.24](https://github.com/Wildhoney/Marea/compare/v0.2.23...v0.2.24) (2025-06-05)
 
