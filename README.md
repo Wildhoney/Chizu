@@ -246,3 +246,27 @@ export default <Actions<Module>>function Actions(module) {
   };
 };
 ```
+
+If you need the context values to be reactive and fire the `Lifecycle.Derive` method then simply add it to your `props` definition when you initialise your scoped component:
+
+```tsx
+export default function Profile(props: Props): React.ReactElement {
+  const name = React.useContext(NameContext);
+
+  return (
+    <Scope<Module> using={{ model, actions, props: { ...props, name } }}>
+      {(module) => (
+        <>
+          <p>Hey {module.model.name}</p>
+
+          <button
+            onClick={() => module.actions.dispatch([Action.Name, randomName()])}
+          >
+            Switch profile
+          </button>
+        </>
+      )}
+    </Scope>
+  );
+}
+```
