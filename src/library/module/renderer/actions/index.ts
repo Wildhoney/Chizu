@@ -7,6 +7,7 @@ import {
   Op,
   Process,
   Context,
+  ContextTypes,
 } from "../../../types/index.ts";
 import { meta } from "../../../utils/index.ts";
 import { update } from "../../../utils/produce/index.ts";
@@ -45,7 +46,7 @@ export default function useActions<M extends ModuleDefinition>(
             props.dispatchers.dispatch(action, data, task);
             return task.promise;
           },
-          context<C extends Context>(context: C): C {
+          context<C extends Context>(context: C): ContextTypes<C> {
             const keys = Object.keys(context);
             props.context.use.current = context;
             props.context.update();
@@ -54,10 +55,10 @@ export default function useActions<M extends ModuleDefinition>(
               (accum, key) => ({
                 ...accum,
                 get [key]() {
-                  return props.context.registry.current[key];
+                  return props.context.values.current[key];
                 },
               }),
-              {} as C,
+              {} as ContextTypes<C>,
             );
           },
         },

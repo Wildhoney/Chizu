@@ -41,7 +41,8 @@ export enum Lifecycle {
 export type Model = Record<symbol | string, any>;
 export type Actions = [] | [ActionName] | [ActionName, ...ActionPayload];
 export type Props = Record<string, unknown>;
-export type Context = Props;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type Context = Record<string, React.Context<any>>;
 
 export type Schema<
   M extends Model,
@@ -81,4 +82,11 @@ export enum Boundary {
 
 export type Meta = {
   boundary: Boundary;
+};
+
+export type ContextType<T> = T extends React.Context<infer U> ? U : never;
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type ContextTypes<T extends Record<string, React.Context<any>>> = {
+  [K in keyof T]: ContextType<T[K]>;
 };

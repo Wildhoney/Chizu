@@ -4,6 +4,7 @@ import { Head } from "../module/renderer/types.ts";
 import {
   Actions,
   Context,
+  ContextTypes,
   Draft,
   Lifecycle,
   Meta,
@@ -18,7 +19,7 @@ export type ControllerActions<M extends ModuleDefinition> = {
     ƒ: (model: M["Model"], meta: Meta) => void,
   ): (models: Models<M["Model"]>, process: symbol) => Models<M["Model"]>;
   dispatch(action: M["Actions"]): Promise<void>;
-  context<C extends Context>(context: C): C;
+  context<C extends Context>(context: C): ContextTypes<C>;
 };
 
 export type ControllerArgs<M extends ModuleDefinition> = Readonly<{
