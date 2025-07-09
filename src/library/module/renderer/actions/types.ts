@@ -6,6 +6,7 @@ import { ViewArgs } from "../../../view/types.ts";
 import { UseOptions } from "../../types.ts";
 import { UseDispatchers } from "../dispatchers/types.ts";
 import { UseModel } from "../model/types.ts";
+import { UseProps } from "../props/types.ts";
 
 export type Props<M extends ModuleDefinition> = {
   broadcast: UseBroadcast;
@@ -13,6 +14,7 @@ export type Props<M extends ModuleDefinition> = {
   model: UseModel;
   dispatchers: UseDispatchers;
   context: UseContext;
+  props: UseProps;
 };
 
 export type UseActions<M extends ModuleDefinition> = {

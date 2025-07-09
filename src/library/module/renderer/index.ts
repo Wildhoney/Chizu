@@ -15,6 +15,7 @@ import { Context, config } from "./utils.ts";
 import ErrorBoundary from "../../errors/index.tsx";
 import useContext from "../../context/index.ts";
 import usePassive from "./passive/index.ts";
+import useProps from "./props/index.ts";
 
 export default function Renderer<M extends ModuleDefinition>({
   options,
@@ -24,14 +25,11 @@ export default function Renderer<M extends ModuleDefinition>({
   const elements = useElements();
   const broadcast = useBroadcast();
   const context = useContext();
+
+  const props = useProps<M>({ options });
   const model = useModel({ options });
 
-  const dispatchers = useDispatchers({
-    broadcast,
-    options,
-    update,
-    model,
-  });
+  const dispatchers = useDispatchers({ broadcast, options, update, model });
 
   const actions = useActions<M>({
     broadcast,
@@ -39,6 +37,7 @@ export default function Renderer<M extends ModuleDefinition>({
     model,
     dispatchers,
     context,
+    props,
   });
 
   useController({ options, dispatchers, actions });
