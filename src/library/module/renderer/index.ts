@@ -8,7 +8,6 @@ import useDispatchers from "./dispatchers/index.ts";
 import useElements from "./elements/index.ts";
 import useLifecycles from "./lifecycles/index.ts";
 import useModel from "./model/index.ts";
-import useQueue from "./queue/index.ts";
 import { Props } from "./types.ts";
 import useUpdate from "./update/index.ts";
 import * as React from "react";
@@ -21,7 +20,6 @@ export default function Renderer<M extends ModuleDefinition>({
   options,
 }: Props<M>): React.ReactNode {
   const update = useUpdate();
-  const queue = useQueue();
   const passive = usePassive();
   const elements = useElements();
   const broadcast = useBroadcast();
@@ -33,7 +31,6 @@ export default function Renderer<M extends ModuleDefinition>({
     options,
     update,
     model,
-    queue,
   });
 
   const actions = useActions<M>({

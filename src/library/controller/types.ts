@@ -10,7 +10,6 @@ import {
   Meta,
   ModuleDefinition,
   Op,
-  Queue,
 } from "../types/index.ts";
 
 export type ControllerActions<M extends ModuleDefinition> = {
@@ -24,7 +23,7 @@ export type ControllerActions<M extends ModuleDefinition> = {
 
 export type ControllerArgs<M extends ModuleDefinition> = Readonly<{
   model: Readonly<M["Model"]>;
-  queue: Readonly<Queue<M["Actions"]>>;
+  props: Readonly<M["Props"]>;
   actions: Readonly<ControllerActions<M>>;
 }>;
 

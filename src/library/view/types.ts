@@ -8,6 +8,7 @@ export type ViewActions<M extends ModuleDefinition> = {
 
 export type ViewArgs<M extends ModuleDefinition> = Readonly<{
   model: Readonly<M["Model"]>;
+  props: Readonly<M["Props"]>;
   boundary: {
     is(boundary: Boundary): boolean;
   };

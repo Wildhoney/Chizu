@@ -1,5 +1,3 @@
-import { Head } from "../module/renderer/types.ts";
-
 export enum Transmit {
   Unicast = "unicast",
   Multicast = "multicast",
@@ -61,13 +59,6 @@ export type ModuleDefinition = {
 };
 
 export type Pk<T> = undefined | symbol | T;
-
-export type Queue<A extends ModuleDefinition["Actions"]> = {
-  name: Head<A>;
-  actions: {
-    abort: AbortController["abort"];
-  };
-}[];
 
 export type Task = PromiseWithResolvers<void>;
 

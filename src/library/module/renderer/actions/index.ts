@@ -23,9 +23,11 @@ export default function useActions<M extends ModuleDefinition>(
     () => ({
       controller: {
         get model() {
-          return props.model.current.stateful as Readonly<M["Model"]>;
+          return props.model.current.stateless as Readonly<M["Model"]>;
         },
-        queue: [],
+        get props() {
+          return props.options.using.props as Readonly<M["Props"]>;
+        },
         actions: {
           annotate<T>(value: T, operations: (Op | Draft<T>)[]): T {
             return annotate(value, operations);
@@ -66,6 +68,9 @@ export default function useActions<M extends ModuleDefinition>(
       view: {
         get model() {
           return props.model.current.stateless as Readonly<M["Model"]>;
+        },
+        get props() {
+          return props.options.using.props as Readonly<M["Props"]>;
         },
         get validate() {
           return props.model.current.validatable as Validatable<
