@@ -1,15 +1,15 @@
-
 export class Draft<T> {
   constructor(public value: T) {}
 }
 
 export class State {
-  static Op = {
-    Add: 1,
-    Remove: 2,
-    Update: 4,
-    Move: 8,
-    Replace: 16,
+  static Operation = {
+    Adding: 1,
+    Removing: 2,
+    Updating: 4,
+    Moving: 8,
+    Replacing: 16,
+    Sorting: 32,
   };
 
   static Draft<T>(value: T): Draft<T> {
@@ -17,7 +17,7 @@ export class State {
   }
 }
 
-export type Action = Lifecycle | symbol | string | number;
+// export type Action = Lifecycle | symbol | string | number;
 
 export class Lifecycle {
   static Mount = Symbol("lifecycle/mount");
@@ -37,16 +37,17 @@ export type Op = number;
 
 export type Model = object;
 
+export const PayloadKey = Symbol("payload");
+
+export type Payload<T = unknown> = string & { [PayloadKey]: T };
+
 export type Actions = unknown;
-
-
 
 export type Context<Model, Actions> = {
   model: Model;
   actions: {
     produce(ƒ: (draft: Model) => void): Model;
-    dispatch: (action: Actions) => void;
-    annotate: <T>(value: T, operation: State.Op[]) => T;
-    consume: <T>(action: any, ƒ: (value: T) => React.ReactNode) => T;
+    dispatch(action: Actions): void;
+    annotate<T>(value: T, operation: (typeof State.Operation)[]): T;
   };
 };

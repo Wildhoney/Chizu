@@ -1,4 +1,4 @@
-import { action, useAction, useActions } from "../../library/index.ts";
+import { createAction, useAction, useActions } from "../../library/index.ts";
 
 import { Model } from "./types.ts";
 
@@ -7,8 +7,8 @@ const model: Model = {
 };
 
 export class Actions {
-  static Decrement = action();
-  static Increment = action();
+  static Decrement = createAction();
+  static Increment = createAction();
 }
 
 export default function useCounterActions() {

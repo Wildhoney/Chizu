@@ -2,49 +2,76 @@ import { hash } from "../utils/index.ts";
 import * as React from "react";
 import { ActionClass, UseActions } from "./types.ts";
 import { withGetters } from "./utils.ts";
-import { Actions, Context, Lifecycle, Model } from "../types/index.ts";
-import * as immer from "immer"
+import {
+  Actions,
+  Context,
+  PayloadKey,
+  Lifecycle,
+  Model,
+  Payload,
+} from "../types/index.ts";
+import * as immer from "immer";
 import EventEmitter from "eventemitter3";
 
-
-
-export function useAction<Model, Actions, const Action extends String<unknown>>(
-  action: (context: Context<Model, Actions>, name: Action[typeof key]) => void,
-) {
-  return  React.useCallback(action, []);
+/**
+ * Memoizes an action handler for performance optimization.
+ *
+ * @template Model The type of the model.
+ * @template Actions The type of the actions.
+ * @template Action The specific action being handled.
+ * @param {(context: Context<Model, Actions>, name: Action) => void} action The action handler function.
+ * @returns {React.useCallback} The memoized action handler.
+ */
+export function useAction<
+  M extends Model,
+  A extends Actions,
+  P extends Payload = never,
+>(action: (context: Context<M, A>, payload: P[typeof PayloadKey]) => void) {
+  return React.useCallback(action, []);
 }
 
-
+/**
+ * A hook for managing state with actions.
+ *
+ * @template M The type of the model.
+ * @template A The type of the actions.
+ * @param {M} model The initial model.
+ * @param {ActionClass<M, A>} ActionClass The class defining the actions.
+ * @returns {UseActions<M, A>} A tuple containing the state and action handlers.
+ */
 export function useActions<M extends Model, A extends Actions>(
   model: M,
   ActionClass: ActionClass<M, A>,
 ): UseActions<M, A> {
   const [state, setState] = React.useState(model);
-  const snapshot = useSnapshot({state});
+  const snapshot = useSnapshot({ state });
+  const unicast = React.useMemo(() => new EventEmitter(), []);
 
-  const unicast = useOptimisedMemo(() => new EventEmitter(), []);
+  const context = React.useMemo(
+    () =>
+      ({
+        actions: {
+          produce(f) {
+            const model = immer.produce(snapshot.state, f);
+            setState(model);
+          },
+        },
+      }) as Context<M, A>,
+    [snapshot.state],
+  );
 
   const instance = useOptimisedMemo(() => {
     const actions = new ActionClass(model);
 
     Object.getOwnPropertySymbols(actions).forEach((key) => {
-      unicast.on(key, () => {
-        actions[key]({
-          actions: {
-            produce(f) {
-              const model = immer.produce(snapshot.state, f);
-              setState(model);
-            },
-          },
-        });
-      });
+      unicast.on(key, (payload) => actions[key](context, payload));
     });
 
     return actions;
   }, [unicast]);
 
-  useOptimisedEffect(() => {
-    instance[Lifecycle.Mount]?.();
+  React.useLayoutEffect(() => {
+    instance[Lifecycle.Mount]?.(context);
 
     return () => {
       instance[Lifecycle.Unmount]?.();
@@ -60,14 +87,22 @@ export function useActions<M extends Model, A extends Actions>(
         },
         consume() {},
         annotate() {},
+        validate() {},
       },
     ],
     [state, unicast],
   );
 }
 
-
-
+/**
+ * Creates a snapshot of a given object, returning a memoized version.
+ * The snapshot provides stable access to the object's properties,
+ * even as the original object changes across renders.
+ *
+ * @template T The type of the object.
+ * @param {T} props The object to create a snapshot of.
+ * @returns {T} A memoized snapshot of the object.
+ */
 export function useSnapshot<T extends object>(props: T): T {
   const ref = React.useRef<T>(props);
 
@@ -77,10 +112,6 @@ export function useSnapshot<T extends object>(props: T): T {
 
   return React.useMemo(() => withGetters(props, ref), [props]);
 }
-
-
-
-
 
 /**
  * Optimises the memoisation of a value based on its dependencies.
