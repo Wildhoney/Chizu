@@ -6169,12 +6169,12 @@ quick-lru@^5.1.1:
   resolved "https://registry.yarnpkg.com/quick-lru/-/quick-lru-5.1.1.tgz#366493e6b3e42a3a6885e2e99d18f80fb7a8c932"
   integrity sha512-WuyALRjWPDGtt/wzJiadO5AXY+8hZ80hVpe6MyivgraREW751X3SbhRvG3eLKOYN+8VEvqLcf3wdnt44Z4S4SA==
 
-react-dom@^19.1.0:
-  version "19.1.0"
-  resolved "https://registry.yarnpkg.com/react-dom/-/react-dom-19.1.0.tgz#133558deca37fa1d682708df8904b25186793623"
-  integrity sha512-Xs1hdnE+DyKgeHJeJznQmYMIBG3TKIHJJT95Q58nHLSrElKlGQqDTR2HQ9fx5CN/Gk6Vh/kupBTDLU11/nDk/g==
+react-dom@^0.0.0-experimental-bdb4a96f-20250801:
+  version "0.0.0-experimental-bdb4a96f-20250801"
+  resolved "https://registry.yarnpkg.com/react-dom/-/react-dom-0.0.0-experimental-bdb4a96f-20250801.tgz#21c9b6e720805cbc8781f0062ebbca13f58ab832"
+  integrity sha512-jLjb9N/kShLktWq4G+59ZCUCLEZb3BuDlXoKCaonnqKFnKAnuwt6oOWUJ/R6KQNY69v+sixIS1ZNvC8ZvWigHA==
   dependencies:
-    scheduler "^0.26.0"
+    scheduler "0.0.0-experimental-bdb4a96f-20250801"
 
 react-is@^16.13.1:
   version "16.13.1"
@@ -6219,10 +6219,10 @@ react-test-renderer@^19.1.0:
     react-is "^19.1.0"
     scheduler "^0.26.0"
 
-react@^19.1.0:
-  version "19.1.0"
-  resolved "https://registry.yarnpkg.com/react/-/react-19.1.0.tgz#926864b6c48da7627f004795d6cce50e90793b75"
-  integrity sha512-FS+XFBNvn3GTAWq26joslQgWNoFu08F4kl0J4CgdNKADkdSGXQyTCnKteIAJy96Br6YbpEU1LSzV5dYtjMkMDg==
+react@^0.0.0-experimental-bdb4a96f-20250801:
+  version "0.0.0-experimental-bdb4a96f-20250801"
+  resolved "https://registry.yarnpkg.com/react/-/react-0.0.0-experimental-bdb4a96f-20250801.tgz#33ca138238513a632f79170b534d83a0984cbbb2"
+  integrity sha512-ObLUgq5SR72B1kkuPS/l8aZ0C51pAeaU0bx+fpRu4d3HdqVKUnfysUy6Sid6Jajo+QKjdEpO1TPt0mNLO5kmhg==
 
 read-pkg-up@^3.0.0:
   version "3.0.0"
@@ -6546,6 +6546,11 @@ saxes@^6.0.0:
   integrity sha512-xAg7SOnEhrm5zI3puOOKyy1OMcMlIJZYNJY7xLBwSze0UjhPLnWfj2GF2EpT0jmzaJKIWKHLsaSSajf35bcYnA==
   dependencies:
     xmlchars "^2.2.0"
+
+scheduler@0.0.0-experimental-bdb4a96f-20250801:
+  version "0.0.0-experimental-bdb4a96f-20250801"
+  resolved "https://registry.yarnpkg.com/scheduler/-/scheduler-0.0.0-experimental-bdb4a96f-20250801.tgz#0e479a7756108896938fc38ae82aceb60e88f792"
+  integrity sha512-wWNMdcz4hgWYDFT1waUE3vPnxhON/HQXlJFHGCXWvAdDTughGlumcF6Z005zjxfEMjAMH+zoYjb51g8SrSF65A==
 
 scheduler@^0.26.0:
   version "0.26.0"

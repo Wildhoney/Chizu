@@ -15,7 +15,8 @@
     "eventemitter3": "^5.0.1",
     "immer": "^10.1.1",
     "lodash": "^4.17.21",
-    "react": "^19.1.0",
+    "react": "^0.0.0-experimental-bdb4a96f-20250801",
+    "react-dom": "^0.0.0-experimental-bdb4a96f-20250801",
     "traverse": "0.6.8"
   },
   "files": [
@@ -49,7 +50,6 @@
     "jest-environment-jsdom": "^30.0.0-beta.3",
     "lucide-react": "^0.511.0",
     "prettier": "^3.5.3",
-    "react-dom": "^19.1.0",
     "react-router-dom": "^7.6.1",
     "react-test-renderer": "^19.1.0",
     "rollup-plugin-visualizer": "^6.0.1",

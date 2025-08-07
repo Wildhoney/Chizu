@@ -1,8 +1,3 @@
-export enum Transmit {
-  Unicast = "unicast",
-  Multicast = "multicast",
-  Broadcast = "broadcast",
-}
 
 export class Draft<T> {
   constructor(public value: T) {}
@@ -22,41 +17,15 @@ export class State {
   }
 }
 
-export type ActionName = Lifecycle | symbol | string | number;
+export type Action = Lifecycle | symbol | string | number;
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type ActionPayload = [any, ...any[]];
-
-export enum Lifecycle {
-  Mount = "lifecycle/mount",
-  Node = "lifecycle/node",
-  Derive = "lifecycle/derive",
-  Error = "lifecycle/error",
-  Unmount = "lifecycle/unmount",
+export class Lifecycle {
+  static Mount = Symbol("lifecycle/mount");
+  static Node = Symbol("lifecycle/node");
+  static Derive = Symbol("lifecycle/derive");
+  static Error = Symbol("lifecycle/error");
+  static Unmount = Symbol("lifecycle/unmount");
 }
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type Model = Record<symbol | string, any>;
-export type Actions = [] | [ActionName] | [ActionName, ...ActionPayload];
-export type Props = Record<string, unknown>;
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type Context = Record<string, React.Context<any>>;
-
-export type Schema<
-  M extends Model,
-  A extends Actions = [],
-  P extends Props = Record<string, never>,
-> = {
-  Model: M;
-  Actions: A;
-  Props: P;
-};
-
-export type ModuleDefinition = {
-  Model: Model;
-  Actions: Actions;
-  Props: Props;
-};
 
 export type Pk<T> = undefined | symbol | T;
 
@@ -66,18 +35,18 @@ export type Process = symbol;
 
 export type Op = number;
 
-export enum Boundary {
-  Default,
-  Error,
-}
+export type Model = object;
 
-export type Meta = {
-  boundary: Boundary;
-};
+export type Actions = unknown;
 
-export type ContextType<T> = T extends React.Context<infer U> ? U : never;
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type ContextTypes<T extends Record<string, React.Context<any>>> = {
-  [K in keyof T]: ContextType<T[K]>;
+
+export type Context<Model, Actions> = {
+  model: Model;
+  actions: {
+    produce(ƒ: (draft: Model) => void): Model;
+    dispatch: (action: Actions) => void;
+    annotate: <T>(value: T, operation: State.Op[]) => T;
+    consume: <T>(action: any, ƒ: (value: T) => React.ReactNode) => T;
+  };
 };
