@@ -1,12 +1,16 @@
-import useModel from ".";
-import { ModuleDefinition, State } from "../../../types/index.ts";
-import { UseOptions } from "../../types.ts";
+import { Model, State } from "../../types";
+import { validatable } from "./utils";
 
-export type Props<M extends ModuleDefinition> = {
-  options: UseOptions<M>;
-};
+export class Models<M extends Model> {
+  constructor(
+    public stateless: M,
+    public stateful: M = stateless,
+  ) {}
 
-export type UseModel = ReturnType<typeof useModel>;
+  get validatable(): Validatable<M> {
+    return validatable(this.stateful);
+  }
+}
 
 export type Validate = {
   pending(): boolean;

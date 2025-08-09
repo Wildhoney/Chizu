@@ -1,6 +1,5 @@
-import { Models } from "../../module/renderer/model/utils.ts";
-import { Meta, ModuleDefinition, Process } from "../../types/index.ts";
-import { meta } from "../index.ts";
+import { Model, Process } from "../../types/index.ts";
+import { Models } from "./types.ts";
 import { Annotation, config } from "./utils.ts";
 import get from "lodash/get";
 import traverse, { TraverseContext } from "traverse";
@@ -16,10 +15,10 @@ import traverse, { TraverseContext } from "traverse";
  * @param ƒ - A function that mutates the model draft to produce the desired changes.
  * @returns {Models<M>} A `Models` instance containing the updated model and its draft.
  */
-export function update<M extends ModuleDefinition["Model"]>(
+export function track<M extends Model>(
   models: Models<M>,
   process: Process,
-  ƒ: (draft: M, meta: Meta) => void,
+  ƒ: (draft: M) => void,
 ): Models<M> {
   function stateless(model: M): M {
     return traverse(model).forEach(function (this: TraverseContext): void {
@@ -69,7 +68,7 @@ export function update<M extends ModuleDefinition["Model"]>(
     });
   }
 
-  const handler = (model: M): void => ƒ(model, model[meta]);
+  const handler = (model: M): void => ƒ(model);
 
   return new Models<M>(
     stateless(config.immer.produce(models.stateless, handler)),
@@ -85,7 +84,7 @@ export function update<M extends ModuleDefinition["Model"]>(
  * @param process - The process whose associated states should be removed.
  * @returns {Models<M>} The updated `Models` instance with the states cleaned up.
  */
-export function cleanup<M extends ModuleDefinition["Model"]>(
+export function prune<M extends Model>(
   models: Models<M>,
   process: Process,
 ): Models<M> {

@@ -33,7 +33,7 @@ export type Task = PromiseWithResolvers<void>;
 
 export type Process = symbol;
 
-export type Op = number;
+export type Operation = number;
 
 export type Model = object;
 
@@ -48,6 +48,6 @@ export type Context<Model, Actions> = {
   actions: {
     produce(ƒ: (draft: Model) => void): Model;
     dispatch(action: Actions): void;
-    annotate<T>(value: T, operation: (typeof State.Operation)[]): T;
+    annotate<T>(value: T, operations: (Operation | Draft<T>)[]): T;
   };
 };

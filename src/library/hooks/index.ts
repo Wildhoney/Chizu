@@ -9,9 +9,13 @@ import {
   Lifecycle,
   Model,
   Payload,
+  Operation,
+  Draft,
 } from "../types/index.ts";
-import * as immer from "immer";
 import EventEmitter from "eventemitter3";
+import { track } from "../utils/produce/index.ts";
+import { Models } from "../utils/produce/types.ts";
+import { annotate } from "../utils/produce/utils.ts";
 
 /**
  * Memoizes an action handler for performance optimization.
@@ -43,22 +47,25 @@ export function useActions<M extends Model, A extends Actions>(
   model: M,
   ActionClass: ActionClass<M, A>,
 ): UseActions<M, A> {
-  const [state, setState] = React.useState(model);
+  const [state, setState] = React.useState<Models<M>>(new Models(model, model));
   const snapshot = useSnapshot({ state });
   const unicast = React.useMemo(() => new EventEmitter(), []);
 
-  const context = React.useMemo(
-    () =>
-      ({
-        actions: {
-          produce(f) {
-            const model = immer.produce(snapshot.state, f);
-            setState(model);
-          },
+  const context = React.useMemo(() => {
+    const process = Symbol("chizu::process");
+
+    return {
+      actions: {
+        produce(f) {
+          const model = track(snapshot.state, process, f);
+          setState(model);
         },
-      }) as Context<M, A>,
-    [snapshot.state],
-  );
+        annotate<T>(value: T, operations: (Operation | Draft<T>)[]): T {
+          return annotate(value, operations);
+        },
+      },
+    } as Context<M, A>;
+  }, [snapshot.state.stateless]);
 
   const instance = useOptimisedMemo(() => {
     const actions = new ActionClass(model);
@@ -80,14 +87,15 @@ export function useActions<M extends Model, A extends Actions>(
 
   return React.useMemo(
     () => [
-      state,
+      state.stateless,
       {
         dispatch(action) {
           unicast.emit(action, []);
         },
         consume() {},
-        annotate() {},
-        validate() {},
+        get validate() {
+          return snapshot.state.validatable;
+        },
       },
     ],
     [state, unicast],
