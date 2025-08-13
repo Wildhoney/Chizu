@@ -42,10 +42,12 @@ export function validatable<M extends Model>(
         case "is": {
           return (operation: Operation) => {
             const states = read<M>(stateful, properties);
+
             if (!states) return false;
-            const operations = new Set(
+
+            const operations: Set<Operation> = new Set(
               states.flatMap((state) => state.operations),
-            ) as Set<Operation>;
+            );
 
             const state = Array.from(operations).reduce(
               (current, operation) => current | (operation ?? 0),

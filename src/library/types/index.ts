@@ -39,6 +39,8 @@ export const PayloadKey = Symbol("payload");
 
 export type Payload<T = unknown> = string & { [PayloadKey]: T };
 
+export type Props = Record<string, unknown>;
+
 export type Action = symbol | string;
 
 export type Actions = Record<

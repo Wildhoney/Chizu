@@ -9,6 +9,7 @@ import {
   Lifecycle,
   Model,
   Payload,
+  Props,
 } from "../types/index.ts";
 import EventEmitter from "eventemitter3";
 import { useBroadcast } from "../broadcast/index.tsx";
@@ -54,7 +55,7 @@ export function useActions<M extends Model, A extends Actions>(
     // const process = Symbol("chizu.process");
     const controller = new AbortController();
 
-    return {
+    return <Context<M, A>>{
       signal: controller.signal,
       actions: {
         produce(f) {
@@ -65,7 +66,7 @@ export function useActions<M extends Model, A extends Actions>(
         //   // return annotate(value, operations);
         // },
       },
-    } as Context<M, A>;
+    };
   }, [snapshot.state]);
 
   const instance = React.useMemo(() => {
@@ -114,12 +115,12 @@ export function useActions<M extends Model, A extends Actions>(
  * @param {T} props The object to create a snapshot of.
  * @returns {T} A memoized snapshot of the object.
  */
-export function useSnapshot<T extends object>(props: T): T {
-  const ref = React.useRef<T>(props);
+export function useSnapshot<P extends Props>(props: P): P {
+  const ref = React.useRef<P>(props);
 
   React.useLayoutEffect((): void => {
     ref.current = props;
   }, [props]);
 
-  return React.useMemo(() => withGetters(props, ref), [props]);
+  return React.useMemo(() => withGetters<P>(props, ref), [props]);
 }
