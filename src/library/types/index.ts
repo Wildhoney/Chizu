@@ -33,6 +33,8 @@ export type Process = symbol;
 
 export type Operation = number;
 
+export type Operations<T> = (Operation | Draft<T>)[];
+
 export type Model<M = Record<string, unknown>> = M;
 
 export const PayloadKey = Symbol("payload");
@@ -48,12 +50,12 @@ export type Actions = Record<
   (context: Context<unknown, unknown>, payload?: unknown) => void
 >;
 
-export type Context<Model, Actions> = {
-  model: Model;
+export type Context<M extends Model, A extends Actions> = {
+  model: M;
   signal: AbortSignal;
   actions: {
-    produce(ƒ: (draft: Model) => void): Model;
+    produce(ƒ: (draft: M) => void): M;
     dispatch(action: Action): void;
-    // annotate<T>(value: T, operations: (Operation | Draft<T>)[]): T;
+        annotate<T>(value: T, operations: Operations<T>): T;
   };
 };

@@ -10,10 +10,24 @@ import {
   Model,
   Payload,
   Props,
+  Operations,
 } from "../types/index.ts";
 import EventEmitter from "eventemitter3";
 import { useBroadcast } from "../broadcast/index.tsx";
 import { isDistributedAction } from "../action/index.ts";
+import {
+  createAnnotation,
+  recordAnnotations,
+  stripAnnotations,
+  transferAnnotations,
+} from "../annotate/index.ts";
+
+export const config = {
+  immer: new immer.Immer(),
+};
+
+immer.enablePatches();
+config.immer.setAutoFreeze(false);
 
 /**
  * Memoizes an action handler for performance optimization.
@@ -29,7 +43,11 @@ export function useAction<
   A extends Actions,
   P extends Payload = never,
 >(action: (context: Context<M, A>, payload: P[typeof PayloadKey]) => void) {
-  return React.useCallback(action, []);
+  return React.useCallback(
+    (context: Context<M, A>, payload: P[typeof PayloadKey]) =>
+      void action(context, payload),
+    [],
+  );
 }
 
 /**
@@ -42,38 +60,40 @@ export function useAction<
  * @returns {UseActions<M, A>} A tuple containing the state and action handlers.
  */
 export function useActions<M extends Model, A extends Actions>(
-  model: M,
+  initialModel: M,
   ActionClass: ActionClass<M, A>,
 ): UseActions<M, A> {
+  const ref = React.useRef<M>(initialModel);
+  const annotations = React.useRef<M>(initialModel);
   const broadcast = useBroadcast();
-  const ref = React.useRef<M>(model);
-  const [state, setState] = React.useState<M>(model);
+  const [model, setModel] = React.useState<M>(initialModel);
+  console.log(model);
 
-  const snapshot = useSnapshot({ state });
+  const snapshot = useSnapshot({ model });
   const unicast = React.useMemo(() => new EventEmitter(), []);
 
   const context = React.useMemo(() => {
-    // const process = Symbol("chizu.process");
+    const process = Symbol("chizu.process");
     const controller = new AbortController();
 
     return <Context<M, A>>{
       signal: controller.signal,
       actions: {
         produce(f) {
-          const newState = immer.produce(ref.current, f);
-          ref.current = newState;
-          setState(newState);
+          const [model, patches] = config.immer.produceWithPatches(stripAnnotations<M>(ref.current), f);
+          ref.current = model;
+          setModel(ref.current);
         },
         dispatch(action) {
           if (isDistributedAction(action)) broadcast.instance.emit(action, []);
           else unicast.emit(action, []);
         },
-        // annotate<T>(value: T, operations: (Operation | Draft<T>)[]): T {
-        //   // return annotate(value, operations);
-        // },
+        annotate<T>(value: T, operations: Operations<T>): T {
+          return createAnnotation<T>(value, operations, process);
+        },
       },
     };
-  }, [snapshot.state]);
+  }, [snapshot.model]);
 
   const instance = React.useMemo(() => {
     const actions = new ActionClass(model);
@@ -96,7 +116,7 @@ export function useActions<M extends Model, A extends Actions>(
 
   return React.useMemo(
     () => [
-      state,
+      stripAnnotations<M>(model),
       {
         dispatch(action) {
           if (isDistributedAction(action)) broadcast.instance.emit(action, []);
@@ -108,7 +128,7 @@ export function useActions<M extends Model, A extends Actions>(
         // },
       },
     ],
-    [state, unicast],
+    [model, unicast],
   );
 }
 

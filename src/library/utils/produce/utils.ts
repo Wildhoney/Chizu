@@ -11,27 +11,6 @@ export const config = {
 enablePatches();
 config.immer.setAutoFreeze(false);
 
-export class Annotation<M> {
-  process: null | Process;
-
-  constructor(
-    public value: M,
-    public operations: Operation[],
-    public field: null | number | string = null,
-  ) {
-    this.process = null;
-  }
-
-  public attach(process: Process): Annotation<M> {
-    this.process = process;
-    return this;
-  }
-}
-
-export function annotate<M>(value: M, operations: Operation[] = []): M {
-  return new Annotation(value, operations) as M;
-}
-
 export function validatable<M extends Model>(
   stateful: M,
   properties: string[] = [],
