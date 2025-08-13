@@ -46,6 +46,7 @@ export function useActions<M extends Model, A extends Actions>(
   ActionClass: ActionClass<M, A>,
 ): UseActions<M, A> {
   const broadcast = useBroadcast();
+  const ref = React.useRef<M>(model);
   const [state, setState] = React.useState<M>(model);
 
   const snapshot = useSnapshot({ state });
@@ -59,8 +60,13 @@ export function useActions<M extends Model, A extends Actions>(
       signal: controller.signal,
       actions: {
         produce(f) {
-          const newState = immer.produce(snapshot.state, f);
+          const newState = immer.produce(ref.current, f);
+          ref.current = newState;
           setState(newState);
+        },
+        dispatch(action) {
+          if (isDistributedAction(action)) broadcast.instance.emit(action, []);
+          else unicast.emit(action, []);
         },
         // annotate<T>(value: T, operations: (Operation | Draft<T>)[]): T {
         //   // return annotate(value, operations);

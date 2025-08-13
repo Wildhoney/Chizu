@@ -33,7 +33,7 @@ export type Process = symbol;
 
 export type Operation = number;
 
-export type Model = object;
+export type Model<M = Record<string, unknown>> = M;
 
 export const PayloadKey = Symbol("payload");
 
@@ -53,7 +53,7 @@ export type Context<Model, Actions> = {
   signal: AbortSignal;
   actions: {
     produce(ƒ: (draft: Model) => void): Model;
-    dispatch(action: Actions): void;
+    dispatch(action: Action): void;
     // annotate<T>(value: T, operations: (Operation | Draft<T>)[]): T;
   };
 };

@@ -1,4 +1,8 @@
-import { createAction, useAction, useActions } from "../../library/index.ts";
+import {
+  createAction,
+  useAction,
+  useActions,
+} from "../../library/index.ts";
 
 import { Model } from "./types.ts";
 
