@@ -8,7 +8,3 @@ export function pk<T>(id?: Pk<T>): boolean | symbol {
   if (id) return Boolean(id && typeof id !== "symbol");
   return Symbol(`pk.${Date.now()}.${crypto.randomUUID()}`);
 }
-
-export function hash<T>(x: T): string {
-  return JSON.stringify(x);
-}

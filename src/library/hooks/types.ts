@@ -1,5 +1,5 @@
-import { Actions, Model } from "../types";
-import { Validatable } from "../utils/produce/types";
+import { Action, Actions, Model } from "../types";
+// import { Validatable } from "../utils/produce/types";
 
 export type ActionClass<M extends Model, A extends Actions> = new (
   model: M,
@@ -12,11 +12,11 @@ export type UseActions<M extends Model, A extends Actions> = [
      * Dispatches an action to update the model.
      * @param action The action to dispatch.
      */
-    dispatch(action: A): void;
-    /**
-     * Validates the current model state.
-     */
-    get validate(): Validatable<M>;
+    dispatch(action: Action): void;
+    // /**
+    //  * Validates the current model state.
+    //  */
+    // get validate(): Validatable<M>;
     /**
      * Consumes the current model state.
      */

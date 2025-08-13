@@ -16,7 +16,7 @@ export class Annotation<M> {
 
   constructor(
     public value: M,
-    public operations: Op[],
+    public operations: Operation[],
     public field: null | number | string = null,
   ) {
     this.process = null;

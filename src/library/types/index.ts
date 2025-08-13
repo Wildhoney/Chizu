@@ -17,8 +17,6 @@ export class State {
   }
 }
 
-// export type Action = Lifecycle | symbol | string | number;
-
 export class Lifecycle {
   static Mount = Symbol("lifecycle/mount");
   static Node = Symbol("lifecycle/node");
@@ -41,13 +39,19 @@ export const PayloadKey = Symbol("payload");
 
 export type Payload<T = unknown> = string & { [PayloadKey]: T };
 
-export type Actions = unknown;
+export type Action = symbol | string;
+
+export type Actions = Record<
+  Action,
+  (context: Context<unknown, unknown>, payload?: unknown) => void
+>;
 
 export type Context<Model, Actions> = {
   model: Model;
+  signal: AbortSignal;
   actions: {
     produce(ƒ: (draft: Model) => void): Model;
     dispatch(action: Actions): void;
-    annotate<T>(value: T, operations: (Operation | Draft<T>)[]): T;
+    // annotate<T>(value: T, operations: (Operation | Draft<T>)[]): T;
   };
 };

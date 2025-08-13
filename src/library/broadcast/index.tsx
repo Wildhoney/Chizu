@@ -1,4 +1,3 @@
-import { useOptimisedMemo } from "../hooks/index.ts";
 import type { BroadcastContext } from "./types.ts";
 import { Props } from "./types.ts";
 import EventEmitter from "eventemitter3";
@@ -21,7 +20,7 @@ export function useBroadcast() {
  * @returns {React.ReactNode}
  */
 export function Broadcaster({ children }: Props): React.ReactNode {
-  const context = useOptimisedMemo(
+  const context = React.useMemo(
     () => ({
       instance: new EventEmitter(),
     }),

@@ -1,4 +1,4 @@
-import { Payload } from "../types";
+import { Action, Payload } from "../types";
 
 /**
  * Defines a new action with a given payload type.
@@ -7,8 +7,10 @@ import { Payload } from "../types";
  * @param {string} [name] An optional name for the action, used for debugging purposes.
  * @returns {Payload<T>} A new action object.
  */
-export function createAction<T = unknown>(name?: string): Payload<T> {
-  return Symbol(`chizu/action::${name}`) as unknown as Payload<T>;
+export function createAction<T = unknown>(
+  name: string = "anonymous",
+): Payload<T> {
+  return Symbol(`chizu.action/${name}`) as unknown as Payload<T>;
 }
 
 /**
@@ -20,9 +22,13 @@ export function createAction<T = unknown>(name?: string): Payload<T> {
  * @returns {Payload<T>} A new distributed action object.
  */
 export function createDistributedAction<T = unknown>(
-  name?: string,
+  name: string = "anonymous",
 ): Payload<T> {
   return Symbol.for(
-    `chizu/action/distributed::${name}`,
+    `chizu.action/distributed/${name}`,
   ) as unknown as Payload<T>;
+}
+
+export function isDistributedAction(action: Action): boolean {
+  return action.toString().startsWith("Symbol(chizu.action/distributed/");
 }

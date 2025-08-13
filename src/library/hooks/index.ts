@@ -1,5 +1,5 @@
-import { hash } from "../utils/index.ts";
 import * as React from "react";
+import * as immer from "immer";
 import { ActionClass, UseActions } from "./types.ts";
 import { withGetters } from "./utils.ts";
 import {
@@ -9,13 +9,10 @@ import {
   Lifecycle,
   Model,
   Payload,
-  Operation,
-  Draft,
 } from "../types/index.ts";
 import EventEmitter from "eventemitter3";
-import { track } from "../utils/produce/index.ts";
-import { Models } from "../utils/produce/types.ts";
-import { annotate } from "../utils/produce/utils.ts";
+import { useBroadcast } from "../broadcast/index.tsx";
+import { isDistributedAction } from "../action/index.ts";
 
 /**
  * Memoizes an action handler for performance optimization.
@@ -47,31 +44,39 @@ export function useActions<M extends Model, A extends Actions>(
   model: M,
   ActionClass: ActionClass<M, A>,
 ): UseActions<M, A> {
-  const [state, setState] = React.useState<Models<M>>(new Models(model, model));
+  const broadcast = useBroadcast();
+  const [state, setState] = React.useState<M>(model);
+
   const snapshot = useSnapshot({ state });
   const unicast = React.useMemo(() => new EventEmitter(), []);
 
   const context = React.useMemo(() => {
-    const process = Symbol("chizu::process");
+    // const process = Symbol("chizu.process");
+    const controller = new AbortController();
 
     return {
+      signal: controller.signal,
       actions: {
         produce(f) {
-          const model = track(snapshot.state, process, f);
-          setState(model);
+          const newState = immer.produce(snapshot.state, f);
+          setState(newState);
         },
-        annotate<T>(value: T, operations: (Operation | Draft<T>)[]): T {
-          return annotate(value, operations);
-        },
+        // annotate<T>(value: T, operations: (Operation | Draft<T>)[]): T {
+        //   // return annotate(value, operations);
+        // },
       },
     } as Context<M, A>;
-  }, [snapshot.state.stateless]);
+  }, [snapshot.state]);
 
-  const instance = useOptimisedMemo(() => {
+  const instance = React.useMemo(() => {
     const actions = new ActionClass(model);
 
-    Object.getOwnPropertySymbols(actions).forEach((key) => {
-      unicast.on(key, (payload) => actions[key](context, payload));
+    Object.getOwnPropertySymbols(actions).forEach((action) => {
+      if (isDistributedAction(action))
+        broadcast.instance.on(action, (payload) =>
+          actions[action](context, payload),
+        );
+      else unicast.on(action, (payload) => actions[action](context, payload));
     });
 
     return actions;
@@ -79,23 +84,21 @@ export function useActions<M extends Model, A extends Actions>(
 
   React.useLayoutEffect(() => {
     instance[Lifecycle.Mount]?.(context);
-
-    return () => {
-      instance[Lifecycle.Unmount]?.();
-    };
+    return () => void instance[Lifecycle.Unmount]?.(context);
   }, []);
 
   return React.useMemo(
     () => [
-      state.stateless,
+      state,
       {
         dispatch(action) {
-          unicast.emit(action, []);
+          if (isDistributedAction(action)) broadcast.instance.emit(action, []);
+          else unicast.emit(action, []);
         },
         consume() {},
-        get validate() {
-          return snapshot.state.validatable;
-        },
+        // get validate() {
+        //   return null;
+        // },
       },
     ],
     [state, unicast],
@@ -114,59 +117,9 @@ export function useActions<M extends Model, A extends Actions>(
 export function useSnapshot<T extends object>(props: T): T {
   const ref = React.useRef<T>(props);
 
-  useOptimisedEffect(() => {
+  React.useLayoutEffect((): void => {
     ref.current = props;
   }, [props]);
 
   return React.useMemo(() => withGetters(props, ref), [props]);
-}
-
-/**
- * Optimises the memoisation of a value based on its dependencies.
- *
- * @param factory {() => T}
- * @param dependencies {React.DependencyList}
- * @returns {T}
- */
-export function useOptimisedMemo<T>(
-  factory: () => T,
-  dependencies: React.DependencyList,
-): T {
-  const cache = React.useRef<T | null>(null);
-  const previousHash = React.useRef<string | null>(null);
-
-  return React.useMemo(() => {
-    const currentHash = hash(dependencies);
-
-    if (previousHash.current !== currentHash) {
-      previousHash.current = currentHash;
-      const result = factory();
-      cache.current = result;
-      return result;
-    }
-
-    return cache.current as T;
-  }, dependencies);
-}
-
-/**
- *  Optimises the execution of an effect based on its dependencies.
- *
- * @param effect {React.EffectCallback}
- * @param dependencies {React.DependencyList}
- */
-export function useOptimisedEffect(
-  effect: React.EffectCallback,
-  dependencies: React.DependencyList,
-): void {
-  const previousHash = React.useRef<string | null>(null);
-
-  React.useEffect(() => {
-    const currentHash = hash(dependencies);
-
-    if (previousHash.current !== currentHash) {
-      previousHash.current = currentHash;
-      return effect();
-    }
-  }, dependencies);
 }
