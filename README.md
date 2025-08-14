@@ -42,7 +42,7 @@ export default function useNameActions() {
   return useActions<Model, typeof Actions>(
     model,
     class {
-      Name = utils.set("name");
+      [Actions.Name] = utils.set("name");
     },
   );
 }
@@ -52,13 +52,15 @@ export default function useNameActions() {
 export default function Profile(props: Props): React.ReactElement {
   const [model, actions] = useNameActions();
 
-  <>
-    <p>Hey {model.name}</p>
+  return (
+    <>
+      <p>Hey {model.name}</p>
 
-    <button onClick={() => actions.dispatch(Action.Name, randomName())}>
-      Switch profile
-    </button>
-  </>;
+      <button onClick={() => actions.dispatch(Actions.Name, randomName())}>
+        Switch profile
+      </button>
+    </>
+  );
 }
 ```
 
@@ -91,7 +93,7 @@ export default function useNameActions() {
   return useActions<Model, typeof Actions>(
     model,
     class {
-      Name = nameAction;
+      [Actions.Name] = nameAction;
     },
   );
 }
@@ -101,13 +103,15 @@ export default function useNameActions() {
 export default function Profile(props: Props): React.ReactElement {
   const [model, actions] = useNameActions();
 
-  <>
-    <p>Hey {model.name}</p>
+  return (
+    <>
+      <p>Hey {model.name}</p>
 
-    <button onClick={() => actions.dispatch(Action.Name)}>
-      Switch profile
-    </button>
-  </>;
+      <button onClick={() => actions.dispatch(Actions.Name)}>
+        Switch profile
+      </button>
+    </>
+  );
 }
 ```
 

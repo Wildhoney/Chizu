@@ -91,14 +91,15 @@ export function useActions<M extends Model, AC extends ActionsClass<any>>(
   const instance = React.useMemo(() => {
     const actions = new ActionClass();
 
-    Object.getOwnPropertySymbols(actions).forEach((actionSymbol) => {
-      const key = actionSymbol as keyof typeof actions; // assert key exists
-      if (isDistributedAction(actionSymbol)) {
-        broadcast.instance.on(actionSymbol, (payload) =>
+    Object.getOwnPropertySymbols(actions).forEach((action) => {
+      const key = action as keyof typeof actions;
+
+      if (isDistributedAction(action)) {
+        broadcast.instance.on(action, (payload) =>
           (actions[key] as Function)(context, payload),
         );
       } else {
-        unicast.on(actionSymbol, (payload) =>
+        unicast.on(action, (payload) =>
           (actions[key] as Function)(context, payload),
         );
       }

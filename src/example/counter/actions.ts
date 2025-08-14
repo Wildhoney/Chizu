@@ -13,8 +13,6 @@ export class Actions {
 export default function useCounterActions() {
   const incrementAction = useAction<Model, typeof Actions, "Increment">(
     (context) => {
-      context.actions.dispatch(Actions.Increment);
-
       context.actions.produce((draft) => {
         draft.count += 1;
       });
@@ -32,8 +30,8 @@ export default function useCounterActions() {
   return useActions<Model, typeof Actions>(
     model,
     class {
-      Increment = incrementAction;
-      Decrement = decrementAction;
+      [Actions.Increment] = incrementAction;
+      [Actions.Decrement] = decrementAction;
     },
   );
 }
