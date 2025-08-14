@@ -1,5 +1,13 @@
+import * as immer from "immer";
 import { RefObject } from "react";
 import { Props } from "../types";
+
+export const config = {
+  immer: new immer.Immer(),
+};
+
+immer.enablePatches();
+config.immer.setAutoFreeze(false);
 
 /**
  * @name withGetters

@@ -1,33 +1,21 @@
+/* eslint-disable @typescript-eslint/no-unsafe-function-type */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import * as React from "react";
-import * as immer from "immer";
-import { ActionClass, UseActions } from "./types.ts";
-import { withGetters } from "./utils.ts";
+import { config, withGetters } from "./utils.ts";
 import {
-  Actions,
   Context,
-  PayloadKey,
   Lifecycle,
   Model,
   Payload,
   Props,
-  Operations,
+  ActionsClass,
+  ActionInstance,
+  UseActions,
 } from "../types/index.ts";
 import EventEmitter from "eventemitter3";
 import { useBroadcast } from "../broadcast/index.tsx";
 import { isDistributedAction } from "../action/index.ts";
-import {
-  createAnnotation,
-  recordAnnotations,
-  stripAnnotations,
-  transferAnnotations,
-} from "../annotate/index.ts";
-
-export const config = {
-  immer: new immer.Immer(),
-};
-
-immer.enablePatches();
-config.immer.setAutoFreeze(false);
+import { plain } from "../annotate/index.ts";
 
 /**
  * Memoizes an action handler for performance optimization.
@@ -40,14 +28,24 @@ config.immer.setAutoFreeze(false);
  */
 export function useAction<
   M extends Model,
-  A extends Actions,
-  P extends Payload = never,
->(action: (context: Context<M, A>, payload: P[typeof PayloadKey]) => void) {
+  AC extends ActionsClass<any>,
+  K extends keyof AC,
+>(
+  handler: (
+    context: Context<M, AC>,
+    payload: AC[K] extends Payload<infer P> ? P : never,
+  ) => void,
+) {
   return React.useCallback(
-    (context: Context<M, A>, payload: P[typeof PayloadKey]) =>
-      void action(context, payload),
-    [],
-  );
+    (
+      context: Context<M, AC>,
+      payload: AC[K] extends Payload<infer P> ? P : never,
+    ) => void handler(context, payload),
+    [handler],
+  ) as ((
+    context: Context<M, AC>,
+    payload: AC[K] extends Payload<infer P> ? P : never,
+  ) => void) & { _payload: AC[K] extends Payload<infer P> ? P : never };
 }
 
 /**
@@ -59,73 +57,74 @@ export function useAction<
  * @param {ActionClass<M, A>} ActionClass The class defining the actions.
  * @returns {UseActions<M, A>} A tuple containing the state and action handlers.
  */
-export function useActions<M extends Model, A extends Actions>(
+export function useActions<M extends Model, AC extends ActionsClass<any>>(
   initialModel: M,
-  ActionClass: ActionClass<M, A>,
-): UseActions<M, A> {
+  ActionClass: new () => ActionInstance<M, AC>,
+): UseActions<M, AC> {
   const ref = React.useRef<M>(initialModel);
-  const annotations = React.useRef<M>(initialModel);
   const broadcast = useBroadcast();
   const [model, setModel] = React.useState<M>(initialModel);
-  console.log(model);
 
   const snapshot = useSnapshot({ model });
   const unicast = React.useMemo(() => new EventEmitter(), []);
 
   const context = React.useMemo(() => {
-    const process = Symbol("chizu.process");
     const controller = new AbortController();
 
-    return <Context<M, A>>{
+    return <Context<M, AC>>{
       signal: controller.signal,
       actions: {
         produce(f) {
-          const [model, patches] = config.immer.produceWithPatches(stripAnnotations<M>(ref.current), f);
-          ref.current = model;
+          const [model] = config.immer.produceWithPatches(ref.current, f);
+          ref.current = plain(model);
           setModel(ref.current);
         },
-        dispatch(action) {
-          if (isDistributedAction(action)) broadcast.instance.emit(action, []);
-          else unicast.emit(action, []);
-        },
-        annotate<T>(value: T, operations: Operations<T>): T {
-          return createAnnotation<T>(value, operations, process);
+        dispatch(...[action, payload]: [action: any, payload?: any]) {
+          if (isDistributedAction(action))
+            broadcast.instance.emit(action, payload);
+          else unicast.emit(action, payload);
         },
       },
     };
   }, [snapshot.model]);
 
   const instance = React.useMemo(() => {
-    const actions = new ActionClass(model);
+    const actions = new ActionClass();
 
-    Object.getOwnPropertySymbols(actions).forEach((action) => {
-      if (isDistributedAction(action))
-        broadcast.instance.on(action, (payload) =>
-          actions[action](context, payload),
+    Object.getOwnPropertySymbols(actions).forEach((actionSymbol) => {
+      const key = actionSymbol as keyof typeof actions; // assert key exists
+      if (isDistributedAction(actionSymbol)) {
+        broadcast.instance.on(actionSymbol, (payload) =>
+          (actions[key] as Function)(context, payload),
         );
-      else unicast.on(action, (payload) => actions[action](context, payload));
+      } else {
+        unicast.on(actionSymbol, (payload) =>
+          (actions[key] as Function)(context, payload),
+        );
+      }
     });
 
     return actions;
   }, [unicast]);
 
   React.useLayoutEffect(() => {
-    instance[Lifecycle.Mount]?.(context);
-    return () => void instance[Lifecycle.Unmount]?.(context);
+    const lifecycles = instance as unknown as {
+      [key: symbol]: (context: Context<M, AC>) => void;
+    };
+    lifecycles[Lifecycle.Mount]?.(context);
+    return () => void lifecycles[Lifecycle.Unmount]?.(context);
   }, []);
 
   return React.useMemo(
     () => [
-      stripAnnotations<M>(model),
+      model,
       {
-        dispatch(action) {
-          if (isDistributedAction(action)) broadcast.instance.emit(action, []);
-          else unicast.emit(action, []);
+        dispatch(...[action, payload]: [action: any, payload?: any]) {
+          if (isDistributedAction(action))
+            broadcast.instance.emit(action, payload);
+          else unicast.emit(action, payload);
         },
         consume() {},
-        // get validate() {
-        //   return null;
-        // },
       },
     ],
     [model, unicast],

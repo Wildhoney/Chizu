@@ -7,7 +7,7 @@ import { Action, Payload } from "../types";
  * @param {string} [name] An optional name for the action, used for debugging purposes.
  * @returns {Payload<T>} A new action object.
  */
-export function createAction<T = unknown>(
+export function createAction<T = never>(
   name: string = "anonymous",
 ): Payload<T> {
   return Symbol(`chizu.action/${name}`) as unknown as Payload<T>;
@@ -21,7 +21,7 @@ export function createAction<T = unknown>(
  * @param {string} [name] An optional name for the action, used for debugging purposes.
  * @returns {Payload<T>} A new distributed action object.
  */
-export function createDistributedAction<T = unknown>(
+export function createDistributedAction<T = never>(
   name: string = "anonymous",
 ): Payload<T> {
   return Symbol.for(
