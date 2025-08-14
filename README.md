@@ -8,10 +8,10 @@ Strongly typed React framework using generators and efficiently updated views al
 
 1. [Benefits](#benefits)
 1. [Getting started](#getting-started)
-1. [Handling errors](#handling-errors)
+<!-- 1. [Handling errors](#handling-errors)
 1. [Distributed actions](#distributed-actions)
 1. [Module dispatch](#module-dispatch)
-1. [Associated context](#associated-context)
+1. [Associated context](#associated-context) -->
 
 ## Benefits
 
@@ -21,86 +21,97 @@ Strongly typed React framework using generators and efficiently updated views al
 - Mostly standard JavaScript without quirky rules and exceptions.
 - Clear separation of concerns between business logic and markup.
 - First-class support for skeleton loading using generators.
-- Strongly typed throughout &ndash; styles, actions and views.
-- Avoid vendor lock-in with framework agnostic libraries such as [Shoelace](https://shoelace.style/).
+- Strongly typed throughout &ndash; dispatches, models, etc&hellip;
 - Easily communicate between actions using distributed actions.
-- State is mutated sequentially ([FIFO](<https://en.wikipedia.org/wiki/FIFO_(computing_and_electronics)>)) and deeply merged for queued mutations.
+- Bundled decorators for common action functionality such as consecutive mode.
 
 ## Getting started
 
 Actions are responsible for mutating the state of the view. In the below example the `name` is dispatched from the view to the actions, the state is updated and the view is rendered with the updated value.
 
 ```tsx
-export default <Actions<Module>>function Actions(module) {
-  return {
-    [Action.Name](name) {
-      return module.actions.produce((draft) => {
-        draft.name = name;
-      });
-    },
-  };
+const model: Model = {
+  name: null,
 };
-```
 
-```tsx
-export default function Profile(props: Props): React.ReactElement {
-  return (
-    <Scope<Module> using={{ model, actions, props }}>
-      {(module) => (
-        <>
-          <p>Hey {module.model.name}</p>
+export class Actions {
+  static Name = createAction<string>();
+}
 
-          <button
-            onClick={() => module.actions.dispatch([Action.Name, randomName()])}
-          >
-            Switch profile
-          </button>
-        </>
-      )}
-    </Scope>
+export default function useNameActions() {
+  return useActions<Model, typeof Actions>(
+    model,
+    class {
+      Name = utils.set("name");
+    },
   );
 }
 ```
 
-You can perform asynchronous operations in the action which will cause the associated view to render a second time:
+```tsx
+export default function Profile(props: Props): React.ReactElement {
+  const [model, actions] = useNameActions();
+
+  <>
+    <p>Hey {model.name}</p>
+
+    <button onClick={() => actions.dispatch(Action.Name, randomName())}>
+      Switch profile
+    </button>
+  </>;
+}
+```
+
+You can perform asynchronous operations in the action which will cause the associated view to render a second time &ndash; as we're starting to require more control in our actions we&apos;ll move to our own fine-tuned action:
 
 ```tsx
-export default <Actions<Module>>function Actions(module) {
-  return {
-    async *[Action.Name]() {
-      yield module.actions.produce((draft) => {
+const model: Model = {
+  name: null,
+};
+
+export class Actions {
+  static Name = createAction();
+}
+
+export default function useNameActions() {
+  const nameAction = useAction<Model, typeof Actions, "Name">(
+    async (context) => {
+      context.actions.produce((draft) => {
         draft.name = null;
       });
 
       const name = await fetch(/* ... */);
 
-      return module.actions.produce((draft) => {
+      context.actions.produce((draft) => {
         draft.name = name;
       });
     },
-  };
-};
-```
+  );
 
-```tsx
-export default function Profile(props: Props): React.ReactElement {
-  return (
-    <Scope<Module> using={{ model, actions, props }}>
-      {(module) => (
-        <>
-          <p>Hey {module.model.name}</p>
-
-          <button onClick={() => module.actions.dispatch([Action.Name])}>
-            Switch profile
-          </button>
-        </>
-      )}
-    </Scope>
+  return useActions<Model, typeof Actions>(
+    model,
+    class {
+      Name = nameAction;
+    },
   );
 }
 ```
 
-However in the above example where the name is fetched asynchronously, there is no feedback to the user &ndash; we can improve that significantly by using the `module.actions.annotate` and `module.validate` helpers:
+```tsx
+export default function Profile(props: Props): React.ReactElement {
+  const [model, actions] = useNameActions();
+
+  <>
+    <p>Hey {model.name}</p>
+
+    <button onClick={() => actions.dispatch(Action.Name)}>
+      Switch profile
+    </button>
+  </>;
+}
+```
+
+<!-- However in the above example where the name is fetched asynchronously, there is no feedback to the user &ndash; we can improve that significantly by using the `module.actions.annotate` and `module.validate` helpers:
 
 ```tsx
 export default <Actions<Module>>function Actions(module) {
@@ -269,4 +280,4 @@ export default function Profile(props: Props): React.ReactElement {
     </Scope>
   );
 }
-```
+``` -->
