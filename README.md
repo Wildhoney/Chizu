@@ -27,7 +27,7 @@ Strongly typed React framework using generators and efficiently updated views al
 
 ## Getting started
 
-Actions are responsible for mutating the state of the view. In the below example the `name` is dispatched from the view to the actions, the state is updated and the view is rendered with the updated value.
+Actions are responsible for mutating the state of the view. In the below example the `name` is dispatched from the view to the actions, the state is updated and the view is rendered with the updated value. We use the `ActionHandlers` type to ensure type safety for our actions class.
 
 ```tsx
 const model: Model = {
@@ -39,9 +39,9 @@ export class Actions {
 }
 
 export default function useNameActions() {
-  return useActions<Model, typeof Actions>(
+  return useActions(
     model,
-    class {
+    <ActionHandlers<Model, typeof Actions>>class {
       [Actions.Name] = utils.set("name");
     },
   );
@@ -90,9 +90,9 @@ export default function useNameActions() {
     },
   );
 
-  return useActions<Model, typeof Actions>(
+  return useActions(
     model,
-    class {
+    <ActionHandlers<Model, typeof Actions>>class {
       [Actions.Name] = nameAction;
     },
   );

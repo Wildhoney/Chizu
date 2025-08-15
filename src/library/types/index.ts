@@ -40,7 +40,15 @@ export type Model<M = Record<string, unknown>> = M;
 
 export const PayloadKey = Symbol("payload");
 
-export type Payload<T = unknown> = string & { [PayloadKey]: T };
+export type Payload<T = unknown> = symbol & { [PayloadKey]: T };
+
+type PayloadType<A> = A extends Payload<infer P> ? P : never;
+
+type UnionToIntersection<U> = (U extends any ? (k: U) => void : never) extends (
+  k: infer I,
+) => void
+  ? I
+  : never;
 
 export type Props = Record<string, unknown>;
 
@@ -56,13 +64,22 @@ export type ActionsClass<AC extends Record<string, Payload<any>>> = {
   new (): unknown;
 } & AC;
 
-export type ActionInstance<M extends Model, AC extends ActionsClass<any>> = {
-  [K in keyof AC as AC[K] extends Payload<any>
-    ? K
-    : never]: AC[K] extends Payload<infer P>
-    ? ((context: Context<M, AC>, payload: P) => void) & { _payload: P }
-    : never;
-};
+export type ActionInstance<
+  M extends Model,
+  AC extends ActionsClass<any>,
+> = UnionToIntersection<
+  AC[keyof AC] extends infer P
+    ? P extends symbol
+      ? P extends Payload<infer T>
+        ? {
+            [K in P]: ((context: Context<M, AC>, payload: T) => void) & {
+              _payload: T;
+            };
+          }
+        : never
+      : never
+    : never
+>;
 
 export type Context<M extends Model, AC extends ActionsClass<any>> = {
   model: M;
@@ -70,20 +87,21 @@ export type Context<M extends Model, AC extends ActionsClass<any>> = {
   actions: {
     produce(ƒ: (draft: M) => void): M;
     dispatch<A extends AC[keyof AC] & Payload<any>>(
-      ...args: A[typeof PayloadKey] extends never
-        ? [A]
-        : [A, A[typeof PayloadKey]]
+      ...args: [PayloadType<A>] extends [never] ? [A] : [A, PayloadType<A>]
     ): void;
   };
 };
+
+export type Handlers<
+  M extends Model,
+  AC extends ActionsClass<any>,
+> = new () => ActionInstance<M, AC>;
 
 export type UseActions<M extends Model, AC extends ActionsClass<any>> = [
   M,
   {
     dispatch<A extends AC[keyof AC] & Payload<any>>(
-      ...args: A[typeof PayloadKey] extends never
-        ? [A]
-        : [A, A[typeof PayloadKey]]
+      ...args: [PayloadType<A>] extends [never] ? [A] : [A, PayloadType<A>]
     ): void;
   },
 ];

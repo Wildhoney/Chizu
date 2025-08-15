@@ -24,9 +24,7 @@ export function createAction<T = never>(
 export function createDistributedAction<T = never>(
   name: string = "anonymous",
 ): Payload<T> {
-  return Symbol.for(
-    `chizu.action/distributed/${name}`,
-  ) as unknown as Payload<T>;
+  return Symbol(`chizu.action/distributed/${name}`) as unknown as Payload<T>;
 }
 
 export function isDistributedAction(action: Action): boolean {

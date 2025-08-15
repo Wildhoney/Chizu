@@ -1,10 +1,11 @@
-import useActions from "./actions.ts";
-import { Actions } from "./actions.ts";
+import useActions, { Actions } from "./actions.ts";
+import { Model } from "./types.ts";
+import { UseActions } from "../../library/index.ts";
 import * as styles from "./styles.ts";
 import * as React from "react";
 
 export default function Counter(): React.ReactElement {
-  const [model, actions] = useActions();
+  const [model, actions] = useActions() as UseActions<Model, typeof Actions>;
 
   return (
     <section className={styles.container}>

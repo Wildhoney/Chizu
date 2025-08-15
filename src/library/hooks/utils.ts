@@ -32,3 +32,17 @@ export function withGetters<P extends Props>(a: P, b: RefObject<P>): P {
     <P>{},
   );
 }
+/**
+ * @name isGenerator
+ * @description Checks if the given result is a generator or async generator.
+ * @param result The result to check.
+ * @returns {boolean} True if the result is a generator or async generator, false otherwise.
+ */
+export function isGenerator(
+  result: unknown,
+): result is Generator | AsyncGenerator {
+  if (!result) return false;
+  if (typeof result !== "object" || result === null) return false;
+  const name = (result as object).constructor.name;
+  return name === "Generator" || name === "AsyncGenerator";
+}

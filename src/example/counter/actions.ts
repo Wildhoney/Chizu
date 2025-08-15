@@ -1,4 +1,10 @@
-import { createAction, useAction, useActions } from "../../library/index.ts";
+import {
+  createAction,
+  useAction,
+  useActions,
+  Handlers,
+  createDistributedAction,
+} from "../../library/index.ts";
 import { Model } from "./types.ts";
 
 const model: Model = {
@@ -7,7 +13,7 @@ const model: Model = {
 
 export class Actions {
   static Increment = createAction();
-  static Decrement = createAction();
+  static Decrement = createDistributedAction();
 }
 
 export default function useCounterActions() {
@@ -27,9 +33,9 @@ export default function useCounterActions() {
     },
   );
 
-  return useActions<Model, typeof Actions>(
+  return useActions(
     model,
-    class {
+    <Handlers<Model, typeof Actions>>class {
       [Actions.Increment] = incrementAction;
       [Actions.Decrement] = decrementAction;
     },

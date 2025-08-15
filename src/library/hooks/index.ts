@@ -29,18 +29,45 @@ import { plain } from "../annotate/index.ts";
 export function useAction<
   M extends Model,
   AC extends ActionsClass<any>,
-  K extends keyof AC,
+  K extends Exclude<keyof AC, "prototype">,
 >(
   handler: (
     context: Context<M, AC>,
     payload: AC[K] extends Payload<infer P> ? P : never,
-  ) => void,
+  ) => void | Promise<void> | AsyncGenerator | Generator,
 ) {
   return React.useCallback(
     (
       context: Context<M, AC>,
       payload: AC[K] extends Payload<infer P> ? P : never,
-    ) => void handler(context, payload),
+    ) => {
+      async function run() {
+        const task = Promise.withResolvers<void>();
+
+        const isGenerator =
+          handler.constructor.name === "GeneratorFunction" ||
+          handler.constructor.name === "AsyncGeneratorFunction";
+
+        if (isGenerator) {
+          const generator = handler(context, payload) as
+            | Generator
+            | AsyncGenerator;
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          for await (const _ of generator) void 0;
+          return;
+        }
+
+        try {
+          await handler(context, payload);
+        } catch (error) {
+          return void task.reject(error);
+        }
+
+        task.resolve();
+      }
+
+      run();
+    },
     [handler],
   ) as ((
     context: Context<M, AC>,
