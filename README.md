@@ -27,7 +27,7 @@ Strongly typed React framework using generators and efficiently updated views al
 
 ## Getting started
 
-Actions are responsible for mutating the state of the view. In the below example the `name` is dispatched from the view to the actions, the state is updated and the view is rendered with the updated value. We use the `ActionHandlers` type to ensure type safety for our actions class.
+Actions are responsible for mutating the state of the view. In the below example the `name` is dispatched from the view to the actions, the state is updated and the view is rendered with the updated value. We use the `Handlers` type to ensure type safety for our actions class.
 
 ```tsx
 const model: Model = {
@@ -41,7 +41,7 @@ export class Actions {
 export default function useNameActions() {
   return useActions(
     model,
-    <ActionHandlers<Model, typeof Actions>>class {
+    <Handlers<Model, typeof Actions>>class {
       [Actions.Name] = utils.set("name");
     },
   );
@@ -92,7 +92,7 @@ export default function useNameActions() {
 
   return useActions(
     model,
-    <ActionHandlers<Model, typeof Actions>>class {
+    <Handlers<Model, typeof Actions>>class {
       [Actions.Name] = nameAction;
     },
   );
@@ -120,10 +120,10 @@ export default function Profile(props: Props): React.ReactElement {
 Chizu provides a simple way to catch errors that occur within your actions. You can use the `ActionError` component to wrap your application and provide an error handler. This handler will be called whenever an error is thrown in an action.
 
 ```tsx
-import { ActionError } from "@chizu/error";
+import { ActionError } from "chizu";
 
 const App = () => (
-  <ActionError handle={(error) => console.error(error)}>
+  <ActionError handler={(error) => console.error(error)}>
     <Profile />
   </ActionError>
 );

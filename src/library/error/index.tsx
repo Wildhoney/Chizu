@@ -7,8 +7,8 @@ export function useActionError() {
   return useContext(ErrorContext);
 }
 
-export function ActionError({ handle, children }: Props) {
+export function ActionError({ handler, children }: Props) {
   return (
-    <ErrorContext.Provider value={handle}>{children}</ErrorContext.Provider>
+    <ErrorContext.Provider value={handler}>{children}</ErrorContext.Provider>
   );
 }
