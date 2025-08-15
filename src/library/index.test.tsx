@@ -12,4 +12,10 @@ it("should increment and decrement the counter", async () => {
 
   fireEvent.click(screen.getByText("Decrement"));
   expect(await screen.findByText("1")).toBeTruthy();
+
+  fireEvent.click(screen.getByText("Set to 5"));
+  expect(await screen.findByText("5")).toBeTruthy();
+
+  fireEvent.click(screen.getByText("Decrement"));
+  expect(await screen.findByText("4")).toBeTruthy();
 });

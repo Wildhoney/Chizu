@@ -3,7 +3,6 @@ import {
   useAction,
   useActions,
   Handlers,
-  createDistributedAction,
 } from "../../library/index.ts";
 import { Model } from "./types.ts";
 
@@ -12,11 +11,20 @@ const model: Model = {
 };
 
 export class Actions {
+  static Set = createAction<number>();
   static Increment = createAction();
-  static Decrement = createDistributedAction();
+  static Decrement = createAction();
 }
 
 export default function useCounterActions() {
+  const setAction = useAction<Model, typeof Actions, "Set">(
+    (context, payload) => {
+      context.actions.produce((draft) => {
+        draft.count = payload;
+      });
+    },
+  );
+
   const incrementAction = useAction<Model, typeof Actions, "Increment">(
     (context) => {
       context.actions.produce((draft) => {
@@ -36,6 +44,7 @@ export default function useCounterActions() {
   return useActions(
     model,
     <Handlers<Model, typeof Actions>>class {
+      [Actions.Set] = setAction;
       [Actions.Increment] = incrementAction;
       [Actions.Decrement] = decrementAction;
     },
