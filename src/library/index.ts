@@ -1,3 +1,5 @@
+export { ActionError } from "./error/index.tsx";
+
 export { createAction, createDistributedAction } from "./action/index.ts";
 
 export type {

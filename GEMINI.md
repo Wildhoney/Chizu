@@ -15,6 +15,11 @@ Key concepts include:
 - **Immer:** Used for immutable state updates.
 - **Broadcast System:** A React context-based system for broadcasting actions to all components.
 
+## Coding Standards
+
+- Use `type` instead of `interface`.
+- Use `export function` instead of `export const () =>`.
+
 ## Directory Structure
 
 ### `src/library/action/`
@@ -45,6 +50,13 @@ Key concepts include:
   - `Synchronous`: A decorator.
   - `Debounce`: A decorator.
 
+### `src/library/error/`
+
+- **`index.tsx`**:
+  - `ActionError`: A React component to handle errors in actions.
+  - `useActionError()`: A hook to access the error context.
+- **`types.ts`**: Defines the types for the error system.
+
 ### `src/library/hooks/`
 
 - **`index.ts`**:
@@ -70,3 +82,7 @@ Key concepts include:
 ## Development Workflow
 
 After each change, and when you think the task is complete, you must run `make checks`. If there are any issues, you must fix them.
+
+Do not update the `CHANGELOG.md` file, as this is handled automatically during the release process.
+
+If you make any changes to the library, ensure that the `README.md` file is updated to reflect these changes.

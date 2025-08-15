@@ -16,6 +16,7 @@ import EventEmitter from "eventemitter3";
 import { useBroadcast } from "../broadcast/index.tsx";
 import { isDistributedAction } from "../action/index.ts";
 import { plain } from "../annotate/index.ts";
+import { useActionError } from "../error/index.tsx";
 
 /**
  * Memoizes an action handler for performance optimization.
@@ -36,6 +37,8 @@ export function useAction<
     payload: AC[K] extends Payload<infer P> ? P : never,
   ) => void | Promise<void> | AsyncGenerator | Generator,
 ) {
+  const handleError = useActionError();
+
   return React.useCallback(
     (
       context: Context<M, AC>,
@@ -52,14 +55,20 @@ export function useAction<
           const generator = handler(context, payload) as
             | Generator
             | AsyncGenerator;
-          // eslint-disable-next-line @typescript-eslint/no-unused-vars
-          for await (const _ of generator) void 0;
+          try {
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            for await (const _ of generator) void 0;
+          } catch (error) {
+            if (handleError) handleError(error as Error);
+            return void task.reject(error);
+          }
           return;
         }
 
         try {
           await handler(context, payload);
         } catch (error) {
+          if (handleError) handleError(error as Error);
           return void task.reject(error);
         }
 
@@ -68,7 +77,7 @@ export function useAction<
 
       run();
     },
-    [handler],
+    [handler, handleError],
   ) as ((
     context: Context<M, AC>,
     payload: AC[K] extends Payload<infer P> ? P : never,

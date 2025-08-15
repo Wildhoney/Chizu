@@ -8,8 +8,8 @@ Strongly typed React framework using generators and efficiently updated views al
 
 1. [Benefits](#benefits)
 1. [Getting started](#getting-started)
-<!-- 1. [Handling errors](#handling-errors)
-1. [Distributed actions](#distributed-actions)
+1. [Error handling](#error-handling)
+<!-- 1. [Distributed actions](#distributed-actions)
 1. [Module dispatch](#module-dispatch)
 1. [Associated context](#associated-context) -->
 
@@ -115,6 +115,20 @@ export default function Profile(props: Props): React.ReactElement {
 }
 ```
 
+## Error handling
+
+Chizu provides a simple way to catch errors that occur within your actions. You can use the `ActionError` component to wrap your application and provide an error handler. This handler will be called whenever an error is thrown in an action.
+
+```tsx
+import { ActionError } from "@chizu/error";
+
+const App = () => (
+  <ActionError handle={(error) => console.error(error)}>
+    <Profile />
+  </ActionError>
+);
+```
+
 <!-- However in the above example where the name is fetched asynchronously, there is no feedback to the user &ndash; we can improve that significantly by using the `module.actions.annotate` and `module.validate` helpers:
 
 ```tsx
@@ -157,52 +171,7 @@ export default function ProfileView(props: Props): React.ReactElement {
 }
 ```
 
-## Handling errors
 
-Most errors are likely to occur in the actions because the views should be free of side effects. First and foremost it's recommended that errors be encoded into your corresponding module using a library such as [`neverthrow`[(https://github.com/supermacro/neverthrow)] &ndash; that way you can effectively identify which properties are fallible and render the DOM accordingly:
-
-```tsx
-export default <Actions<Module>>function Actions(module) {
-  return {
-    *[Action.Name]() {
-      yield module.actions.produce((draft) => {
-        draft.name = null;
-      });
-
-      const name = await fetch(/* ... */);
-
-      return module.actions.produce((draft) => {
-        draft.name = name ? Result.Just(name) : Result.Nothing();
-      });
-    },
-  };
-};
-```
-
-However in eventualities where an error has not been caught in an action then the `Lifecycle.Error` is the next best thing &ndash; use it to display a toast message and log it your chosen error log service.
-
-Additionally when rendering an error may be thrown which prevents the DOM from updating as you'd expect &ndash; perhaps a side effect has delivered an unexpected data structure. In those cases again `Lifecycle.Error` is your friend. When such an error is thrown the component boundary will be switched to `Boundary.Error` which you detect using `module.boundary.is(Boundary.Error)` and switch to an alternative markup that _should_ render, within that you could display a button to attempt recovery &ndash; simply call an action again and update the meta to switch the boundary back to `Boundary.Default`:
-
-```tsx
-export default <Actions<Module>>function Actions(module) {
-  return {
-    *[Action.Recover]() {
-      yield module.actions.produce((draft) => {
-        draft.name = null;
-      });
-
-      const name = await fetch(/* ... */);
-
-      return module.actions.produce((draft, meta) => {
-        meta.boundary = Boundary.Default;
-        draft.name = name;
-      });
-    },
-  };
-};
-```
-
-If the component again throws an error after attempting recovery, it will simply switch back to the `Boundary.Error` again.
 
 ## Distributed actions
 
