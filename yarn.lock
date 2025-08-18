@@ -1287,6 +1287,11 @@
     "@eslint/core" "^0.14.0"
     levn "^0.4.1"
 
+"@faker-js/faker@^9.9.0":
+  version "9.9.0"
+  resolved "https://registry.yarnpkg.com/@faker-js/faker/-/faker-9.9.0.tgz#3ad015fbbaaae7af3149555e0f22b4b30134c69d"
+  integrity sha512-OEl393iCOoo/z8bMezRlJu+GlRGlsKbUAN7jKB6LhnKoqKve5DXRpalbItIIcwnCjs1k/FOPjFzcA6Qn+H+YbA==
+
 "@hapi/hoek@^9.0.0", "@hapi/hoek@^9.3.0":
   version "9.3.0"
   resolved "https://registry.yarnpkg.com/@hapi/hoek/-/hoek-9.3.0.tgz#8368869dcb735be2e7f5cb7647de78e167a251fb"
@@ -6159,6 +6164,11 @@ quick-lru@^5.1.1:
   version "5.1.1"
   resolved "https://registry.yarnpkg.com/quick-lru/-/quick-lru-5.1.1.tgz#366493e6b3e42a3a6885e2e99d18f80fb7a8c932"
   integrity sha512-WuyALRjWPDGtt/wzJiadO5AXY+8hZ80hVpe6MyivgraREW751X3SbhRvG3eLKOYN+8VEvqLcf3wdnt44Z4S4SA==
+
+ramda@^0.31.3:
+  version "0.31.3"
+  resolved "https://registry.yarnpkg.com/ramda/-/ramda-0.31.3.tgz#0f54199ec99a7bd6702277d28d6bf7f93b916bb9"
+  integrity sha512-xKADKRNnqmDdX59PPKLm3gGmk1ZgNnj3k7DryqWwkamp4TJ6B36DdpyKEQ0EoEYmH2R62bV4Q+S0ym2z8N2f3Q==
 
 react-dom@^0.0.0-experimental-bdb4a96f-20250801:
   version "0.0.0-experimental-bdb4a96f-20250801"

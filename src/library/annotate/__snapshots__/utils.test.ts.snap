@@ -1,0 +1,90 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`reconcile() x 1`] = `
+{
+  "countries": [
+    "Bahamas",
+    "Nepal",
+    "Samoa",
+  ],
+  "country": "Nigeria",
+}
+`;
+
+exports[`reconcile() x 2`] = `
+{
+  "countries": [
+    "Bahamas",
+    "Nepal",
+    "Samoa",
+  ],
+  "countries.0": "Bahamas",
+  "countries.1": Annotation {
+    "operations": [
+      {
+        "operation": 1,
+        "process": Symbol(process),
+      },
+    ],
+    "value": "Nepal",
+  },
+  "countries.2": "Samoa",
+  "country": Annotation {
+    "operations": [
+      {
+        "operation": 1,
+        "process": Symbol(process),
+      },
+    ],
+    "value": "Nigeria",
+  },
+}
+`;
+
+exports[`reconcile() x 3`] = `
+{
+  "countries": [
+    "Bahamas",
+    "Nepal",
+    "Samoa",
+    "Bonaire, Sint Eustatius and Saba",
+  ],
+  "country": "Venezuela",
+}
+`;
+
+exports[`reconcile() x 4`] = `
+{
+  "countries": [
+    "Bahamas",
+    "Nepal",
+    "Samoa",
+    "Bonaire, Sint Eustatius and Saba",
+  ],
+  "countries.0": "Bahamas",
+  "countries.1": Annotation {
+    "operations": [
+      {
+        "operation": 4,
+        "process": Symbol(process),
+      },
+      {
+        "operation": 1,
+        "process": Symbol(process),
+      },
+    ],
+    "value": "Nepal",
+  },
+  "countries.2": "Samoa",
+  "countries.3": "Bonaire, Sint Eustatius and Saba",
+  "country": Annotation {
+    "operations": [
+      {
+        "operation": 1,
+        "process": Symbol(process),
+      },
+    ],
+    "value": "Venezuela",
+  },
+}
+`;

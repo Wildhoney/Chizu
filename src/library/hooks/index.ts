@@ -9,14 +9,14 @@ import {
   Payload,
   Props,
   ActionsClass,
-  ActionInstance,
-  UseActions,
+  Handlers,
 } from "../types/index.ts";
 import EventEmitter from "eventemitter3";
 import { useBroadcast } from "../broadcast/index.tsx";
 import { isDistributedAction } from "../action/index.ts";
-import { plain } from "../annotate/index.ts";
 import { useActionError } from "../error/index.tsx";
+import { Store } from "./types.ts";
+import { reconcile } from "../annotate/utils.ts";
 
 /**
  * Memoizes an action handler for performance optimization.
@@ -47,32 +47,26 @@ export function useAction<
       async function run() {
         const task = Promise.withResolvers<void>();
 
-        const isGenerator =
-          handler.constructor.name === "GeneratorFunction" ||
-          handler.constructor.name === "AsyncGeneratorFunction";
+        try {
+          const isGenerator =
+            handler.constructor.name === "GeneratorFunction" ||
+            handler.constructor.name === "AsyncGeneratorFunction";
 
-        if (isGenerator) {
-          const generator = handler(context, payload) as
-            | Generator
-            | AsyncGenerator;
-          try {
+          if (isGenerator) {
+            const generator = handler(context, payload) as
+              | Generator
+              | AsyncGenerator;
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
             for await (const _ of generator) void 0;
-          } catch (error) {
-            if (handleError) handleError(error as Error);
-            return void task.reject(error);
+          } else {
+            await handler(context, payload);
           }
-          return;
-        }
-
-        try {
-          await handler(context, payload);
         } catch (error) {
+          console.log("error", error);
           if (handleError) handleError(error as Error);
-          return void task.reject(error);
+        } finally {
+          task.resolve();
         }
-
-        task.resolve();
       }
 
       run();
@@ -93,13 +87,18 @@ export function useAction<
  * @param {ActionClass<M, A>} ActionClass The class defining the actions.
  * @returns {UseActions<M, A>} A tuple containing the state and action handlers.
  */
-export function useActions<M extends Model, AC extends ActionsClass<any>>(
+export function useActions<M extends Model, AC extends Handlers<M, AC>>(
   initialModel: M,
-  ActionClass: new () => ActionInstance<M, AC>,
-): UseActions<M, AC> {
-  const ref = React.useRef<M>(initialModel);
+  ActionClass: AC,
+) {
   const broadcast = useBroadcast();
   const [model, setModel] = React.useState<M>(initialModel);
+
+  const refs = {
+    viewModel: React.useRef<M>(initialModel),
+    produceModel: React.useRef(initialModel),
+    annotationStore: React.useRef<Store>({}),
+  };
 
   const snapshot = useSnapshot({ model });
   const unicast = React.useMemo(() => new EventEmitter(), []);
@@ -111,9 +110,15 @@ export function useActions<M extends Model, AC extends ActionsClass<any>>(
       signal: controller.signal,
       actions: {
         produce(f) {
-          const [model] = config.immer.produceWithPatches(ref.current, f);
-          ref.current = plain(model);
-          setModel(ref.current);
+          const model = config.immer.produce(refs.viewModel.current, () =>
+            f(refs.viewModel.current, refs.produceModel.current),
+          );
+          refs.viewModel.current = reconcile(
+            model,
+            refs.produceModel,
+            refs.annotationStore,
+          );
+          setModel(refs.viewModel.current);
         },
         dispatch(...[action, payload]: [action: any, payload?: any]) {
           if (isDistributedAction(action))

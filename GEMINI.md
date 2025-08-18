@@ -81,7 +81,7 @@ Key concepts include:
 
 ## Development Workflow
 
-After each change, and when you think the task is complete, you must run `make checks`. If there are any issues, you must fix them.
+After each change, and when you think the task is complete, you must run `make checks`. This command will format, lint, typecheck, and run unit tests. If there are any issues, you must fix them.
 
 Do not update the `CHANGELOG.md` file, as this is handled automatically during the release process.
 

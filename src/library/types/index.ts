@@ -85,7 +85,7 @@ export type Context<M extends Model, AC extends ActionsClass<any>> = {
   model: M;
   signal: AbortSignal;
   actions: {
-    produce(ƒ: (draft: M) => void): M;
+    produce(ƒ: (model: M, annotations: M) => void): M;
     dispatch<A extends AC[keyof AC] & Payload<any>>(
       ...args: [PayloadType<A>] extends [never] ? [A] : [A, PayloadType<A>]
     ): void;

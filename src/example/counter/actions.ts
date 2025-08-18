@@ -19,24 +19,24 @@ export class Actions {
 export default function useCounterActions() {
   const setAction = useAction<Model, typeof Actions, "Set">(
     (context, payload) => {
-      context.actions.produce((draft) => {
-        draft.count = payload;
+      context.actions.produce((model) => {
+        model.count = payload;
       });
     },
   );
 
   const incrementAction = useAction<Model, typeof Actions, "Increment">(
     (context) => {
-      context.actions.produce((draft) => {
-        draft.count += 1;
+      context.actions.produce((model) => {
+        model.count += 1;
       });
     },
   );
 
   const decrementAction = useAction<Model, typeof Actions, "Decrement">(
     (context) => {
-      context.actions.produce((draft) => {
-        draft.count -= 1;
+      context.actions.produce((model) => {
+        model.count -= 1;
       });
     },
   );
