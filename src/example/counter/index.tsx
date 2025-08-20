@@ -18,6 +18,8 @@ export default function Counter(): React.ReactElement {
       <button onClick={() => actions.dispatch(Actions.Increment)}>
         Increment
       </button>
+
+      <button onClick={() => actions.dispatch(Actions.Reset, 0)}>Reset</button>
     </section>
   );
 }

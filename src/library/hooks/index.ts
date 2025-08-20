@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unsafe-function-type */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import * as React from "react";
-import { config, withGetters } from "./utils.ts";
+import { config, getCallbackFunction, withGetters } from "./utils.ts";
 import {
   Context,
   Lifecycle,
@@ -38,8 +38,7 @@ export function useAction<
   ) => void | Promise<void> | AsyncGenerator | Generator,
 ) {
   const handleError = useActionError();
-
-  return React.useCallback(
+  return getCallbackFunction()(
     (
       context: Context<M, AC>,
       payload: AC[K] extends Payload<infer P> ? P : never,
@@ -62,7 +61,6 @@ export function useAction<
             await handler(context, payload);
           }
         } catch (error) {
-          console.log("error", error);
           if (handleError) handleError(error as Error);
         } finally {
           task.resolve();

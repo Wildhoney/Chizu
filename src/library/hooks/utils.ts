@@ -1,6 +1,7 @@
 import * as immer from "immer";
 import { RefObject } from "react";
 import { Props } from "../types";
+import * as React from "react";
 
 export const config = {
   immer: new immer.Immer(),
@@ -45,4 +46,18 @@ export function isGenerator(
   if (typeof result !== "object" || result === null) return false;
   const name = (result as object).constructor.name;
   return name === "Generator" || name === "AsyncGenerator";
+}
+
+/**
+ * Returns the appropriate callback function based on the React version.
+ * @returns {typeof React.useCallback} The callback function.
+ */
+export function getCallbackFunction(): typeof React.useCallback {
+  if ("experimental_useEffectEvent" in React) {
+    return React.experimental_useEffectEvent as typeof React.useCallback;
+  } else if ("useEffectEvent" in React) {
+    return React.useEffectEvent as typeof React.useCallback;
+  }
+
+  return React.useCallback;
 }

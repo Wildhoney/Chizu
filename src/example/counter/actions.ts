@@ -11,13 +11,13 @@ const model: Model = {
 };
 
 export class Actions {
-  static Set = createAction<number>();
+  static Reset = createAction<number>();
   static Increment = createAction();
   static Decrement = createAction();
 }
 
 export default function useCounterActions() {
-  const setAction = useAction<Model, typeof Actions, "Set">(
+  const resetAction = useAction<Model, typeof Actions, "Reset">(
     (context, payload) => {
       context.actions.produce((model) => {
         model.count = payload;
@@ -44,7 +44,7 @@ export default function useCounterActions() {
   return useActions(
     model,
     <Handlers<Model, typeof Actions>>class {
-      [Actions.Set] = setAction;
+      [Actions.Reset] = resetAction;
       [Actions.Increment] = incrementAction;
       [Actions.Decrement] = decrementAction;
     },
