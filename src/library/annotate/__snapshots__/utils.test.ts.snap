@@ -45,7 +45,7 @@ exports[`reconcile() is able to handle the annotations 3`] = `
 {
   "countries": [
     "Bahamas",
-    "Nepal",
+    "Nigeria",
     "Samoa",
     "Bonaire, Sint Eustatius and Saba",
   ],
@@ -57,7 +57,7 @@ exports[`reconcile() is able to handle the annotations 4`] = `
 {
   "countries": [
     "Bahamas",
-    "Nepal",
+    "Nigeria",
     "Samoa",
     "Bonaire, Sint Eustatius and Saba",
   ],
@@ -65,15 +65,15 @@ exports[`reconcile() is able to handle the annotations 4`] = `
   "countries.1": Annotation {
     "operations": [
       {
-        "operation": 4,
-        "process": Symbol(process),
-      },
-      {
         "operation": 1,
         "process": Symbol(process),
       },
+      {
+        "operation": 4,
+        "process": Symbol(process),
+      },
     ],
-    "value": "Nepal",
+    "value": "Nigeria",
   },
   "countries.2": "Samoa",
   "countries.3": "Bonaire, Sint Eustatius and Saba",

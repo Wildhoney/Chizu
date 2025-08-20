@@ -7,10 +7,10 @@ import get from "lodash/get";
 import { set } from "lodash";
 
 import { Operations, Process } from "../types/index.ts";
-import { Operation } from "./types.ts";
+import { Operation, Validator } from "./types.ts";
 
 export class Annotation<T> {
-  private operations: Operation<T>[];
+  public operations: Operation<T>[];
 
   constructor(
     public value: T,
@@ -34,8 +34,10 @@ export class Annotation<T> {
     return this;
   }
 
-  remove(process: Process) {
-    this.operations = this.operations.filter((op) => op.process !== process);
+  clean(process: Process) {
+    this.operations = this.operations.filter(
+      (operation) => operation.process !== process,
+    );
   }
 }
 
@@ -58,7 +60,7 @@ export function reconcile<M extends Model>(
 
     if (this.node instanceof Annotation) {
       if (annotation) {
-        const merged = this.node.merge(annotation);
+        const merged = annotation.merge(this.node);
         updatedAnnotationStore[key] = merged;
         set(updatedProduceModel, key, merged.value);
 
@@ -87,4 +89,35 @@ export function reconcile<M extends Model>(
     (produceModel.current = updatedProduceModel),
     reconciled
   );
+}
+
+export function proxy<M extends Model>(
+  model: M,
+  annotationStore: Store,
+  path: string[] = [],
+): M | Validator {
+  return new Proxy(model, {
+    get(target, property, receiver) {
+      const key = [...path, property].join(".");
+      const record = annotationStore?.[key];
+      const pending = (record?.operations.length ?? 0) > 0;
+
+      if (property === "pending") {
+        return () => pending;
+      }
+
+      const value = Reflect.get(target, property, receiver);
+
+      if (typeof value === "object" && value !== null)
+        return proxy(value as M, annotationStore, [
+          ...path,
+          property as string,
+        ]);
+      else
+        return {
+          pending: () => pending,
+          path: [...path, property],
+        };
+    },
+  }) as M | Validator;
 }

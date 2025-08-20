@@ -4,6 +4,8 @@ import {
   useActions,
   Handlers,
 } from "../../library/index.ts";
+import { State } from "../../library/types/index.ts";
+import { sleep } from "../../library/utils/index.ts";
 import { Model } from "./types.ts";
 
 const model: Model = {
@@ -26,7 +28,16 @@ export default function useCounterActions() {
   );
 
   const incrementAction = useAction<Model, typeof Actions, "Increment">(
-    (context) => {
+    async (context) => {
+      context.actions.produce((model) => {
+        model.count = context.actions.annotate(model.count + 1, [
+          State.Operation.Updating,
+          State.Draft(5),
+        ]);
+      });
+
+      await sleep(1000);
+
       context.actions.produce((model) => {
         model.count += 1;
       });

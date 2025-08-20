@@ -1,3 +1,5 @@
+import { Validateable } from "../annotate/types";
+
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export class Draft<T> {
   constructor(public value: T) {}
@@ -89,6 +91,7 @@ export type Context<M extends Model, AC extends ActionsClass<any>> = {
     dispatch<A extends AC[keyof AC] & Payload<any>>(
       ...args: [PayloadType<A>] extends [never] ? [A] : [A, PayloadType<A>]
     ): void;
+    annotate<T>(value: T, operations: Operations<T>): T;
   };
 };
 
@@ -103,5 +106,6 @@ export type UseActions<M extends Model, AC extends ActionsClass<any>> = [
     dispatch<A extends AC[keyof AC] & Payload<any>>(
       ...args: [PayloadType<A>] extends [never] ? [A] : [A, PayloadType<A>]
     ): void;
+    validate: Validateable<M>;
   },
 ];

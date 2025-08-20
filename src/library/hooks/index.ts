@@ -10,13 +10,15 @@ import {
   Props,
   ActionsClass,
   Handlers,
+  Operations,
 } from "../types/index.ts";
 import EventEmitter from "eventemitter3";
 import { useBroadcast } from "../broadcast/index.tsx";
 import { isDistributedAction } from "../action/index.ts";
 import { useActionError } from "../error/index.tsx";
 import { Store } from "./types.ts";
-import { reconcile } from "../annotate/utils.ts";
+import { Annotation, reconcile } from "../annotate/utils.ts";
+import { validateable } from "../annotate/index.ts";
 
 /**
  * Memoizes an action handler for performance optimization.
@@ -38,6 +40,7 @@ export function useAction<
   ) => void | Promise<void> | AsyncGenerator | Generator,
 ) {
   const handleError = useActionError();
+
   return getCallbackFunction()(
     (
       context: Context<M, AC>,
@@ -61,8 +64,13 @@ export function useAction<
             await handler(context, payload);
           }
         } catch (error) {
-          if (handleError) handleError(error as Error);
+          console.error("Chizu\n\n", error);
+          handleError?.(error as Error);
         } finally {
+          // for (const x of Object.values(refs.annotationStore.current)) {
+          //   x?.clean(process)
+          // }
+
           task.resolve();
         }
       }
@@ -102,6 +110,7 @@ export function useActions<M extends Model, AC extends Handlers<M, AC>>(
   const unicast = React.useMemo(() => new EventEmitter(), []);
 
   const context = React.useMemo(() => {
+    const process = Symbol("chizu/process");
     const controller = new AbortController();
 
     return <Context<M, AC>>{
@@ -111,17 +120,22 @@ export function useActions<M extends Model, AC extends Handlers<M, AC>>(
           const model = config.immer.produce(refs.viewModel.current, () =>
             f(refs.viewModel.current, refs.produceModel.current),
           );
+
           refs.viewModel.current = reconcile(
             model,
             refs.produceModel,
             refs.annotationStore,
           );
+
           setModel(refs.viewModel.current);
         },
         dispatch(...[action, payload]: [action: any, payload?: any]) {
           if (isDistributedAction(action))
             broadcast.instance.emit(action, payload);
           else unicast.emit(action, payload);
+        },
+        annotate<T>(value: T, operations: Operations<T>): T {
+          return new Annotation<T>(value, operations, process) as T;
         },
       },
     };
@@ -165,6 +179,9 @@ export function useActions<M extends Model, AC extends Handlers<M, AC>>(
           else unicast.emit(action, payload);
         },
         consume() {},
+        get validate() {
+          return validateable(model, refs.annotationStore.current);
+        },
       },
     ],
     [model, unicast],

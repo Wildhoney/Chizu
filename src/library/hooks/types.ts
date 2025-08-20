@@ -1,3 +1,3 @@
 import { Annotation } from "../annotate/utils.ts";
 
-export type Store = Record<string, Annotation<unknown>>;
+export type Store = Record<string, undefined | Annotation<unknown>>;
