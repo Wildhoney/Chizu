@@ -19,6 +19,7 @@ Key concepts include:
 
 - Use `type` instead of `interface`.
 - Use `export function` instead of `export const () =>`.
+- All comments and documentation must be written in British-English.
 
 ## Development Workflow
 
