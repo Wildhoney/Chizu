@@ -18,7 +18,7 @@ type Model = {
 };
 
 describe("reconcile()", () => {
-  it("x", () => {
+  it("is able to handle the annotations", () => {
     const produceModel = React.createRef<Model>() as React.RefObject<Model>;
     const annotationStore = React.createRef<Store>() as React.RefObject<Store>;
 
