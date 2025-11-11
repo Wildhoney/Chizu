@@ -1,9 +1,4 @@
-import {
-  createAction,
-  useAction,
-  useActions,
-  Handlers,
-} from "../../library/index.ts";
+import { createAction, useAction, useActions } from "../../library/index.ts";
 import { State } from "../../library/types/index.ts";
 import { sleep } from "../../library/utils/index.ts";
 import { Model } from "./types.ts";
@@ -54,7 +49,7 @@ export default function useCounterActions() {
 
   return useActions(
     model,
-    <Handlers<Model, typeof Actions>>class {
+    class {
       [Actions.Reset] = resetAction;
       [Actions.Increment] = incrementAction;
       [Actions.Decrement] = decrementAction;

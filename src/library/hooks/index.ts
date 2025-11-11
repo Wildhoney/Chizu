@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unsafe-function-type */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import * as React from "react";
-import { config, getCallbackFunction, withGetters } from "./utils.ts";
+import { config, useActionCallback, withGetters } from "./utils.ts";
 import {
   Context,
   Lifecycle,
@@ -9,8 +9,10 @@ import {
   Payload,
   Props,
   ActionsClass,
-  Handlers,
+  Actions,
   Operations,
+  Process,
+  Action,
 } from "../types/index.ts";
 import EventEmitter from "eventemitter3";
 import { useBroadcast } from "../broadcast/index.tsx";
@@ -32,7 +34,7 @@ import { validateable } from "../annotate/index.ts";
 export function useAction<
   M extends Model,
   AC extends ActionsClass<any>,
-  K extends Exclude<keyof AC, "prototype">,
+  K extends never | Exclude<keyof AC, "prototype"> = never,
 >(
   handler: (
     context: Context<M, AC>,
@@ -41,47 +43,32 @@ export function useAction<
 ) {
   const handleError = useActionError();
 
-  return getCallbackFunction()(
-    (
+  return useActionCallback(
+    async (
       context: Context<M, AC>,
       payload: AC[K] extends Payload<infer P> ? P : never,
     ) => {
-      async function run() {
-        const task = Promise.withResolvers<void>();
+      try {
+        const isGenerator =
+          handler.constructor.name === "GeneratorFunction" ||
+          handler.constructor.name === "AsyncGeneratorFunction";
 
-        try {
-          const isGenerator =
-            handler.constructor.name === "GeneratorFunction" ||
-            handler.constructor.name === "AsyncGeneratorFunction";
-
-          if (isGenerator) {
-            const generator = handler(context, payload) as
-              | Generator
-              | AsyncGenerator;
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            for await (const _ of generator) void 0;
-          } else {
-            await handler(context, payload);
-          }
-        } catch (error) {
-          console.error("Chizu\n\n", error);
-          handleError?.(error as Error);
-        } finally {
-          // for (const x of Object.values(refs.annotationStore.current)) {
-          //   x?.clean(process)
-          // }
-
-          task.resolve();
+        if (isGenerator) {
+          const generator = handler(context, payload) as
+            | Generator
+            | AsyncGenerator;
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          for await (const _ of generator) void 0;
+        } else {
+          await handler(context, payload);
         }
+      } catch (error) {
+        console.error("Chizu\n\n", error);
+        handleError?.(error as Error);
       }
-
-      run();
     },
     [handler, handleError],
-  ) as ((
-    context: Context<M, AC>,
-    payload: AC[K] extends Payload<infer P> ? P : never,
-  ) => void) & { _payload: AC[K] extends Payload<infer P> ? P : never };
+  );
 }
 
 /**
@@ -93,7 +80,7 @@ export function useAction<
  * @param {ActionClass<M, A>} ActionClass The class defining the actions.
  * @returns {UseActions<M, A>} A tuple containing the state and action handlers.
  */
-export function useActions<M extends Model, AC extends Handlers<M, AC>>(
+export function useActions<M extends Model, AC extends Actions<M, AC>>(
   initialModel: M,
   ActionClass: AC,
 ) {
@@ -101,86 +88,87 @@ export function useActions<M extends Model, AC extends Handlers<M, AC>>(
   const [model, setModel] = React.useState<M>(initialModel);
 
   const refs = {
-    viewModel: React.useRef<M>(initialModel),
-    produceModel: React.useRef(initialModel),
-    annotationStore: React.useRef<Store>({}),
+    model: React.useRef<M>(initialModel),
+    store: React.useRef<Store>({}),
   };
 
   const snapshot = useSnapshot({ model });
   const unicast = React.useMemo(() => new EventEmitter(), []);
 
-  const context = React.useMemo(() => {
-    const process = Symbol("chizu/process");
-    const controller = new AbortController();
+  const getContext = React.useCallback(
+    (process: Process) => {
+      const controller = new AbortController();
 
-    return <Context<M, AC>>{
-      signal: controller.signal,
-      actions: {
-        produce(f) {
-          const model = config.immer.produce(refs.viewModel.current, () =>
-            f(refs.viewModel.current, refs.produceModel.current),
-          );
+      return <Context<M, AC>>{
+        signal: controller.signal,
+        actions: {
+          produce(f) {
+            const model = config.immer.produce(refs.model.current, () =>
+              f(refs.model.current),
+            );
 
-          refs.viewModel.current = reconcile(
-            model,
-            refs.produceModel,
-            refs.annotationStore,
-          );
+            refs.model.current = reconcile(model, refs.store);
 
-          setModel(refs.viewModel.current);
+            setModel(refs.model.current);
+          },
+          dispatch(...[action, payload]: [action: any, payload?: any]) {
+            if (isDistributedAction(action))
+              broadcast.instance.emit(action, payload);
+            else unicast.emit(action, payload);
+          },
+          annotate<T>(value: T, operations: Operations<T>): T {
+            return new Annotation<T>(value, operations, process) as T;
+          },
         },
-        dispatch(...[action, payload]: [action: any, payload?: any]) {
-          if (isDistributedAction(action))
-            broadcast.instance.emit(action, payload);
-          else unicast.emit(action, payload);
-        },
-        annotate<T>(value: T, operations: Operations<T>): T {
-          return new Annotation<T>(value, operations, process) as T;
-        },
-      },
-    };
-  }, [snapshot.model]);
+      };
+    },
+    [snapshot.model],
+  );
 
-  const instance = React.useMemo(() => {
+  React.useLayoutEffect(() => {
     const actions = new ActionClass();
 
     Object.getOwnPropertySymbols(actions).forEach((action) => {
       const key = action as keyof typeof actions;
 
       if (isDistributedAction(action)) {
-        broadcast.instance.on(action, (payload) =>
-          (actions[key] as Function)(context, payload),
-        );
-      } else {
-        unicast.on(action, (payload) =>
-          (actions[key] as Function)(context, payload),
-        );
-      }
-    });
+        return void broadcast.instance.on(action, async (payload) => {
+          const task = Promise.withResolvers<void>();
+          const process = Symbol("chizu/process");
 
-    return actions;
+          await (actions[key] as Function)(getContext(process), payload);
+          for (const x of Object.values(refs.store.current)) x?.clean(process);
+          task.resolve();
+        });
+      }
+
+      unicast.on(action, async (payload) => {
+        const task = Promise.withResolvers<void>();
+        const process = Symbol("chizu/process");
+        await (actions[key] as Function)(getContext(process), payload);
+        for (const x of Object.values(refs.store.current)) x?.clean(process);
+        task.resolve();
+      });
+    });
   }, [unicast]);
 
   React.useLayoutEffect(() => {
-    const lifecycles = instance as unknown as {
-      [key: symbol]: (context: Context<M, AC>) => void;
-    };
-    lifecycles[Lifecycle.Mount]?.(context);
-    return () => void lifecycles[Lifecycle.Unmount]?.(context);
+    unicast.emit(Lifecycle.Mount);
+    return () => void unicast.emit(Lifecycle.Unmount);
   }, []);
 
   return React.useMemo(
     () => [
       model,
       {
-        dispatch(...[action, payload]: [action: any, payload?: any]) {
+        dispatch(...[action, payload]: [action: Action, payload?: Payload]) {
           if (isDistributedAction(action))
             broadcast.instance.emit(action, payload);
           else unicast.emit(action, payload);
         },
         consume() {},
         get validate() {
-          return validateable(model, refs.annotationStore.current);
+          return validateable(model);
         },
       },
     ],

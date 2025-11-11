@@ -1,4 +1,5 @@
-import { Actions, Context, Model, Payload, Pk } from "../types/index.ts";
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { ActionsClass, Context, Model, Payload, Pk } from "../types/index.ts";
 
 export { default as sleep } from "./sleep/index.ts";
 
@@ -31,8 +32,10 @@ export function pk<T>(id?: Pk<T>): boolean | symbol {
  * @param property The name of the property in the state to update.
  * @returns An action function that takes the context and a payload, and updates the state.
  */
-export function set<M extends Model, A extends Actions>(property: string) {
-  return (context: Context<M, A>, payload: Payload): void => {
+export function set<M extends Model, AC extends ActionsClass<any>>(
+  property: string,
+) {
+  return (context: Context<M, AC>, payload: Payload): void => {
     context.actions.produce((draft: M) => {
       (draft as Record<string, Payload>)[property] = payload;
     });

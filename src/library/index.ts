@@ -8,7 +8,7 @@ export type {
   ActionInstance,
   ActionsClass,
   UseActions,
-  Handlers,
+  Actions,
 } from "./types/index.ts";
 export { Lifecycle } from "./types/index.ts";
 export * as utils from "./utils/index.ts";

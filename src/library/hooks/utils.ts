@@ -52,12 +52,9 @@ export function isGenerator(
  * Returns the appropriate callback function based on the React version.
  * @returns {typeof React.useCallback} The callback function.
  */
-export function getCallbackFunction(): typeof React.useCallback {
-  if ("experimental_useEffectEvent" in React) {
-    return React.experimental_useEffectEvent as typeof React.useCallback;
-  } else if ("useEffectEvent" in React) {
-    return React.useEffectEvent as typeof React.useCallback;
-  }
-
-  return React.useCallback;
-}
+export const useActionCallback =
+  "experimental_useEffectEvent" in React
+    ? (React.experimental_useEffectEvent as typeof React.useCallback)
+    : "useEffectEvent" in React
+      ? (React.useEffectEvent as typeof React.useCallback)
+      : React.useCallback;

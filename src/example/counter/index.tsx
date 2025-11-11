@@ -9,6 +9,8 @@ export default function Counter(): React.ReactElement {
 
   return (
     <section className={styles.container}>
+      {actions.validate.count.pending() && <div>Loading...</div>}
+
       <button onClick={() => actions.dispatch(Actions.Decrement)}>
         Decrement
       </button>

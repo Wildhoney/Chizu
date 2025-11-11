@@ -56,12 +56,6 @@ export type Props = Record<string, unknown>;
 
 export type Action = symbol | string;
 
-export type Actions<T = unknown> = {
-  new (): unknown;
-} & {
-  [key: Payload<T>]: Payload<T>;
-};
-
 export type ActionsClass<AC extends Record<string, Payload<any>>> = {
   new (): unknown;
 } & AC;
@@ -74,8 +68,11 @@ export type ActionInstance<
     ? P extends symbol
       ? P extends Payload<infer T>
         ? {
-            [K in P]: ((context: Context<M, AC>, payload: T) => void) & {
-              _payload: T;
+            [K in P]: ((
+              context: Context<M, AC>,
+              payload: T,
+            ) => void | Promise<void>) & {
+              payload: T;
             };
           }
         : never
@@ -87,7 +84,7 @@ export type Context<M extends Model, AC extends ActionsClass<any>> = {
   model: M;
   signal: AbortSignal;
   actions: {
-    produce(ƒ: (model: M, annotations: M) => void): M;
+    produce(ƒ: (model: M) => void): M;
     dispatch<A extends AC[keyof AC] & Payload<any>>(
       ...args: [PayloadType<A>] extends [never] ? [A] : [A, PayloadType<A>]
     ): void;
@@ -95,7 +92,7 @@ export type Context<M extends Model, AC extends ActionsClass<any>> = {
   };
 };
 
-export type Handlers<
+export type Actions<
   M extends Model,
   AC extends ActionsClass<any>,
 > = new () => ActionInstance<M, AC>;

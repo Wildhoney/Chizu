@@ -27,7 +27,7 @@ Strongly typed React framework using generators and efficiently updated views al
 
 ## Getting started
 
-Actions are responsible for mutating the state of the view. In the below example the `name` is dispatched from the view to the actions, the state is updated and the view is rendered with the updated value. We use the `Handlers` type to ensure type safety for our actions class.
+Actions are responsible for mutating the state of the view. In the below example the `name` is dispatched from the view to the actions, the state is updated and the view is rendered with the updated value. We use the `Actions` type to ensure type safety for our actions class.
 
 ```tsx
 const model: Model = {
@@ -41,7 +41,7 @@ export class Actions {
 export default function useNameActions() {
   return useActions(
     model,
-    <Handlers<Model, typeof Actions>>class {
+    <Actions<Model, typeof Actions>>class {
       [Actions.Name] = utils.set("name");
     },
   );
@@ -92,7 +92,7 @@ export default function useNameActions() {
 
   return useActions(
     model,
-    <Handlers<Model, typeof Actions>>class {
+    <Actions<Model, typeof Actions>>class {
       [Actions.Name] = nameAction;
     },
   );
@@ -127,6 +127,20 @@ const App = () => (
     <Profile />
   </ActionError>
 );
+```
+
+## Handling states
+
+```ts
+model.name.pending();
+
+model.name.is(State.Operation.Updating);
+model.name.not(State.Operating.Removing);
+
+model.name.optimistic();
+
+model.name.as(Kind.Value);
+model.name.as(Kind.Annotation);
 ```
 
 <!-- However in the above example where the name is fetched asynchronously, there is no feedback to the user &ndash; we can improve that significantly by using the `module.actions.annotate` and `module.validate` helpers:
