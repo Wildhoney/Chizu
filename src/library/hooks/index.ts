@@ -106,7 +106,7 @@ export function useActions<M extends Model, AC extends Actions<M, AC>>(
             else unicast.emit(action, payload);
           },
           annotate<T>(
-            operation: (value: T, process: Process) => T,
+            operation: <V>(value: V, process: Process) => V,
             value: T,
           ): T {
             return operation(value, process);

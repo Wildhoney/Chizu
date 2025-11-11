@@ -38,4 +38,3 @@ export function isGenerator(
   const name = (result as object).constructor.name;
   return name === "Generator" || name === "AsyncGenerator";
 }
-

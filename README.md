@@ -1,8 +1,13 @@
 <div align="center">
   <img src="/media/logo.png" width="475" />
+
+[![Checks](https://github.com/adamtimberlake/Chizu/actions/workflows/checks.yml/badge.svg)](https://github.com/adamtimberlake/Chizu/actions/workflows/checks.yml)
+
 </div>
 
 Strongly typed React framework using generators and efficiently updated views alongside the publish-subscribe pattern.
+
+**[View Live Demo →](https://adamtimberlake.github.io/Chizu/)**
 
 ## Contents
 

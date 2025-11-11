@@ -8,6 +8,8 @@ export default defineConfig({
     visualizer(),
     dts({
       include: ["src/library"],
+      outDir: "dist",
+      entryRoot: "src/library",
     }),
   ],
   build: {
@@ -19,16 +21,26 @@ export default defineConfig({
     },
     rollupOptions: {
       external(id) {
-        return ["eventemitter3", "immer", "lodash", "react", "traverse"].some(
-          (pkg) => id === pkg || id.startsWith(pkg + "/"),
-        );
+        return [
+          "@mobily/ts-belt",
+          "eventemitter3",
+          "immer",
+          "immeration",
+          "lodash",
+          "react",
+          "react-dom",
+          "traverse",
+        ].some((pkg) => id === pkg || id.startsWith(pkg + "/"));
       },
       output: {
         globals: {
+          "@mobily/ts-belt": "TsBelt",
           eventemitter3: "EventEmitter3",
           immer: "Immer",
+          immeration: "Immeration",
           lodash: "_",
           react: "React",
+          "react-dom": "ReactDOM",
           traverse: "Traverse",
         },
       },

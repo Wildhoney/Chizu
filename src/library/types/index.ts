@@ -90,7 +90,7 @@ export type Context<M extends Model, AC extends ActionsClass<any>> = {
     dispatch<A extends AC[keyof AC] & Payload<any>>(
       ...args: [PayloadType<A>] extends [never] ? [A] : [A, PayloadType<A>]
     ): void;
-    annotate<T>(operation: OperationFunction, value: T): T;
+    annotate<T>(operation: <V>(value: V, process: Process) => V, value: T): T;
   };
 };
 
