@@ -1,3 +1,3 @@
-import { Annotation } from "../annotate/utils.ts";
+import type { State } from "immeration";
 
-export type Store = Record<string, undefined | Annotation<unknown>>;
+export type Store = State<Record<string, unknown>> | null;

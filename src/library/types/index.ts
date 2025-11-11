@@ -1,4 +1,4 @@
-import { Validateable } from "../annotate/types";
+import type { Decorate } from "immeration";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export class Draft<T> {
@@ -80,6 +80,8 @@ export type ActionInstance<
     : never
 >;
 
+export type OperationFunction = <T>(value: T, process: Process) => T;
+
 export type Context<M extends Model, AC extends ActionsClass<any>> = {
   model: M;
   signal: AbortSignal;
@@ -88,7 +90,7 @@ export type Context<M extends Model, AC extends ActionsClass<any>> = {
     dispatch<A extends AC[keyof AC] & Payload<any>>(
       ...args: [PayloadType<A>] extends [never] ? [A] : [A, PayloadType<A>]
     ): void;
-    annotate<T>(value: T, operations: Operations<T>): T;
+    annotate<T>(operation: OperationFunction, value: T): T;
   };
 };
 
@@ -103,6 +105,6 @@ export type UseActions<M extends Model, AC extends ActionsClass<any>> = [
     dispatch<A extends AC[keyof AC] & Payload<any>>(
       ...args: [PayloadType<A>] extends [never] ? [A] : [A, PayloadType<A>]
     ): void;
-    validate: Validateable<M>;
+    inspect: Decorate<M>;
   },
 ];

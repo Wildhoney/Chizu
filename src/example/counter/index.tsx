@@ -1,27 +1,47 @@
-import useActions, { Actions } from "./actions.ts";
-import { Model } from "./types.ts";
+import useActions from "./actions.ts";
+import { Model, Actions } from "./types.ts";
 import { UseActions } from "../../library/index.ts";
 import * as styles from "./styles.ts";
 import * as React from "react";
+import FlipNumbers from "react-flip-numbers";
 
 export default function Counter(): React.ReactElement {
   const [model, actions] = useActions() as UseActions<Model, typeof Actions>;
 
   return (
     <section className={styles.container}>
-      {actions.validate.count.pending() && <div>Loading...</div>}
+      <div className={styles.card}>
+        <div className={styles.header}>
+          <h1 className={styles.title}>Counter</h1>
+        </div>
 
-      <button onClick={() => actions.dispatch(Actions.Decrement)}>
-        Decrement
-      </button>
+        <div className={styles.group}>
+          <button
+            className={styles.button}
+            onClick={() => actions.dispatch(Actions.Decrement)}
+          >
+            −
+          </button>
 
-      <h1>{model.count}</h1>
+          <div className={styles.display}>
+            <FlipNumbers
+              height={48}
+              width={32}
+              color="#333"
+              background="#fafafa"
+              play
+              numbers={String(model.count)}
+            />
+          </div>
 
-      <button onClick={() => actions.dispatch(Actions.Increment)}>
-        Increment
-      </button>
-
-      <button onClick={() => actions.dispatch(Actions.Reset, 0)}>Reset</button>
+          <button
+            className={styles.button}
+            onClick={() => actions.dispatch(Actions.Increment)}
+          >
+            +
+          </button>
+        </div>
+      </div>
     </section>
   );
 }

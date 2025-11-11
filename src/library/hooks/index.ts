@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unsafe-function-type */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import * as React from "react";
-import { config, useActionCallback, withGetters } from "./utils.ts";
+import { withGetters } from "./utils.ts";
 import {
   Context,
   Lifecycle,
@@ -10,7 +10,6 @@ import {
   Props,
   ActionsClass,
   Actions,
-  Operations,
   Process,
   Action,
 } from "../types/index.ts";
@@ -18,9 +17,7 @@ import EventEmitter from "eventemitter3";
 import { useBroadcast } from "../broadcast/index.tsx";
 import { isDistributedAction } from "../action/index.ts";
 import { useActionError } from "../error/index.tsx";
-import { Store } from "./types.ts";
-import { Annotation, reconcile } from "../annotate/utils.ts";
-import { validateable } from "../annotate/index.ts";
+import { State } from "immeration";
 
 /**
  * Memoizes an action handler for performance optimization.
@@ -43,7 +40,7 @@ export function useAction<
 ) {
   const handleError = useActionError();
 
-  return useActionCallback(
+  return React.useCallback(
     async (
       context: Context<M, AC>,
       payload: AC[K] extends Payload<infer P> ? P : never,
@@ -87,10 +84,7 @@ export function useActions<M extends Model, AC extends Actions<M, AC>>(
   const broadcast = useBroadcast();
   const [model, setModel] = React.useState<M>(initialModel);
 
-  const refs = {
-    model: React.useRef<M>(initialModel),
-    store: React.useRef<Store>({}),
-  };
+  const store = React.useRef<State<M>>(new State<M>(initialModel));
 
   const snapshot = useSnapshot({ model });
   const unicast = React.useMemo(() => new EventEmitter(), []);
@@ -103,21 +97,19 @@ export function useActions<M extends Model, AC extends Actions<M, AC>>(
         signal: controller.signal,
         actions: {
           produce(f) {
-            const model = config.immer.produce(refs.model.current, () =>
-              f(refs.model.current),
-            );
-
-            refs.model.current = reconcile(model, refs.store);
-
-            setModel(refs.model.current);
+            store.current.mutate((draft) => f(draft));
+            setModel(store.current.model);
           },
           dispatch(...[action, payload]: [action: any, payload?: any]) {
             if (isDistributedAction(action))
               broadcast.instance.emit(action, payload);
             else unicast.emit(action, payload);
           },
-          annotate<T>(value: T, operations: Operations<T>): T {
-            return new Annotation<T>(value, operations, process) as T;
+          annotate<T>(
+            operation: (value: T, process: Process) => T,
+            value: T,
+          ): T {
+            return operation(value, process);
           },
         },
       };
@@ -137,7 +129,7 @@ export function useActions<M extends Model, AC extends Actions<M, AC>>(
           const process = Symbol("chizu/process");
 
           await (actions[key] as Function)(getContext(process), payload);
-          for (const x of Object.values(refs.store.current)) x?.clean(process);
+          store.current.prune(process);
           task.resolve();
         });
       }
@@ -146,7 +138,7 @@ export function useActions<M extends Model, AC extends Actions<M, AC>>(
         const task = Promise.withResolvers<void>();
         const process = Symbol("chizu/process");
         await (actions[key] as Function)(getContext(process), payload);
-        for (const x of Object.values(refs.store.current)) x?.clean(process);
+        store.current.prune(process);
         task.resolve();
       });
     });
@@ -167,8 +159,8 @@ export function useActions<M extends Model, AC extends Actions<M, AC>>(
           else unicast.emit(action, payload);
         },
         consume() {},
-        get validate() {
-          return validateable(model);
+        get inspect() {
+          return store.current.inspect;
         },
       },
     ],
