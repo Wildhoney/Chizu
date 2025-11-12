@@ -5,17 +5,17 @@ import Counter from "../example/counter";
 it("should increment and decrement the counter", async () => {
   render(<Counter />);
 
-  expect(screen.getByText("1")).toBeTruthy();
+  expect(screen.getByLabelText("1")).toBeTruthy();
 
-  fireEvent.click(screen.getByText("Increment"));
-  expect(await screen.findByText("2")).toBeTruthy();
+  fireEvent.click(screen.getByText("+"));
+  expect(await screen.findByLabelText("2")).toBeTruthy();
 
-  fireEvent.click(screen.getByText("Decrement"));
-  expect(await screen.findByText("1")).toBeTruthy();
+  fireEvent.click(screen.getByText("−"));
+  expect(await screen.findByLabelText("1")).toBeTruthy();
 
-  fireEvent.click(screen.getByText("Reset"));
-  expect(await screen.findByText("0")).toBeTruthy();
+  fireEvent.click(screen.getByText("−"));
+  expect(await screen.findByLabelText("0")).toBeTruthy();
 
-  fireEvent.click(screen.getByText("Decrement"));
-  expect(await screen.findByText("-1")).toBeTruthy();
+  fireEvent.click(screen.getByText("−"));
+  expect(await screen.findByLabelText("-1")).toBeTruthy();
 });
