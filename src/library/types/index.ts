@@ -12,6 +12,25 @@ export type { ActionId, Box, Task, Tasks };
 export type { ConsumerRenderer };
 
 /**
+ * Internal symbols used as brand keys to distinguish typed objects at runtime.
+ * These enable TypeScript to differentiate between HandlerPayload, DistributedPayload,
+ * and channeled actions through branded types.
+ * @internal
+ */
+export class Brand {
+  /** Brand key for HandlerPayload type */
+  static Payload = Symbol("chizu.brand/Payload");
+  /** Brand key for DistributedPayload type */
+  static Distributed = Symbol("chizu.brand/Distributed");
+  /** Access the underlying symbol from an action */
+  static Action = Symbol("chizu.brand/Action");
+  /** Identifies channeled actions (result of calling Action(channel)) */
+  static Channel = Symbol("chizu.brand/Channel");
+  /** Element capture events used by Lifecycle.Element */
+  static Element = Symbol("chizu.action.lifecycle/Element");
+}
+
+/**
  * Lifecycle actions that trigger at specific points in a component's lifecycle.
  * Define handlers for these in your actions class to respond to lifecycle events.
  *
@@ -27,21 +46,65 @@ export type { ConsumerRenderer };
 export class Lifecycle {
   /** Triggered once when the component mounts (`useLayoutEffect`). */
   static Mount = Symbol("chizu.action.lifecycle/Mount");
-  /** Triggered once after the component mounts (`useEffect` with empty deps `[]`). */
-  static Node = Symbol("chizu.action.lifecycle/Node");
   /** Triggered when the component unmounts. */
   static Unmount = Symbol("chizu.action.lifecycle/Unmount");
   /** Triggered when an action throws an error. Receives `Fault` as payload. */
   static Error = Symbol("chizu.action.lifecycle/Error");
   /** Triggered when `context.data` has changed. Not fired on initial mount. Receives `Record<string, unknown>` payload with changed keys. */
   static Update = Symbol("chizu.action.lifecycle/Update");
+
+  /**
+   * Triggered when an element is captured or released via `actions.element()`.
+   * Supports channeled subscriptions by element name.
+   *
+   * The payload is the captured element (or `null` when released).
+   *
+   * @example
+   * ```ts
+   * // Subscribe to ALL element changes
+   * actions.useAction(Lifecycle.Element, (context, element) => {
+   *   console.log("Element changed:", element);
+   * });
+   *
+   * // Subscribe to a specific element by name (channeled)
+   * actions.useAction(Lifecycle.Element({ Name: "input" }), (context, element) => {
+   *   if (element) {
+   *     element.focus();
+   *   }
+   * });
+   * ```
+   */
+  static Element = (() => {
+    const symbol = Brand.Element;
+    const action = function (channel: {
+      Name: string;
+    }): ChanneledAction<unknown, { Name: string }> {
+      return {
+        [Brand.Action]: symbol,
+        [Brand.Payload]: <unknown>undefined,
+        [Brand.Channel]: channel,
+        channel,
+      };
+    };
+    // eslint-disable-next-line fp/no-mutating-methods
+    Object.defineProperty(action, Brand.Action, {
+      value: symbol,
+      enumerable: false,
+    });
+    // eslint-disable-next-line fp/no-mutating-methods
+    Object.defineProperty(action, Brand.Payload, {
+      value: undefined,
+      enumerable: false,
+    });
+    return <HandlerPayload<unknown, { Name: string }>>action;
+  })();
 }
 
 /**
  * Distribution modes for actions.
  *
  * - **Unicast** &ndash; Action is scoped to the component that defines it and cannot be
- *   consumed by other components. This is the default behavior.
+ *   consumed by other components. This is the default behaviour.
  * - **Broadcast** &ndash; Action is distributed to all mounted components that have defined
  *   a handler for it. Can be consumed with `actions.consume()`.
  *
@@ -107,36 +170,69 @@ export type Pk<T> = undefined | symbol | T;
 export type Model<M = Record<string, unknown>> = M;
 
 /**
- * Internal symbol used as a brand key for the HandlerPayload type.
- * Enables TypeScript to distinguish HandlerPayload from plain symbols.
- * @internal
- */
-export const PayloadKey = Symbol("payload");
-
-/**
- * Internal symbol used as a brand key for the DistributedPayload type.
- * Enables TypeScript to distinguish distributed actions from local actions.
- * @internal
- */
-export const DistributedKey = Symbol("distributed");
-
-/**
- * Branded type for action symbols created with `Action()`.
- * The phantom type parameter `T` carries the payload type at the type level.
+ * Branded type for action objects created with `Action()`.
+ * The phantom type parameters carry the payload and channel types at the type level.
  *
- * @template T - The payload type for the action
+ * Actions wrap an internal symbol (used as event emitter keys) in a callable object.
+ * When a channel type is specified, the action can be called to create a channeled dispatch.
+ *
+ * @template P - The payload type for the action
+ * @template C - The channel type for channeled dispatches (defaults to never = no channel)
+ *
+ * @example
+ * ```ts
+ * // Action without channel support
+ * const Increment = Action<number>("Increment");
+ * dispatch(Increment, 5);
+ *
+ * // Action with channel support
+ * const UserUpdated = Action<User, { UserId: number }>("UserUpdated");
+ * dispatch(UserUpdated, user);                    // broadcast to all handlers
+ * dispatch(UserUpdated({ UserId: 5 }), user);     // channeled dispatch
+ * ```
  */
-export type HandlerPayload<T = unknown> = symbol & { [PayloadKey]: T };
+export type HandlerPayload<P = unknown, C extends Filter = never> = {
+  readonly [Brand.Action]: symbol;
+  readonly [Brand.Payload]: P;
+  readonly [Brand.Distributed]?: boolean;
+} & ([C] extends [never]
+  ? unknown
+  : {
+      (channel: C): ChanneledAction<P, C>;
+    });
 
 /**
- * Branded type for distributed action symbols created with `Action()` and `Distribution.Broadcast`.
+ * Result of calling an action with a channel argument.
+ * Contains the action reference and the channel data for filtered dispatch.
+ *
+ * @template P - The payload type for the action
+ * @template C - The channel type
+ *
+ * @example
+ * ```ts
+ * const UserUpdated = Action<User, { UserId: number }>("UserUpdated");
+ *
+ * // UserUpdated({ UserId: 5 }) returns ChanneledAction<User, { UserId: number }>
+ * dispatch(UserUpdated({ UserId: 5 }), user);
+ * ```
+ */
+export type ChanneledAction<P = unknown, C = unknown> = {
+  readonly [Brand.Action]: symbol;
+  readonly [Brand.Payload]: P;
+  readonly [Brand.Channel]: C;
+  readonly channel: C;
+};
+
+/**
+ * Branded type for distributed action objects created with `Action()` and `Distribution.Broadcast`.
  * Distributed actions are broadcast to all mounted components and can be consumed with `actions.consume()`.
  *
- * This type extends `HandlerPayload<T>` with an additional brand to enforce at compile-time
+ * This type extends `HandlerPayload<P, C>` with an additional brand to enforce at compile-time
  * that only distributed actions can be passed to `consume()`. Attempting to consume
  * a local action will result in a TypeScript error.
  *
- * @template T - The payload type for the action
+ * @template P - The payload type for the action
+ * @template C - The channel type for channeled dispatches (defaults to never)
  *
  * @example
  * ```ts
@@ -149,25 +245,32 @@ export type HandlerPayload<T = unknown> = symbol & { [PayloadKey]: T };
  * actions.consume(Increment, ...); // Type error!
  * ```
  */
-export type DistributedPayload<T = unknown> = HandlerPayload<T> & {
-  [DistributedKey]: true;
+export type DistributedPayload<
+  P = unknown,
+  C extends Filter = never,
+> = HandlerPayload<P, C> & {
+  readonly [Brand.Distributed]: true;
 };
 
 /**
- * Extracts the payload type `T` from a `HandlerPayload<T>` or `ActionFilter<HandlerPayload<T>>`.
+ * Extracts the payload type `P` from a `HandlerPayload<P>` or `ChanneledAction<P, C>`.
  * Use this in handler signatures to get the action's payload type.
  *
- * Works with both plain actions and filtered action tuples:
+ * Works with both plain actions and channeled actions:
  * - `Payload<Action<User>>` → `User`
- * - `Payload<[Action<User>, { UserId: number }]>` → `User`
+ * - `Payload<ChanneledAction<User, { UserId: number }>>` → `User`
  *
- * @template A - The action type (HandlerPayload<T> or ActionFilter)
+ * @template A - The action type (HandlerPayload or ChanneledAction)
  */
-export type Payload<A> = A extends readonly [HandlerPayload<infer P>, Filter]
-  ? P
-  : A extends HandlerPayload<infer P>
+
+/* eslint-disable @typescript-eslint/no-explicit-any */
+export type Payload<A> =
+  A extends ChanneledAction<infer P, any>
     ? P
-    : never;
+    : A extends HandlerPayload<infer P, any>
+      ? P
+      : never;
+/* eslint-enable @typescript-eslint/no-explicit-any */
 
 /**
  * JavaScript primitive types.
@@ -183,10 +286,10 @@ export type Primitive =
   | undefined;
 
 /**
- * Non-nullable primitive type for filter values.
+ * Primitive type for filter values, excluding null and undefined.
  * Includes `string`, `number`, `bigint`, `boolean`, and `symbol`.
  */
-export type FilterValue = NonNullable<Primitive>;
+export type FilterValue = Exclude<Primitive, null | undefined>;
 
 /**
  * Filter object for channeled actions.
@@ -214,51 +317,34 @@ export type FilterValue = NonNullable<Primitive>;
 export type Filter = Record<string, FilterValue>;
 
 /**
- * Tuple type for subscribing to filtered events within an action.
- * Used with `useAction` to listen for actions dispatched with matching filter properties.
+ * Union type representing either a plain action or a channeled action.
+ * Used in `useAction` and `dispatch` signatures to accept both forms.
  *
- * The filter is an object where dispatch properties must match registered properties:
- * - Register: `[Action, { UserId: 1, Role: "admin" }]`
- * - Dispatch `[Action, { UserId: 1 }]` → matches handlers where `UserId === 1`
- * - Dispatch `[Action, {}]` → matches ALL filtered handlers
- * - Dispatch `Action` (plain) → matches ALL handlers (plain + filtered)
- *
- * @template A - The action type (must be a HandlerPayload)
+ * @template A - The action type
  *
  * @example
  * ```ts
  * class Actions {
- *   static UserUpdated = Action<User>("UserUpdated", Distribution.Broadcast);
+ *   static UserUpdated = Action<User, { UserId: number }>("UserUpdated", Distribution.Broadcast);
  * }
  *
- * // Subscribe to updates for a specific user
- * actions.useAction([Actions.UserUpdated, { UserId: props.userId }], (context, user) => {
+ * // Subscribe to updates for a specific user (channeled)
+ * actions.useAction(Actions.UserUpdated({ UserId: props.userId }), (context, user) => {
  *   context.actions.produce((draft) => {
  *     draft.model.user = user;
  *   });
  * });
  *
- * // Dispatch to specific user
- * actions.dispatch([Actions.UserUpdated, { UserId: user.id }], user);
+ * // Dispatch to specific user (channeled)
+ * actions.dispatch(Actions.UserUpdated({ UserId: user.id }), user);
  *
- * // Dispatch to ALL handlers (plain + filtered)
+ * // Dispatch to ALL handlers (plain)
  * actions.dispatch(Actions.UserUpdated, user);
  * ```
  */
-export type ActionFilter<A extends HandlerPayload = HandlerPayload> = readonly [
-  A,
-  Filter,
-];
-
-/**
- * Union type representing either a plain action or a filtered action tuple.
- * Used in `useAction` and `dispatch` signatures to accept both forms.
- *
- * @template A - The action type
- */
-export type ActionOrFilter<A extends HandlerPayload = HandlerPayload> =
+export type ActionOrChanneled<A extends HandlerPayload = HandlerPayload> =
   | A
-  | ActionFilter<A>;
+  | ChanneledAction;
 
 /**
  * Checks if a function type returns a Promise.
@@ -283,6 +369,39 @@ type AssertSync<F> =
  * Represents any object that can be captured as reactive data.
  */
 export type Props = Record<string, unknown>;
+
+/**
+ * Extracts the elements type from a Model.
+ * If the model has an `elements` property, returns its type.
+ * Otherwise returns an empty record.
+ *
+ * @example
+ * ```ts
+ * type Model = {
+ *   count: number;
+ *   elements: { button: HTMLButtonElement | null };
+ * };
+ *
+ * type E = ModelElements<Model>; // { button: HTMLButtonElement | null }
+ * ```
+ */
+export type ModelElements<M> = M extends {
+  elements: infer E extends Record<string, unknown>;
+}
+  ? E
+  : Record<string, never>;
+
+/**
+ * Base type for element mappings in useActions.
+ * @deprecated Define elements directly in your Model type instead:
+ * ```ts
+ * type Model = {
+ *   count: number;
+ *   elements: { button: HTMLButtonElement | null };
+ * };
+ * ```
+ */
+export type Elements = Record<string, unknown>;
 
 /**
  * Constraint type for action containers.
@@ -326,7 +445,7 @@ export type Result = {
 
 export type HandlerContext<
   M extends Model,
-  AC extends Actions,
+  _AC extends Actions,
   D extends Props = Props,
 > = {
   readonly model: Readonly<M>;
@@ -417,6 +536,20 @@ export type HandlerContext<
    * ```
    */
   readonly tasks: Tasks;
+  /**
+   * Captured DOM elements registered via `actions.element()`.
+   * Elements may be `null` if not yet captured or if the element was unmounted.
+   *
+   * @example
+   * ```ts
+   * actions.useAction(Actions.Focus, (context) => {
+   *   context.elements.input?.focus();
+   * });
+   * ```
+   */
+  readonly elements: {
+    [K in keyof ModelElements<M>]: ModelElements<M>[K] | null;
+  };
   readonly actions: {
     produce<
       F extends (draft: {
@@ -426,9 +559,7 @@ export type HandlerContext<
     >(
       ƒ: F & AssertSync<F>,
     ): M;
-    dispatch<A extends AC[keyof AC] & HandlerPayload<unknown>>(
-      ...args: [Payload<A>] extends [never] ? [A] : [A, Payload<A>]
-    ): void;
+    dispatch(action: ActionOrChanneled, payload?: unknown): void;
     annotate<T>(operation: Operation, value: T): T;
   };
 };
@@ -469,7 +600,7 @@ export type HandlerContext<
  * @template K - The action key (keyof AC) — determines payload type via lookup
  * @template D - Optional data/props type (defaults to Props)
  *
- * @see {@link HandlerMap} for the recommended HKT pattern
+ * @see {@link Handlers} for the recommended HKT pattern
  */
 export type Handler<
   M extends Model,
@@ -494,7 +625,7 @@ export type Handler<
  *
  * @example
  * ```ts
- * import { Action, HandlerMap } from "chizu";
+ * import { Action, Handlers } from "chizu";
  *
  * class Actions {
  *   static SetName = Action<string>("SetName");
@@ -502,7 +633,7 @@ export type Handler<
  * }
  *
  * // Define the HKT once for this module
- * type H = HandlerMap<Model, typeof Actions>;
+ * type H = Handlers<Model, typeof Actions>;
  *
  * // "Apply" the HKT via indexed access — H["SetName"] is the handler type
  * export const handleSetName: H["SetName"] = (context, name) => {
@@ -526,7 +657,7 @@ export type Handler<
  * }
  * ```
  */
-export type HandlerMap<
+export type Handlers<
   M extends Model,
   AC extends Actions,
   D extends Props = Props,
@@ -544,7 +675,7 @@ export type UseActions<
 > = [
   Readonly<M>,
   {
-    dispatch(action: ActionOrFilter, payload?: HandlerPayload): void;
+    dispatch(action: ActionOrChanneled, payload?: HandlerPayload): void;
     /**
      * Subscribes to a distributed action's values and renders based on the callback.
      * The callback receives a Box with `value` (the payload) and `inspect` (for annotation status).
@@ -578,6 +709,53 @@ export type UseActions<
       renderer: ConsumerRenderer<Payload<AC[K]>>,
     ): React.ReactNode;
     inspect: Inspect<M>;
+    /**
+     * Captured DOM elements registered via `element()`.
+     * Elements may be `null` if not yet captured or if the element was unmounted.
+     *
+     * @example
+     * ```tsx
+     * type Model = {
+     *   count: number;
+     *   elements: { input: HTMLInputElement };
+     * };
+     * const [model, actions] = useActions<Model, typeof Actions>(model);
+     *
+     * // Access captured elements
+     * actions.elements.input?.focus();
+     * ```
+     */
+    elements: { [K in keyof ModelElements<M>]: ModelElements<M>[K] | null };
+    /**
+     * Captures a DOM element for later access via `elements` or `context.elements`.
+     * Use as a ref callback on JSX elements.
+     *
+     * @param name - The element key (must match a key in Model['elements'])
+     * @param element - The DOM element or null (when unmounting)
+     *
+     * @example
+     * ```tsx
+     * type Model = {
+     *   count: number;
+     *   elements: {
+     *     container: HTMLDivElement;
+     *     input: HTMLInputElement;
+     *   };
+     * };
+     *
+     * const [model, actions] = useActions<Model, typeof Actions>(model);
+     *
+     * return (
+     *   <div ref={element => actions.element('container', element)}>
+     *     <input ref={element => actions.element('input', element)} />
+     *   </div>
+     * );
+     * ```
+     */
+    element<K extends keyof ModelElements<M>>(
+      name: K,
+      element: ModelElements<M>[K] | null,
+    ): void;
   },
 ] & {
   /**
@@ -585,10 +763,10 @@ export type UseActions<
    * Types are pre-baked from the useActions call, so no type parameter is needed.
    *
    * Supports two subscription patterns:
-   * 1. **Plain action** - Receives ALL dispatches for that action (including filtered ones)
-   * 2. **Filtered action** `[Action, filter]` - Receives only dispatches matching the filter
+   * 1. **Plain action** - Receives ALL dispatches for that action (including channeled ones)
+   * 2. **Channeled action** `Action(channel)` - Receives only dispatches matching the channel
    *
-   * @param action - The action symbol or `[action, filter]` tuple to bind
+   * @param action - The action or channeled action (e.g., `Action({ UserId: 1 })`)
    * @param handler - The handler function receiving context and payload
    *
    * @example
@@ -600,13 +778,13 @@ export type UseActions<
    *   // Fires for any UserUpdated dispatch
    * });
    *
-   * // Subscribe to UserUpdated for a specific user only
-   * actions.useAction([Actions.UserUpdated, { UserId: props.userId }], (context, user) => {
-   *   // Only fires when dispatched with matching filter
+   * // Subscribe to UserUpdated for a specific user only (channeled)
+   * actions.useAction(Actions.UserUpdated({ UserId: props.userId }), (context, user) => {
+   *   // Only fires when dispatched with matching channel
    * });
    * ```
    */
-  useAction<A extends ActionId | ActionFilter>(
+  useAction<A extends ActionId | HandlerPayload | ChanneledAction>(
     action: A,
     handler: (
       context: HandlerContext<M, AC, D>,

@@ -2,8 +2,9 @@ import * as React from "react";
 import {
   useLifecycles,
   useData,
-  isFilteredAction,
-  matchesFilter,
+  isChanneledAction,
+  getActionSymbol,
+  matchesChannel,
 } from "./utils.ts";
 
 export { With } from "./utils.ts";
@@ -12,6 +13,7 @@ import type { Data, Handler, Scope } from "./types.ts";
 import {
   HandlerContext,
   Lifecycle,
+  Brand,
   Phase,
   Model,
   HandlerPayload,
@@ -23,7 +25,9 @@ import {
   Result,
   Task,
   Filter,
-  ActionFilter,
+  ChanneledAction,
+  ActionOrChanneled,
+  ModelElements,
 } from "../types/index.ts";
 
 import {
@@ -45,7 +49,7 @@ function useRegisterHandler<
   D extends Props,
 >(
   scope: React.RefObject<Scope>,
-  action: ActionId | ActionFilter,
+  action: ActionId | HandlerPayload | ChanneledAction,
   handler: (
     context: HandlerContext<M, AC, D>,
     payload: unknown,
@@ -66,14 +70,14 @@ function useRegisterHandler<
     },
   );
 
-  const getFilter = React.useEffectEvent(() =>
-    isFilteredAction(action) ? action[1] : undefined,
+  const getChannel = React.useEffectEvent((): Filter | undefined =>
+    isChanneledAction(action) ? <Filter>action.channel : undefined,
   );
 
-  const base = isFilteredAction(action) ? action[0] : action;
+  const base = getActionSymbol(action);
   const entries = scope.current.handlers.get(base) ?? new Set();
   if (entries.size === 0) scope.current.handlers.set(base, entries);
-  entries.add({ getFilter, handler: <Handler>stableHandler });
+  entries.add({ getChannel, handler: <Handler>stableHandler });
 }
 
 /**
@@ -175,6 +179,16 @@ export function useActions<
   const scope = React.useRef<Scope>({ handlers: new Map() });
   const distributedActions = React.useRef<Set<ActionId>>(new Set());
   const phase = React.useRef<Phase>(Phase.Mounting);
+  type E = ModelElements<M>;
+  const elements = React.useRef<{ [K in keyof E]: E[K] | null }>(
+    <{ [K in keyof E]: E[K] | null }>{},
+  );
+  const pendingCaptures = React.useRef<Map<keyof E, E[keyof E] | null>>(
+    new Map(),
+  );
+  const lastEmittedElements = React.useRef<Map<keyof E, E[keyof E] | null>>(
+    new Map(),
+  );
 
   /**
    * Creates the context object passed to action handlers during dispatch.
@@ -198,6 +212,7 @@ export function useActions<
         task,
         data,
         tasks,
+        elements: elements.current,
         actions: {
           produce(f) {
             if (controller.signal.aborted) return;
@@ -211,12 +226,14 @@ export function useActions<
               hydration.current = null;
             }
           },
-          dispatch(action: ActionId | ActionFilter, payload?: HandlerPayload) {
+          dispatch(action: ActionOrChanneled, payload?: HandlerPayload) {
             if (controller.signal.aborted) return;
-            const base = isFilteredAction(action) ? action[0] : action;
-            const filter = isFilteredAction(action) ? action[1] : undefined;
-            const emitter = isDistributedAction(base) ? broadcast : unicast;
-            emitter.emit(base, payload, filter);
+            const base = getActionSymbol(action);
+            const channel = isChanneledAction(action)
+              ? action.channel
+              : undefined;
+            const emitter = isDistributedAction(action) ? broadcast : unicast;
+            emitter.emit(base, payload, channel);
           },
           annotate<T>(operation: Operation, value: T): T {
             return state.current.annotate(operation, value);
@@ -231,17 +248,19 @@ export function useActions<
     function createHandler(
       action: ActionId,
       actionHandler: Handler,
-      getFilter: () => Filter | undefined,
+      getChannel: () => Filter | undefined,
     ) {
       return async function handler(
         payload: HandlerPayload,
-        dispatchFilter?: Filter,
+        dispatchChannel?: Filter,
       ) {
-        const registeredFilter = getFilter();
+        const registeredChannel = getChannel();
 
-        if (G.isNotNullable(dispatchFilter)) {
-          if (!registeredFilter) return;
-          if (!matchesFilter(dispatchFilter, registeredFilter)) return;
+        if (
+          G.isNotNullable(dispatchChannel) &&
+          G.isNotNullable(registeredChannel)
+        ) {
+          if (!matchesChannel(dispatchChannel, registeredChannel)) return;
         }
 
         const result = <Result>{ processes: new Set<Process>() };
@@ -256,6 +275,7 @@ export function useActions<
             error: getError(caught),
             action: getName(action),
             handled,
+            tasks,
           };
           error?.(details);
           if (handled) unicast.emit(Lifecycle.Error, details);
@@ -267,26 +287,55 @@ export function useActions<
             }
           }
           result.processes.forEach((process) => state.current.prune(process));
-          rerender();
+          // Only rerender if state was actually changed (produce was called)
+          if (result.processes.size > 0) rerender();
           completion.resolve();
         }
       };
     }
 
+    const cleanupFns: Array<() => void> = [];
+
     scope.current.handlers.forEach((entries, action) => {
-      for (const { getFilter, handler: actionHandler } of entries) {
-        const handler = createHandler(action, actionHandler, getFilter);
+      for (const { getChannel, handler: actionHandler } of entries) {
+        const handler = createHandler(action, actionHandler, getChannel);
 
         if (isDistributedAction(action)) {
           broadcast.on(action, handler);
           unicast.on(action, handler);
           distributedActions.current.add(action);
+          cleanupFns.push(() => {
+            broadcast.off(action, handler);
+            unicast.off(action, handler);
+          });
         } else {
           unicast.on(action, handler);
+          cleanupFns.push(() => unicast.off(action, handler));
         }
       }
     });
+
+    return () => {
+      // Emit Unmount before removing handlers so they can respond (e.g., abort tasks)
+      phase.current = Phase.Unmounting;
+      unicast.emit(Lifecycle.Unmount);
+      phase.current = Phase.Unmounted;
+      for (const cleanup of cleanupFns) cleanup();
+    };
   }, [unicast]);
+
+  // Process pending element captures after each render
+  // Only emit if the element truly changed (not just React's ref cleanup/setup cycle)
+  React.useLayoutEffect(() => {
+    for (const [name, element] of pendingCaptures.current) {
+      const lastEmitted = lastEmittedElements.current.get(name);
+      if (lastEmitted !== element) {
+        lastEmittedElements.current.set(name, element);
+        unicast.emit(Brand.Element, element, { Name: name });
+      }
+    }
+    pendingCaptures.current.clear();
+  });
 
   useLifecycles({
     unicast,
@@ -301,23 +350,34 @@ export function useActions<
       <UseActions<M, AC, D>>[
         model,
         {
-          dispatch(action: ActionId | ActionFilter, payload?: HandlerPayload) {
-            const base = isFilteredAction(action) ? action[0] : action;
-            const filter = isFilteredAction(action) ? action[1] : undefined;
-            const emitter = isDistributedAction(base) ? broadcast : unicast;
-            emitter.emit(base, payload, filter);
+          dispatch(action: ActionOrChanneled, payload?: HandlerPayload) {
+            const base = getActionSymbol(action);
+            const channel = isChanneledAction(action)
+              ? action.channel
+              : undefined;
+            const emitter = isDistributedAction(action) ? broadcast : unicast;
+            emitter.emit(base, payload, channel);
           },
           consume(
-            action: symbol,
+            action: symbol | object,
             renderer: ConsumerRenderer<unknown>,
           ): React.ReactNode {
             return React.createElement(Partition, {
-              action,
+              action: <symbol>getActionSymbol(action),
               renderer,
             });
           },
           get inspect() {
             return state.current.inspect;
+          },
+          get elements() {
+            return elements.current;
+          },
+          element<K extends keyof E>(name: K, el: E[K] | null) {
+            elements.current[name] = el;
+            // Always queue - processed in useLayoutEffect after render completes
+            // This handles React's ref cleanup/setup cycle correctly
+            pendingCaptures.current.set(name, el);
           },
         },
       ],
@@ -325,7 +385,7 @@ export function useActions<
   );
 
   (<UseActions<M, AC, D>>result).useAction = <
-    A extends ActionId | ActionFilter,
+    A extends ActionId | HandlerPayload | ChanneledAction,
   >(
     action: A,
     handler: (
