@@ -38,7 +38,7 @@
     "vitest/vite": "^7.3.5",
     "vite": "^7.3.5",
     "esbuild": "^0.28.1",
-    "react-router": "^7.15.1",
+    "react-router": "^7.18.2",
     "ws": "^8.21.0"
   },
   "files": [
